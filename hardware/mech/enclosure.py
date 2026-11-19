@@ -21,7 +21,14 @@ Z = thickness, Z = 0 at the outer front face (water side), +Z towards the tub wa
 import math
 import os
 
+import sys
+
 import cadquery as cq
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import brand  # noqa: E402
+
+BRANDING = True                                   # deboss logo / wordmark / Qi target (see brand.py)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out")
@@ -97,6 +104,9 @@ def make_cup():
             csk = (cq.Workplane("YZ").workplane(offset=side * OUT_W / 2)
                    .center(sy, SCREW_Z).circle(2.0).extrude(-side * 1.0, taper=45))
             cup = cup.cut(hole).cut(csk)
+    if BRANDING:
+        for f in brand.front_features(sys.modules[__name__]):
+            cup = cup.cut(f)
     return cup
 
 
@@ -131,6 +141,9 @@ def make_plug():
     notch = (cq.Workplane("XY").workplane(offset=DEPTH - 0.8).center(0, pl / 2 - 0.5)
              .rect(8.0, 2.0).extrude(1.0))
     plug = plug.cut(notch)
+    if BRANDING:
+        for f in brand.back_features(sys.modules[__name__]):
+            plug = plug.cut(f)
     return plug
 
 
