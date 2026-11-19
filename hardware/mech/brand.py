@@ -2,9 +2,9 @@
 """Brand identity + industrial-design features for the bath monitor (rev B).
 
 All features are shallow debosses or grooves: no paint, inserts or glue required.
-  front (cup) : ripple mark + wordmark in the dry top band; a level SCALE on the left margin
-                (equal horizontal ticks at every electrode boundary, pad numbers 1-6) and an alarm
-                chevron on the right at the default alarm level. Nothing is cut over the electrodes.
+  front (cup) : ripple mark + wordmark in the dry top band; small alarm arrows on both margins at
+                the default alarm level. No scale: through the translucent cup the electrodes show as
+                soft grey panels (copper under white solder mask). Nothing is cut over the electrodes.
   sides (cup) : a WATERLINE groove around both long sides at the default alarm level.
   back (plug) : ripple mark + wordmark, the Qi COIL OUTLINE (one 30 mm ring exactly over the coil),
                 "Qi" / "charge this side", rating line.
@@ -94,19 +94,15 @@ def front_features(E):
     _, y_word = E.pcb_to_dev(19.0, 19.5)
     feats.append(front(ripple_solid(13.0, DEBOSS), 0, y_mark))
     feats.append(front(text_solid(NAME, 6.5, DEBOSS), 0, y_word))
-    ticks, centres = pad_levels(E)
-    x_in, x_out = scale_geometry(E)
-    # one clean scale on the viewer's LEFT margin (device +X): equal, level ticks at every pad boundary
-    for y in ticks:
-        feats.append(tick(x_in, x_in + 1.8, y, 0.5, DEBOSS))
-    # pad numbers on the viewer's left margin (seen from the front, device +X is on the viewer's left)
-    for k, y in enumerate(centres, 1):
-        feats.append(front(text_solid(str(k), 2.2, DEBOSS, FONT_SMALL), x_in + 0.9, y))   # same column as the ticks
-    # default alarm chevron on the viewer's right, tip at the alarm line
+    # alarm-level arrows on both front margins (outside the electrodes), tips at the default alarm line.
+    # No scale: the electrodes themselves show through the translucent cup as soft grey panels
+    # (copper under WHITE solder mask), which is the level graphic.
+    ticks, _ = pad_levels(E)
     y_alarm = ticks[-1]
-    tip = x_in
-    feats.append(cq.Workplane("XY").polyline([(-tip, y_alarm), (-(tip + 2.6), y_alarm + 1.5),
-                                              (-(tip + 2.6), y_alarm - 1.5)]).close().extrude(DEBOSS))
+    tip = scale_geometry(E)[0]
+    for side in (-1, 1):
+        feats.append(cq.Workplane("XY").polyline([(side * tip, y_alarm), (side * (tip + 2.6), y_alarm + 1.5),
+                                                  (side * (tip + 2.6), y_alarm - 1.5)]).close().extrude(DEBOSS))
     return feats
 
 

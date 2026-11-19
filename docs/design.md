@@ -235,6 +235,7 @@ With 500 mAh, that's about **6 months between charges** at one bath per day. Eve
 | Size | 38 × 102 mm body + 12 × 10 mm thermal tab on a 6 mm neck (see placement study) |
 | Assembly | Single-side SMT (L4) |
 | Finish | ENIG (flat pads for the module, better for test pads) |
+| Solder mask | **White**. Through the translucent case, the electrodes read as soft grey panels, which is the front's level graphic |
 | Keep-outs | No copper beneath or beside the module antenna. No copper pour on L1–L3 under the Qi coil footprint (coil is on the battery side, so this mainly matters for the ferrite outline) |
 | Test pads | 3V3, GND, EN, IO0, USB D+/D−, VBAT, for a pogo-pin jig |
 
@@ -291,3 +292,4 @@ With 500 mAh, that's about **6 months between charges** at one bath per day. Eve
 | 2026-11-19 | Branding: working name "brim", drop-to-the-brim mark, foam/tide/deep/aqua palette, Inter type. Debossed logo + wordmark on the dry front band, alarm-level chevrons, Qi target over the coil on the back (docs/branding.md) |
 | 2026-11-19 | Brand rev B: ripple (pebble-in-water) mark, muted palette (mist / slate / ink / sea glass), unpainted deboss. Case: 2.5 mm front round, graduated level scale with pad numbers, alarm chevron, waterline groove on the sides, Qi coil outline on the back |
 | 2026-11-19 | Markings simplified: level horizontal scale on the left margin only (ticks + pad numbers in one column), alarm chevron on the right; Qi outline is one plain ring (no dashes or alignment ticks) |
+| 2026-11-19 | Front markings reverted to the clean look: no scale or numbers. The electrodes show through the translucent cup as grey panels (white solder mask); small alarm arrows on both edges |
