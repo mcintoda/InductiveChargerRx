@@ -7,7 +7,7 @@ overflows, and reports the water temperature.
 - **Level:** a 6-pad capacitive ladder that senses through the enclosure wall (non-contact)
 - **Temperature:** TMP117, ±0.1 °C
 - **Radio:** ESP32-S3 Wi-Fi → free ntfy push notifications (iOS app)
-- **Power:** 1000 mAh Li-ion, BQ51050B Qi receiver/charger at 534 mA, ~12 months per charge (estimate)
+- **Power:** 500 mAh Li-ion (403040), BQ51050B Qi receiver/charger at 262 mA, ~6 months per charge (estimate)
 - **Build:** JLCPCB 4-layer PCB + SMT assembly, JLC3DP enclosure
 
 - [`docs/design.md`](docs/design.md): requirements, architecture, power budget, mechanics, firmware behaviour

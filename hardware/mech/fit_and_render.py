@@ -4,8 +4,9 @@
 Internal parts are modelled as simple solids at their real positions:
   PCB 38 x 112 x 1.0 (top corners R5.5) pressed on the front wall,
   ESP32-S3 module 15.5 x 20.1 x 2.4 on the back of the PCB,
-  Li-ion 603450 (34 x 50 x 6) behind the electrode band, Qi coil 30 x 1.2 behind the battery,
-  0.6 mm foam between coil and plug.
+  Li-ion 403040 (30 x 40 x 4) behind the electrode band, Qi coil 30 x 1.2 behind the battery,
+  1.2 mm (compressed) foam between coil and plug, and a 1.35 mm-tall envelope for all other
+  back-side components (0805 is the tallest passive) across the electronics band.
 
     python3 hardware/mech/fit_and_render.py
 """
@@ -43,12 +44,15 @@ def box(cx, cy, w, l, z0, h):
 
 def parts():
     mx, my = E.pcb_to_dev(19.0, 9.8)
-    bx, by = E.pcb_to_dev(19.0, 71.0)
-    cx, cy = E.pcb_to_dev(19.0, 72.0)
-    batt = box(bx, by, 34.0, 50.0, Z_BACK_PCB, 6.0)
-    coil = cq.Workplane("XY").workplane(offset=Z_BACK_PCB + 6.0).center(cx, cy).circle(15.0).extrude(1.2)
-    foam = cq.Workplane("XY").workplane(offset=Z_BACK_PCB + 7.2).center(cx, cy).circle(15.0).extrude(0.55)
-    return {"pcb": pcb(), "module": box(mx, my, 15.5, 20.1, Z_BACK_PCB, 2.4), "battery": batt, "coil": coil, "foam": foam}
+    bx, by = E.pcb_to_dev(19.0, 70.0)
+    batt = box(bx, by, 30.0, 40.0, Z_BACK_PCB, E.BATT_T)
+    coil = cq.Workplane("XY").workplane(offset=Z_BACK_PCB + E.BATT_T).center(bx, by).circle(15.0).extrude(1.2)
+    foam = cq.Workplane("XY").workplane(offset=Z_BACK_PCB + E.BATT_T + 1.2).center(bx, by).circle(15.0).extrude(1.15)
+    # passives envelope: electronics band (PCB y 4.6..29.5), full width, minus the module footprint
+    ex, ey = E.pcb_to_dev(19.0, (4.6 + 29.5) / 2)
+    comps = box(ex, ey, E.PCB_W - 0.2, 29.5 - 4.6, Z_BACK_PCB, 1.35).cut(box(mx, my, 15.7, 20.3, Z_BACK_PCB - 0.1, 2))
+    return {"pcb": pcb(), "module": box(mx, my, 15.5, 20.1, Z_BACK_PCB, 2.4), "parts": comps,
+            "battery": batt, "coil": coil, "foam": foam}
 
 
 def vol(a, b):
@@ -74,14 +78,14 @@ def main():
             print(f"  {name:8s} vs {shell_name:5s}: {v:.3f}")
     # clamping: gap between the stack and the plug back wall / posts
     print("PCB pressed on front wall: PCB front face Z =", Z_PCB, "(front wall inner face Z =", E.T_FRONT, ")")
-    print(f"Stack back face Z = {Z_BACK_PCB + 7.75:.2f}, plug inner face Z = {E.DEPTH - E.T_BACK:.2f} (foam compressed 0.05 mm)")
+    print(f"Stack back face Z = {Z_BACK_PCB + E.BATT_T + 1.2 + 1.15:.2f}, plug inner face Z = {E.DEPTH - E.T_BACK:.2f}")
 
     # ---- cross-section through the battery/coil (Y = battery centre) ----
-    bx, by = E.pcb_to_dev(19.0, 71.0)
+    bx, by = E.pcb_to_dev(19.0, 70.0)
     _, ywin = E.pcb_to_dev(19.0, 107.0)
-    fig, axes = plt.subplots(2, 1, figsize=(9, 5.2))
+    fig, axes = plt.subplots(2, 1, figsize=(9, 6.2))
     colors = {"cup": "#9bb7d4", "plug": "#3b6fb6", "pcb": "#2e7d32", "module": "#666", "battery": "#d4a017",
-              "coil": "#b45309", "foam": "#e5e7eb"}
+              "coil": "#b45309", "foam": "#e5e7eb", "parts": "#a3a3a3"}
     for ax, (yy, title) in zip(axes, ((by, "Section across the electrode band (battery + coil)"),
                                       (E.pcb_to_dev(19, 12.0)[1], "Section across the electronics band (module + clamp posts)"))):
         for name, wp in [("cup", cup), ("plug", plug)] + list(inner.items()):
@@ -109,7 +113,7 @@ def main():
     cs = E.ORING_CS * 0.98
     ax.add_patch(plt.Circle((gx - (E.GLAND_DEPTH + E.PLUG_CLR) / 2, E.GROOVE_Z0 + E.GLAND_W / 2), cs / 2,
                             color="k", alpha=0.85))
-    ax.text(gx + 1.2, E.GROOVE_Z0 + 1.2, "EPDM O-ring 88 x 1.5\n(shown uncompressed;\n22 % squeeze when fitted)", fontsize=7)
+    ax.text(gx + 1.2, E.GROOVE_Z0 + 1.2, "EPDM O-ring 90 x 1.5\n(shown uncompressed;\n22 % squeeze when fitted)", fontsize=7)
     ax.annotate("M2 screw axis\n(outboard of seal)", xy=(-E.OUT_W / 2, E.SCREW_Z), xytext=(-E.OUT_W / 2 - 7, E.SCREW_Z + 2.8),
                 fontsize=7, arrowprops=dict(arrowstyle="->", lw=0.6))
     ax.set_xlim(-E.OUT_W / 2 - 9, -E.OUT_W / 2 + 9); ax.set_ylim(E.DEPTH + 1, -1)

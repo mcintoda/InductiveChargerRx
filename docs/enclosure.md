@@ -36,7 +36,7 @@ Sources: [Hammond 1555 datasheet](https://www.mouser.com/datasheet/2/177/1555-12
 
 ![Parts](img/enclosure_parts.png)
 
-**Outside size: 43.8 × 118.0 × 11.5 mm** (internal cavity 39.4 × 113.6 × 8.8 mm). Three printed parts:
+**Outside size: 43.8 × 119.8 × 10.1 mm** (internal cavity 39.4 × 115.4 × 7.4 mm). The cavity has 2.6 mm of extra length above the PCB so the ESP32 module clears the plug skirt. Three printed parts:
 
 | Part | What it does |
 |---|---|
@@ -52,21 +52,21 @@ Sources: [Hammond 1555 datasheet](https://www.mouser.com/datasheet/2/177/1555-12
   between the groove bottom and the cup's bore. Squeeze is set by the geometry, not by screw torque,
   so there is no flange, no gasket to crush evenly, and no glue.
 - **Retention:** 4 × M2 × 4 mm A4-stainless self-tapping screws (for plastics) go through the side walls into the plug,
-  on the **outside of the O-ring** (axis at Z 9.6 mm, groove at Z 5.9–8.2). Water can enter a
+  on the **outside of the O-ring** (axis at Z 8.0 mm, groove at Z 4.3–6.6). Water can enter a
   screw hole but stops at the O-ring. The screws only stop the plug backing out, for example when warm water
   heats the trapped air: +30 °C gives about 10 kPa, which is about 50 N on the plug.
-- **Internal clamping:** PCB 1.0, battery 6.0, coil 1.2 and 1.0 mm PORON foam (compressed to 0.6) fill
-  the 8.8 mm cavity exactly. Closing the plug presses the electrodes flat on the front wall, which matters
+- **Internal clamping:** PCB 1.0, battery 4.0 (403040), coil 1.2 and 1.6 mm PORON foam (compressed to 1.2) fill
+  the 7.4 mm cavity exactly. Closing the plug presses the electrodes flat on the front wall, which matters
   because each 0.1 mm of air gap costs about 20 % of the signal.
 
 | Gland parameter (static radial, CS 1.5 mm) | Value |
 |---|---|
-| O-ring | **88 × 1.5 mm EPDM 70 Sh A** (hot water, soap and bath oils. Silicone also works but is less tear-resistant) |
-| Installed stretch on the groove bottom | 4.3 % (groove perimeter 288.5 mm) |
+| O-ring | **90 × 1.5 mm EPDM 70 Sh A** (hot water, soap and bath oils. Silicone also works but is less tear-resistant) |
+| Installed stretch on the groove bottom | 3.3 % (groove perimeter 292.1 mm) |
 | Groove depth / width | 1.05 / 2.30 mm |
 | Radial clearance, plug ↔ bore | 0.10 mm |
-| Squeeze | **22 % nominal**, 15–28 % with the plug pushed fully to one side |
-| Groove fill | 64 % |
+| Squeeze | **22 % nominal**, 15–29 % with the plug pushed fully to one side |
+| Groove fill | 65 % |
 | Groove corner radius | 4.9 mm (≥ 3 × CS) |
 
 These follow standard static-radial guidance (roughly 18–25 % squeeze, ≤ 85 % fill; see
@@ -79,7 +79,7 @@ These follow standard static-radial guidance (roughly 18–25 % squeeze, ≤ 85 
 ![Sections](img/enclosure_section.png)
 
 `hardware/mech/fit_and_render.py` places the PCB (with the 5.5 mm top-corner radius now in the
-placement-study board), the ESP32 module, the 603450 cell, the Qi coil and the foam at their real positions,
+placement-study board), the ESP32 module, a 1.35 mm envelope for all other back-side parts, the 403040 cell, the Qi coil and the foam at their real positions,
 and intersects them with the cup and plug. **Interference is 0.000 mm³ for every pair.** The PCB front face
 sits exactly on the front-wall inner face.
 
@@ -104,11 +104,11 @@ Sources: [JLC3DP capabilities](https://jlc3dp.com/capabilities/3d-printing-servi
 
 | Qty | Part |
 |---|---|
-| 1 | O-ring 88 × 1.5 mm, EPDM 70 Sh A (buy a few) |
+| 1 | O-ring 90 × 1.5 mm, EPDM 70 Sh A (buy a few) |
 | 4 | Screw M2 × 4 mm, A4 (316) stainless, self-tapping for plastics (PT/plastite style), flat head |
-| 1 | PORON foam 1.0 mm, about 30 × 50 mm (behind the coil) |
+| 1 | PORON foam 1.6 mm, Ø30 mm (behind the coil) |
 | 1 | Thermal gap pad 0.5 mm, 10 × 7 mm (TMP117 tab ↔ thermal window) |
-| 2 | Suction cup Ø40 mm with mushroom head (head ≈ 10 mm, neck ≈ 5 mm) |
+| 2 | Suction cup Ø40 mm with mushroom head, see section 2.7 (e.g. Bambu Lab HA011) |
 | – | Silicone O-ring grease (no epoxy anywhere) |
 
 ### 2.5 Assembly and leak test
@@ -120,13 +120,35 @@ Sources: [JLC3DP capabilities](https://jlc3dp.com/capabilities/3d-printing-servi
 4. To open: remove the 4 screws and lever the plug out at the top notch.
 
 ### 2.6 Notes
-- **Buoyancy:** it displaces about 59 cm³. In SLA resin the device weighs about 62 g and sinks slowly; in PP about 57 g and barely floats.
+- **Buoyancy:** it displaces about 53 cm³. In SLA resin the device weighs about 53 g (about neutral); in PP about 48 g and floats.
   It doesn't matter in the bracket. If floating is wanted, drop the plug posts and use foam instead.
 - **LED:** natural (translucent) PP or a clear resin shows the status LED through the wall. With an opaque material,
   add a 0.8 mm thin spot in the plug above the LED.
 - **Qi:** the coil sits 1.5 mm behind the plug's outer face, well inside the ~5 mm limit.
 - **Body contact:** the outer surfaces are plastic only. The screw heads are A4 stainless (passive, very low nickel release)
   and sit on the side walls.
+
+### 2.7 Suction cups (sourced)
+
+The bracket takes **two 40 mm mushroom-head suction cups**. You push the head through the round end of each
+keyhole and then hang the bracket so the neck slides to the top of the slot. Industrial vacuum cups
+(Festo, Piab, Zimmer…) are made to work with a vacuum pump and don't hold on their own, so they aren't suitable here.
+
+| Option | Why | Source |
+|---|---|---|
+| **Bambu Lab "Suction Caps with Mushroom Head", 40 mm, part HA011 (10 pcs, clear PVC)** (recommended) | Mushroom head made for keyholes, one stable part number, cheap (about US$1.50 per 10), sold in the US, EU, UK, AU and Asia | [US store](https://us.store.bambulab.com/products/suction-caps-with-mushroom-head), [EU store](https://eu.store.bambulab.com/en-be/products/suction-caps-with-mushroom-head) |
+| Kinter "Premium Suction Cup – Mushroom Head" (clear, UV-resistant PVC) | US maker that designs these cups specifically for keyhole openings. Check sizes with Kinter | [Kinter](https://products.kinter.com/viewitems/all-categories/premium-suction-cup-mushroom-head) |
+| Flintronic 40 mm mushroom-head 12-pack (PVC, with hooks) | Widely sold on Amazon. Leave the hooks off | [listing](https://ibspot.com/products/flintronic-suction-cups-pack-of-12-clear-plastic-suction-cups-diameter-40-mm-pvc-wall-hooks-with-suction-cup-and-hooks-transparent-plastic-suction-cups-suction-cup-hooks-extra-strong-for) |
+| Adams 1-3/4" (44.5 mm) cups with stud + knurled nut, 25-pack (alternative) | Bolt-through instead of keyhole. The stud fits the 6 mm slot, with the nut on the device side of the bracket. A buyer reports the stud can pull out of the cup, so it's the second choice | [listing](https://www.dkhardware.com/1-3-4-medium-suction-cups-with-studs-and-knurled-nuts-25-suction-cups-asc134n-product-26445.html) |
+
+**The keyhole in `enclosure.py` is parametric** because none of these vendors publish head or neck sizes:
+it takes heads up to 12 mm across and 3.5 mm tall, and necks up to 5.8 mm, with a 7 mm slide. Before printing the
+bracket, measure the cups you bought and set `KEY_HEAD_D`, `KEY_NECK_W` and `KEY_POCKET`.
+
+Tips: an acrylic tub is ideal (smooth and non-porous). Clean the spot with isopropyl alcohol and press the cups
+on with the tub dry and warm. A drop of water on the rim helps. PVC cups stiffen over months, so replace them
+if they start to creep (two cups per bracket is about 10× more holding force than the device needs). Suction cups won't
+hold on textured anti-slip areas.
 
 Outputs: `hardware/mech/out/{cup,plug,bracket}.step|.stl`, `assembly.step`. Rebuild with
 `python3 hardware/mech/enclosure.py` and check with `python3 hardware/mech/fit_and_render.py`.

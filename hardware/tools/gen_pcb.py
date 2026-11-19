@@ -176,7 +176,7 @@ place("U1", W_B / 2, 9.8)
 # Qi receiver/charger column (left), next to the coil pads
 place("U2", 5.6, 12.6)
 pack(["C7", "C9", "C5", "C8", "C10", "C6"], 0.6, 4.9, 10.9, 9.9)
-pack(["C1", "C2", "C3", "C4", "C11", "C21", "C12", "C13", "C22", "R21", "R1", "R2", "R3"], 0.6, 15.5, 10.9, 25.2, gap=0.25)
+pack(["C1", "C2", "C3", "C4", "C11", "C21", "C12", "C13", "C22", "R1", "R2", "R3"], 0.6, 15.5, 10.9, 25.2, gap=0.25)
 # power / housekeeping column (right)
 place("U4", 32.3, 7.0)
 pack(["C14", "C15", "C17", "C18", "R9", "C19", "Q1", "R4", "R5", "R6", "R7", "R8", "C16",
@@ -186,6 +186,8 @@ pack(["R11", "R12", "R13", "R14", "R15", "R16", "R20", "R17"], 11.4, 20.9, 26.6,
 # wire pads (coil left / battery right) and pogo test pads (centre)
 place("L1", 5.6, 27.0)
 place("J1", 36.4, 27.0)
+# battery thermistor on the back, under the top of the cell (thermal pad / foam presses it on)
+place("TH1", 19.0, 52.5)
 pack([f"TP{i}" for i in range(1, 9)], 7.4, 23.9, 26.3, 29.4, gap=0.2)
 # thermal tab
 place("U3", 19.0, 107.0, 90)
@@ -254,8 +256,8 @@ board.Add(ka)
 
 # --- mechanical context on user layers ---------------------------------------------
 U = pcbnew.Dwgs_User
-rect(U, 2.0, 46.0, 36.0, 96.0, 0.2); text(U, "Li-ion 603450, 1000 mAh (behind PCB, B side)", 19, 62, 1.0)
-circle(pcbnew.Cmts_User, 19.0, 72.0, 15.0, 0.2); text(pcbnew.Cmts_User, "Qi Rx coil 30 mm (against back wall)", 19, 88.5, 1.0)
+rect(U, 4.0, 50.0, 34.0, 90.0, 0.2); text(U, "Li-ion 403040, 500 mAh (behind PCB, B side)", 19, 60, 1.0)
+circle(pcbnew.Cmts_User, 19.0, 70.0, 15.0, 0.2); text(pcbnew.Cmts_User, "Qi Rx coil 30 mm (against back wall)", 19, 88.5, 1.0)
 rect(pcbnew.Eco1_User, -2.6, -3.0, W_B + 2.6, ty1 + 2.6, 0.2); text(pcbnew.Eco1_User, "enclosure inner wall", 19, ty1 + 1.6, 1.0)
 for y, label in [(PAD6_TOP, "default alarm level (top of pad 6)"),
                  (pad_center_y(1) + PAD_H / 2, "wake: water reaches pad 1"),

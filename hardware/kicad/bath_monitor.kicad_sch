@@ -1089,7 +1089,7 @@
         )
       )
     )
-    (symbol "Connector_Generic:Conn_01x03"
+    (symbol "Connector_Generic:Conn_01x02"
       (pin_names
         (offset 1.016)
         hide
@@ -1097,14 +1097,14 @@
       (in_bom yes)
       (on_board yes)
       (property "Reference" "J"
-        (at 0 5.08 0)
+        (at 0 2.54 0)
         (effects
           (font
             (size 1.27 1.27)
           )
         )
       )
-      (property "Value" "Conn_01x03"
+      (property "Value" "Conn_01x02"
         (at 0 -5.08 0)
         (effects
           (font
@@ -1139,7 +1139,7 @@
           hide
         )
       )
-      (property "ki_description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+      (property "ki_description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
         (at 0 0 0)
         (effects
           (font
@@ -1157,7 +1157,7 @@
           hide
         )
       )
-      (symbol "Conn_01x03_1_1"
+      (symbol "Conn_01x02_1_1"
         (rectangle
           (start -1.27 -2.413)
           (end 0 -2.667)
@@ -1181,18 +1181,7 @@
           )
         )
         (rectangle
-          (start -1.27 2.667)
-          (end 0 2.413)
-          (stroke
-            (width 0.1524)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (rectangle
-          (start -1.27 3.81)
+          (start -1.27 1.27)
           (end 1.27 -3.81)
           (stroke
             (width 0.254)
@@ -1203,7 +1192,7 @@
           )
         )
         (pin passive line
-          (at -5.08 2.54 0)
+          (at -5.08 0 0)
           (length 3.81)
           (name "Pin_1"
             (effects
@@ -1221,7 +1210,7 @@
           )
         )
         (pin passive line
-          (at -5.08 0 0)
+          (at -5.08 -2.54 0)
           (length 3.81)
           (name "Pin_2"
             (effects
@@ -1238,17 +1227,265 @@
             )
           )
         )
+      )
+    )
+    (symbol "Device:Thermistor_NTC"
+      (pin_numbers hide)
+      (pin_names
+        (offset 0)
+      )
+      (in_bom yes)
+      (on_board yes)
+      (property "Reference" "TH"
+        (at -4.445 0 90)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+        )
+      )
+      (property "Value" "Thermistor_NTC"
+        (at 3.175 0 90)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+        )
+      )
+      (property "Footprint" ""
+        (at 0 1.27 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property "Datasheet" "~"
+        (at 0 1.27 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property "ki_keywords" "thermistor NTC resistor sensor RTD"
+        (at 0 0 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property "ki_description" "Temperature dependent resistor, negative temperature coefficient"
+        (at 0 0 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (property "ki_fp_filters" "*NTC* *Thermistor* PIN?ARRAY* bornier* *Terminal?Block* R_*"
+        (at 0 0 0)
+        (effects
+          (font
+            (size 1.27 1.27)
+          )
+          hide
+        )
+      )
+      (symbol "Thermistor_NTC_0_1"
+        (arc
+          (start -3.048 2.159)
+          (mid -3.0495 2.3143)
+          (end -3.175 2.413)
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (arc
+          (start -3.048 2.159)
+          (mid -2.9736 1.9794)
+          (end -2.794 1.905)
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (arc
+          (start -3.048 2.794)
+          (mid -2.9736 2.6144)
+          (end -2.794 2.54)
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (arc
+          (start -2.794 1.905)
+          (mid -2.6144 1.9794)
+          (end -2.54 2.159)
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (arc
+          (start -2.794 2.54)
+          (mid -2.4393 2.5587)
+          (end -2.159 2.794)
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (arc
+          (start -2.794 3.048)
+          (mid -2.9736 2.9736)
+          (end -3.048 2.794)
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (arc
+          (start -2.54 2.794)
+          (mid -2.6144 2.9736)
+          (end -2.794 3.048)
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (rectangle
+          (start -1.016 2.54)
+          (end 1.016 -2.54)
+          (stroke
+            (width 0.254)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (polyline
+          (pts
+            (xy -2.54 2.159)
+            (xy -2.54 2.794)
+          )
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (polyline
+          (pts
+            (xy -1.778 2.54)
+            (xy -1.778 1.524)
+            (xy 1.778 -1.524)
+            (xy 1.778 -2.54)
+          )
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type none)
+          )
+        )
+        (polyline
+          (pts
+            (xy -2.54 -3.683)
+            (xy -2.54 -1.397)
+            (xy -2.794 -2.159)
+            (xy -2.286 -2.159)
+            (xy -2.54 -1.397)
+            (xy -2.54 -1.651)
+          )
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type outline)
+          )
+        )
+        (polyline
+          (pts
+            (xy -1.778 -1.397)
+            (xy -1.778 -3.683)
+            (xy -2.032 -2.921)
+            (xy -1.524 -2.921)
+            (xy -1.778 -3.683)
+            (xy -1.778 -3.429)
+          )
+          (stroke
+            (width 0)
+            (type default)
+          )
+          (fill
+            (type outline)
+          )
+        )
+      )
+      (symbol "Thermistor_NTC_1_1"
         (pin passive line
-          (at -5.08 -2.54 0)
-          (length 3.81)
-          (name "Pin_3"
+          (at 0 3.81 270)
+          (length 1.27)
+          (name "~"
             (effects
               (font
                 (size 1.27 1.27)
               )
             )
           )
-          (number "3"
+          (number "1"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+        )
+        (pin passive line
+          (at 0 -3.81 90)
+          (length 1.27)
+          (name "~"
+            (effects
+              (font
+                (size 1.27 1.27)
+              )
+            )
+          )
+          (number "2"
             (effects
               (font
                 (size 1.27 1.27)
@@ -4922,63 +5159,6 @@
   )
   (symbol
     (lib_id "Device:R")
-    (at 137.16 83.82 90)
-    (unit 1)
-    (in_bom yes)
-    (on_board yes)
-    (dnp no)
-    (uuid "41190801-8243-5ae8-86fe-3dea9bcd825b")
-    (property "Reference" "R21"
-      (at 137.16 79.37 90)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-      )
-    )
-    (property "Value" "196R 1%"
-      (at 137.16 81.28 90)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-      )
-    )
-    (property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-      (at 137.16 83.82 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 137.16 83.82 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "4cf5a90e-95d4-53ca-b50b-c11886e0f3c3")
-    )
-    (pin "2"
-      (uuid "90110950-383b-5c43-a73b-9c62ad4007d2")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "R21")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
-    (lib_id "Device:R")
     (at 157.48 83.82 90)
     (unit 1)
     (in_bom yes)
@@ -4993,7 +5173,7 @@
         )
       )
     )
-    (property "Value" "196R 1%"
+    (property "Value" "1k 1%"
       (at 157.48 81.28 90)
       (effects
         (font
@@ -5019,7 +5199,7 @@
         hide
       )
     )
-    (property "Note" "R_ILIM = R21 + R1 + R2 = 588R -> I_BULK = 314 AOhm / 588R = 534 mA (K_ILIM spec'd for 500-1500 mA)"
+    (property "Note" "R_ILIM = R1 + R2 = 1.196k -> I_BULK = 314 AOhm / 1196R = 262 mA (0.5C for 500 mAh). Below the 500 mA characterised range: TI E2E says OK with reduced accuracy (keep >100 mA fast charge, >30 mA termination)"
       (at 157.48 83.82 0)
       (effects
         (font
@@ -5579,7 +5759,7 @@
         hide
       )
     )
-    (property "Note" "R_TERM = 240 Ohm/% x %: 10k -> 41.7 % of 534 mA = 222 mA (min 120 mA)"
+    (property "Note" "R_TERM = 240 Ohm/% x %: 10k -> 41.7 % of 262 mA = ~109 mA (TI E2E: keep > 30 mA); bench-verify"
       (at 116.84 95.25 0)
       (effects
         (font
@@ -5715,14 +5895,23 @@
     )
   )
   (symbol
-    (lib_id "Connector_Generic:Conn_01x03")
-    (at 154.94 71.12 0)
+    (lib_id "Connector_Generic:Conn_01x02")
+    (at 154.94 68.58 0)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "5312705e-d688-5291-9998-8f4264281928")
     (property "Reference" "J1"
+      (at 157.48 67.31 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (justify left)
+      )
+    )
+    (property "Value" "500mAh"
       (at 157.48 69.85 0)
       (effects
         (font
@@ -5731,17 +5920,8 @@
         (justify left)
       )
     )
-    (property "Value" "Li-ion 1000mAh"
-      (at 157.48 72.39 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        (justify left)
-      )
-    )
-    (property "Footprint" "Connector_Wire:SolderWire-0.1sqmm_1x03_P3.6mm_D0.4mm_OD1mm"
-      (at 154.94 71.12 0)
+    (property "Footprint" "Connector_Wire:SolderWire-0.1sqmm_1x02_P3.6mm_D0.4mm_OD1mm"
+      (at 154.94 68.58 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -5750,7 +5930,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 154.94 71.12 0)
+      (at 154.94 68.58 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -5758,8 +5938,8 @@
         hide
       )
     )
-    (property "Note" "1S Li-ion pouch 1000 mAh (603450), protection PCM, 10k B3380 NTC lead to TS/CTRL"
-      (at 154.94 71.12 0)
+    (property "Note" "1S Li-ion pouch 500 mAh, 403040 (4.0 x 30 x 40 mm), with protection PCM, 2 wires"
+      (at 154.94 68.58 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -5772,9 +5952,6 @@
     )
     (pin "2"
       (uuid "1a87206c-bd89-5238-a843-5e174bb60435")
-    )
-    (pin "3"
-      (uuid "ac458908-fff3-5008-996d-659b090b0cbb")
     )
     (instances
       (project "bath_monitor"
@@ -5835,6 +6012,138 @@
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
           (reference "#PWR009")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (symbol
+    (lib_id "Device:Thermistor_NTC")
+    (at 132.08 74.93 0)
+    (unit 1)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "096481ab-13c0-514f-8ef7-58a10f580d0c")
+    (property "Reference" "TH1"
+      (at 129.54 73.66 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (justify right)
+      )
+    )
+    (property "Value" "10k B3380"
+      (at 129.54 76.2 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (justify right)
+      )
+    )
+    (property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+      (at 132.08 74.93 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "Datasheet" "~"
+      (at 132.08 74.93 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "MPN" "Murata NCP15XH103F03RC"
+      (at 132.08 74.93 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "Note" "On B.Cu under the battery, thermal pad to the cell. Matches the BQ51050B internal 20k bias (10k, B3380)"
+      (at 132.08 74.93 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (pin "1"
+      (uuid "a1c5336e-2be1-5a6c-ab9a-e2c1dd1bcd6b")
+    )
+    (pin "2"
+      (uuid "6a01c853-f8e7-5fb7-b663-0e6e2b179743")
+    )
+    (instances
+      (project "bath_monitor"
+        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
+          (reference "TH1")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (symbol
+    (lib_id "power:GND")
+    (at 132.08 78.74 0)
+    (unit 1)
+    (in_bom no)
+    (on_board no)
+    (dnp no)
+    (uuid "abc2a0c7-ca0e-5902-bc8b-c89e99f6060c")
+    (property "Reference" "#PWR010"
+      (at 132.08 78.74 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "Value" "GND"
+      (at 132.08 82.34 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property "Footprint" ""
+      (at 132.08 78.74 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "Datasheet" "~"
+      (at 132.08 78.74 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (pin "1"
+      (uuid "0d42361c-8abc-5ef2-9973-606c2a213bf8")
+    )
+    (instances
+      (project "bath_monitor"
+        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
+          (reference "#PWR010")
           (unit 1)
         )
       )
@@ -5903,8 +6212,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "abc2a0c7-ca0e-5902-bc8b-c89e99f6060c")
-    (property "Reference" "#PWR010"
+    (uuid "7e018256-81c2-5731-ab47-b74cab2f4276")
+    (property "Reference" "#PWR011"
       (at 127.0 58.42 0)
       (effects
         (font
@@ -5940,12 +6249,12 @@
       )
     )
     (pin "1"
-      (uuid "0d42361c-8abc-5ef2-9973-606c2a213bf8")
+      (uuid "1affe482-2c3e-59f3-b8a3-70595cb2833b")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR010")
+          (reference "#PWR011")
           (unit 1)
         )
       )
@@ -6026,8 +6335,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "7e018256-81c2-5731-ab47-b74cab2f4276")
-    (property "Reference" "#PWR011"
+    (uuid "716dfe05-2c50-537c-8956-5a505fb31951")
+    (property "Reference" "#PWR012"
       (at 129.54 66.04 0)
       (effects
         (font
@@ -6063,12 +6372,12 @@
       )
     )
     (pin "1"
-      (uuid "1affe482-2c3e-59f3-b8a3-70595cb2833b")
+      (uuid "e72e57f3-8c95-57c7-8746-df35044f6f37")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR011")
+          (reference "#PWR012")
           (unit 1)
         )
       )
@@ -6149,8 +6458,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "716dfe05-2c50-537c-8956-5a505fb31951")
-    (property "Reference" "#PWR012"
+    (uuid "29f9a11b-d75d-52dd-b919-5075dd6497e0")
+    (property "Reference" "#PWR013"
       (at 137.16 66.04 0)
       (effects
         (font
@@ -6186,12 +6495,12 @@
       )
     )
     (pin "1"
-      (uuid "e72e57f3-8c95-57c7-8746-df35044f6f37")
+      (uuid "e76cc7f6-425e-57ee-8b0b-6a0010f812e3")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR012")
+          (reference "#PWR013")
           (unit 1)
         )
       )
@@ -6322,8 +6631,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "29f9a11b-d75d-52dd-b919-5075dd6497e0")
-    (property "Reference" "#PWR013"
+    (uuid "70a59086-2337-59af-bbb8-b1a11de643a1")
+    (property "Reference" "#PWR014"
       (at 157.48 119.38 0)
       (effects
         (font
@@ -6359,12 +6668,12 @@
       )
     )
     (pin "1"
-      (uuid "e76cc7f6-425e-57ee-8b0b-6a0010f812e3")
+      (uuid "1223c76f-2d02-58f9-b951-7ce38e4ef86e")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR013")
+          (reference "#PWR014")
           (unit 1)
         )
       )
@@ -6439,8 +6748,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "70a59086-2337-59af-bbb8-b1a11de643a1")
-    (property "Reference" "#PWR014"
+    (uuid "89539b9a-a48c-5b15-9db9-9751eee21fb2")
+    (property "Reference" "#PWR015"
       (at 182.88 116.84 0)
       (effects
         (font
@@ -6476,12 +6785,12 @@
       )
     )
     (pin "1"
-      (uuid "1223c76f-2d02-58f9-b951-7ce38e4ef86e")
+      (uuid "eeae009d-c5ff-580a-8adb-826fbc77ae60")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR014")
+          (reference "#PWR015")
           (unit 1)
         )
       )
@@ -6553,8 +6862,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "89539b9a-a48c-5b15-9db9-9751eee21fb2")
-    (property "Reference" "#PWR015"
+    (uuid "3656d546-76ec-582d-805f-6eeaf078311f")
+    (property "Reference" "#PWR016"
       (at 182.88 93.98 0)
       (effects
         (font
@@ -6590,12 +6899,12 @@
       )
     )
     (pin "1"
-      (uuid "eeae009d-c5ff-580a-8adb-826fbc77ae60")
+      (uuid "1a2d9796-a790-5b90-848d-86b611513eb5")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR015")
+          (reference "#PWR016")
           (unit 1)
         )
       )
@@ -6751,8 +7060,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "3656d546-76ec-582d-805f-6eeaf078311f")
-    (property "Reference" "#PWR016"
+    (uuid "15252f55-a9b8-5b08-94b4-a4ff8b0f88aa")
+    (property "Reference" "#PWR017"
       (at 172.72 66.04 0)
       (effects
         (font
@@ -6788,12 +7097,12 @@
       )
     )
     (pin "1"
-      (uuid "1a2d9796-a790-5b90-848d-86b611513eb5")
+      (uuid "e190c6a9-c193-5142-8d21-9b5b026d098e")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR016")
+          (reference "#PWR017")
           (unit 1)
         )
       )
@@ -6806,8 +7115,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "15252f55-a9b8-5b08-94b4-a4ff8b0f88aa")
-    (property "Reference" "#PWR017"
+    (uuid "b1f17661-4951-5016-b440-fe2f07763b9b")
+    (property "Reference" "#PWR018"
       (at 193.04 71.12 0)
       (effects
         (font
@@ -6843,12 +7152,12 @@
       )
     )
     (pin "1"
-      (uuid "e190c6a9-c193-5142-8d21-9b5b026d098e")
+      (uuid "f430f8eb-f809-589c-aff5-e03fd3d37256")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR017")
+          (reference "#PWR018")
           (unit 1)
         )
       )
@@ -6861,8 +7170,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "b1f17661-4951-5016-b440-fe2f07763b9b")
-    (property "Reference" "#PWR018"
+    (uuid "12c4e15e-6c01-54d6-a8c9-3998f2344e0f")
+    (property "Reference" "#PWR019"
       (at 220.98 58.42 0)
       (effects
         (font
@@ -6898,12 +7207,12 @@
       )
     )
     (pin "1"
-      (uuid "f430f8eb-f809-589c-aff5-e03fd3d37256")
+      (uuid "3848fb3c-1811-55ef-8198-eb7a8b1e20c7")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR018")
+          (reference "#PWR019")
           (unit 1)
         )
       )
@@ -6984,8 +7293,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "12c4e15e-6c01-54d6-a8c9-3998f2344e0f")
-    (property "Reference" "#PWR019"
+    (uuid "9c899127-7123-5e41-aceb-46185be62106")
+    (property "Reference" "#PWR020"
       (at 213.36 66.04 0)
       (effects
         (font
@@ -7021,12 +7330,12 @@
       )
     )
     (pin "1"
-      (uuid "3848fb3c-1811-55ef-8198-eb7a8b1e20c7")
+      (uuid "8b394d7a-5baf-5af9-9407-37865a233999")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR019")
+          (reference "#PWR020")
           (unit 1)
         )
       )
@@ -7039,8 +7348,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "9c899127-7123-5e41-aceb-46185be62106")
-    (property "Reference" "#PWR020"
+    (uuid "a564855b-92ad-55b8-bcca-5aa2ea59d46f")
+    (property "Reference" "#PWR021"
       (at 236.22 50.8 0)
       (effects
         (font
@@ -7076,12 +7385,12 @@
       )
     )
     (pin "1"
-      (uuid "8b394d7a-5baf-5af9-9407-37865a233999")
+      (uuid "9e695437-dbdd-565f-9a52-88d9c90b6729")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR020")
+          (reference "#PWR021")
           (unit 1)
         )
       )
@@ -7212,8 +7521,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "a564855b-92ad-55b8-bcca-5aa2ea59d46f")
-    (property "Reference" "#PWR021"
+    (uuid "39e29c6a-64a1-5528-9257-dba957bb89b4")
+    (property "Reference" "#PWR022"
       (at 236.22 66.04 0)
       (effects
         (font
@@ -7249,12 +7558,12 @@
       )
     )
     (pin "1"
-      (uuid "9e695437-dbdd-565f-9a52-88d9c90b6729")
+      (uuid "72cca81a-93c6-52ec-b2a2-cc1922760d8c")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR021")
+          (reference "#PWR022")
           (unit 1)
         )
       )
@@ -7335,8 +7644,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "39e29c6a-64a1-5528-9257-dba957bb89b4")
-    (property "Reference" "#PWR022"
+    (uuid "0135e733-61c9-5aeb-bd25-38e2f2b3e53e")
+    (property "Reference" "#PWR023"
       (at 246.38 66.04 0)
       (effects
         (font
@@ -7372,12 +7681,12 @@
       )
     )
     (pin "1"
-      (uuid "72cca81a-93c6-52ec-b2a2-cc1922760d8c")
+      (uuid "03ed4ace-d871-51a9-a0c7-c34c13e79658")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR022")
+          (reference "#PWR023")
           (unit 1)
         )
       )
@@ -7547,8 +7856,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "0135e733-61c9-5aeb-bd25-38e2f2b3e53e")
-    (property "Reference" "#PWR023"
+    (uuid "c26b1491-7814-5d33-b47e-b989fa0ae403")
+    (property "Reference" "#PWR024"
       (at 215.9 142.24 0)
       (effects
         (font
@@ -7584,12 +7893,12 @@
       )
     )
     (pin "1"
-      (uuid "03ed4ace-d871-51a9-a0c7-c34c13e79658")
+      (uuid "1ddc8a0b-e3d0-5213-83f1-6953f6a60bda")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR023")
+          (reference "#PWR024")
           (unit 1)
         )
       )
@@ -7720,8 +8029,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "c26b1491-7814-5d33-b47e-b989fa0ae403")
-    (property "Reference" "#PWR024"
+    (uuid "658e5720-6a2d-5ece-86d7-3378bfc2ae34")
+    (property "Reference" "#PWR025"
       (at 190.5 154.94 0)
       (effects
         (font
@@ -7757,12 +8066,12 @@
       )
     )
     (pin "1"
-      (uuid "1ddc8a0b-e3d0-5213-83f1-6953f6a60bda")
+      (uuid "d85b8e7b-d1bd-583c-ac57-fb6e58266e3d")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR024")
+          (reference "#PWR025")
           (unit 1)
         )
       )
@@ -7775,8 +8084,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "658e5720-6a2d-5ece-86d7-3378bfc2ae34")
-    (property "Reference" "#PWR025"
+    (uuid "49989fe5-ee7a-556a-8c40-a472cbc5bb54")
+    (property "Reference" "#PWR026"
       (at 203.2 162.56 0)
       (effects
         (font
@@ -7812,12 +8121,12 @@
       )
     )
     (pin "1"
-      (uuid "d85b8e7b-d1bd-583c-ac57-fb6e58266e3d")
+      (uuid "03cc982b-8d3f-5bbd-a3f2-24545ceb8857")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR025")
+          (reference "#PWR026")
           (unit 1)
         )
       )
@@ -7830,8 +8139,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "f720f4b1-b610-5aee-959f-22027c3f9d01")
-    (property "Reference" "#FLG026"
+    (uuid "98f906f4-6f73-5c79-8fde-1373691a5e61")
+    (property "Reference" "#FLG027"
       (at 198.12 134.62 0)
       (effects
         (font
@@ -7868,12 +8177,12 @@
       )
     )
     (pin "1"
-      (uuid "00ed74af-07c2-5372-87f7-c81b9b85cf5b")
+      (uuid "7f5a5a1e-16df-55e3-ab74-dd7bb07417a9")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#FLG026")
+          (reference "#FLG027")
           (unit 1)
         )
       )
@@ -8152,8 +8461,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "13783fc6-8a28-539e-b7d6-efa7d272a0b5")
-    (property "Reference" "#PWR027"
+    (uuid "ef0aa1ee-fafb-50ef-82d1-518a1e93ec04")
+    (property "Reference" "#PWR028"
       (at 317.5 76.2 0)
       (effects
         (font
@@ -8189,12 +8498,12 @@
       )
     )
     (pin "1"
-      (uuid "f28d8289-f83a-5a49-a9eb-d331be88cc4c")
+      (uuid "23c3de62-d001-5bb3-8206-b6fb1e2637ad")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR027")
+          (reference "#PWR028")
           (unit 1)
         )
       )
@@ -8275,8 +8584,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "ef0aa1ee-fafb-50ef-82d1-518a1e93ec04")
-    (property "Reference" "#PWR028"
+    (uuid "06419a4a-1ccf-5d9f-997f-37eb84d35b8e")
+    (property "Reference" "#PWR029"
       (at 340.36 83.82 0)
       (effects
         (font
@@ -8312,12 +8621,12 @@
       )
     )
     (pin "1"
-      (uuid "23c3de62-d001-5bb3-8206-b6fb1e2637ad")
+      (uuid "b826c561-1849-5eec-ba3e-75dff904aab4")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR028")
+          (reference "#PWR029")
           (unit 1)
         )
       )
@@ -8398,8 +8707,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "06419a4a-1ccf-5d9f-997f-37eb84d35b8e")
-    (property "Reference" "#PWR029"
+    (uuid "c4322572-838b-58f1-9a6d-164ac0950965")
+    (property "Reference" "#PWR030"
       (at 353.06 83.82 0)
       (effects
         (font
@@ -8435,12 +8744,12 @@
       )
     )
     (pin "1"
-      (uuid "b826c561-1849-5eec-ba3e-75dff904aab4")
+      (uuid "95dd8996-e320-582f-a132-6b731ffcd822")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR029")
+          (reference "#PWR030")
           (unit 1)
         )
       )
@@ -8509,8 +8818,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "c4322572-838b-58f1-9a6d-164ac0950965")
-    (property "Reference" "#PWR030"
+    (uuid "f0b294c2-c514-5100-9077-26adcf33ab2f")
+    (property "Reference" "#PWR031"
       (at 317.5 144.78 0)
       (effects
         (font
@@ -8546,12 +8855,12 @@
       )
     )
     (pin "1"
-      (uuid "95dd8996-e320-582f-a132-6b731ffcd822")
+      (uuid "d0bf938c-7310-5710-822f-a84c6dea9333")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR030")
+          (reference "#PWR031")
           (unit 1)
         )
       )
@@ -8620,8 +8929,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "f0b294c2-c514-5100-9077-26adcf33ab2f")
-    (property "Reference" "#PWR031"
+    (uuid "9e6595f1-766a-5172-8abb-9796b58e5995")
+    (property "Reference" "#PWR032"
       (at 327.66 147.32 0)
       (effects
         (font
@@ -8657,12 +8966,12 @@
       )
     )
     (pin "1"
-      (uuid "d0bf938c-7310-5710-822f-a84c6dea9333")
+      (uuid "10461c82-8e97-50d8-bdeb-acc910576544")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR031")
+          (reference "#PWR032")
           (unit 1)
         )
       )
@@ -8675,8 +8984,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "82060261-ce94-5410-a1b3-fc659eb81da7")
-    (property "Reference" "#FLG032"
+    (uuid "ee5e26ba-8ab2-5dd8-8741-47d33f7c90f6")
+    (property "Reference" "#FLG033"
       (at 335.28 147.32 0)
       (effects
         (font
@@ -8713,12 +9022,12 @@
       )
     )
     (pin "1"
-      (uuid "808f2225-7c9d-5baf-8619-1a83679e0848")
+      (uuid "7d5d694a-437a-50df-ba9f-cd314a0d13c7")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#FLG032")
+          (reference "#FLG033")
           (unit 1)
         )
       )
@@ -8731,8 +9040,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "693142ca-0f4c-5501-80ee-9ede155e9743")
-    (property "Reference" "#PWR033"
+    (uuid "0bbf3c50-2ab9-502b-800f-62a82d7b8939")
+    (property "Reference" "#PWR034"
       (at 335.28 147.32 0)
       (effects
         (font
@@ -8768,12 +9077,12 @@
       )
     )
     (pin "1"
-      (uuid "acb54d54-6932-50e5-9c55-dd8400146610")
+      (uuid "b9ab19b8-14a3-5cba-9599-64d2cf521a21")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR033")
+          (reference "#PWR034")
           (unit 1)
         )
       )
@@ -8845,8 +9154,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "0bbf3c50-2ab9-502b-800f-62a82d7b8939")
-    (property "Reference" "#PWR034"
+    (uuid "4e995e44-6425-5dbe-9f77-fbfdf752cfe8")
+    (property "Reference" "#PWR035"
       (at 299.72 81.28 0)
       (effects
         (font
@@ -8882,12 +9191,12 @@
       )
     )
     (pin "1"
-      (uuid "b9ab19b8-14a3-5cba-9599-64d2cf521a21")
+      (uuid "9ec06bf6-54f1-5251-8628-7dcd0a443b64")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR034")
+          (reference "#PWR035")
           (unit 1)
         )
       )
@@ -8966,8 +9275,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "4e995e44-6425-5dbe-9f77-fbfdf752cfe8")
-    (property "Reference" "#PWR035"
+    (uuid "4e9c5f0d-3131-51df-b865-7212f44efbff")
+    (property "Reference" "#PWR036"
       (at 280.67 88.9 270)
       (effects
         (font
@@ -9004,12 +9313,12 @@
       )
     )
     (pin "1"
-      (uuid "9ec06bf6-54f1-5251-8628-7dcd0a443b64")
+      (uuid "9459604c-d5b3-5d64-bb08-66a6ce18f72e")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR035")
+          (reference "#PWR036")
           (unit 1)
         )
       )
@@ -10340,8 +10649,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "4e9c5f0d-3131-51df-b865-7212f44efbff")
-    (property "Reference" "#PWR036"
+    (uuid "3a10beba-1e63-56e5-90bb-7ec66d26a985")
+    (property "Reference" "#PWR037"
       (at 340.36 116.84 0)
       (effects
         (font
@@ -10377,12 +10686,12 @@
       )
     )
     (pin "1"
-      (uuid "9459604c-d5b3-5d64-bb08-66a6ce18f72e")
+      (uuid "0519d172-8313-5e0e-989c-3f6e17df865b")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR036")
+          (reference "#PWR037")
           (unit 1)
         )
       )
@@ -10985,24 +11294,13 @@
   (wire
     (pts
       (xy 114.3 83.82)
-      (xy 133.35 83.82)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "ed1389e3-885a-52a6-abd8-679027254215")
-  )
-  (wire
-    (pts
-      (xy 140.97 83.82)
       (xy 153.67 83.82)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "9ddfbb4b-ba6c-586b-a685-0a3f26c7d11a")
+    (uuid "4f0281ee-9240-521b-a5a1-6c21e17a7ca0")
   )
   (wire
     (pts
@@ -11013,7 +11311,7 @@
       (width 0)
       (type default)
     )
-    (uuid "581d0dd1-ff69-5d8b-a6cd-75a873db2910")
+    (uuid "9aae88fb-8315-5adf-aeb9-1c2c1e303345")
   )
   (wire
     (pts
@@ -11024,7 +11322,7 @@
       (width 0)
       (type default)
     )
-    (uuid "a3af25e7-68dc-5ab0-aff5-343269566f6a")
+    (uuid "2f741e7e-d2fe-5bac-935e-38b88235a6ed")
   )
   (wire
     (pts
@@ -11035,7 +11333,7 @@
       (width 0)
       (type default)
     )
-    (uuid "2c879c85-71e0-5fde-b27e-7f7b1c4dc643")
+    (uuid "0dbe21ac-47e3-5885-85a2-37688ad724a5")
   )
   (wire
     (pts
@@ -11046,7 +11344,7 @@
       (width 0)
       (type default)
     )
-    (uuid "dbceb22b-89c6-56dc-88ff-3a8ca65ca9eb")
+    (uuid "85e2ce26-acb8-5ee1-9146-6bc812461506")
   )
   (wire
     (pts
@@ -11057,7 +11355,7 @@
       (width 0)
       (type default)
     )
-    (uuid "8095ce48-7032-57a2-b611-e06b378d95d7")
+    (uuid "81f12e28-d043-56b5-b3a8-d76a4a9654ce")
   )
   (wire
     (pts
@@ -11068,7 +11366,7 @@
       (width 0)
       (type default)
     )
-    (uuid "07d55410-56bc-5ded-ae4c-03eafb04e24b")
+    (uuid "cd35fafa-3e33-5cde-9b20-8b4d1fa91417")
   )
   (wire
     (pts
@@ -11079,7 +11377,7 @@
       (width 0)
       (type default)
     )
-    (uuid "bff03193-aaba-5a01-81fc-a7ca5aac30e1")
+    (uuid "9758611a-8dbb-5a7e-9f34-2f9219678c18")
   )
   (wire
     (pts
@@ -11090,7 +11388,7 @@
       (width 0)
       (type default)
     )
-    (uuid "43c26ed0-3bce-5481-a380-a321340986c1")
+    (uuid "50249931-636e-54e6-8e1c-7e04410d2d6c")
   )
   (wire
     (pts
@@ -11101,7 +11399,7 @@
       (width 0)
       (type default)
     )
-    (uuid "2aa2c1a1-d364-582d-a1b8-9f3213630990")
+    (uuid "65882d77-71e3-5641-8310-be47436a05cb")
   )
   (wire
     (pts
@@ -11112,18 +11410,7 @@
       (width 0)
       (type default)
     )
-    (uuid "4c1b5334-9fa9-5723-866a-7e7452c80f2b")
-  )
-  (wire
-    (pts
-      (xy 114.3 71.12)
-      (xy 149.86 71.12)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "04a2a90f-5aa7-5b5e-a658-c79af58aef2f")
+    (uuid "02e38c4d-353d-5e78-8c96-ab071755c072")
   )
   (wire
     (pts
@@ -11134,7 +11421,7 @@
       (width 0)
       (type default)
     )
-    (uuid "01f86ba6-904f-5704-9462-80f0cc37b9fd")
+    (uuid "aae23e3e-65c3-5174-a2d8-550abe442dd6")
   )
   (wire
     (pts
@@ -11145,18 +11432,40 @@
       (width 0)
       (type default)
     )
-    (uuid "faad5efa-6552-500c-a7d2-36072e87a6f1")
+    (uuid "6d6b0957-1e21-52f2-964a-e529c46824a4")
   )
   (wire
     (pts
-      (xy 149.86 73.66)
+      (xy 149.86 71.12)
+      (xy 144.78 71.12)
+    )
+    (stroke
+      (width 0)
+      (type default)
+    )
+    (uuid "51be1c62-9822-5343-8b55-92a5e03273bc")
+  )
+  (wire
+    (pts
+      (xy 144.78 71.12)
       (xy 144.78 73.66)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "bf6f2935-1a72-528b-b1ed-002c148b368e")
+    (uuid "b74979d9-bd8d-5c23-a531-5ca4f1a29350")
+  )
+  (wire
+    (pts
+      (xy 114.3 71.12)
+      (xy 132.08 71.12)
+    )
+    (stroke
+      (width 0)
+      (type default)
+    )
+    (uuid "ccac9e9f-ea74-5d7b-ab8c-989b80e4d1bf")
   )
   (wire
     (pts

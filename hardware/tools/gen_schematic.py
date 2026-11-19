@@ -210,10 +210,10 @@ W(pin("C1", "1"), pin("L1", "1")); W(pin("L1", "2"), (25.4, UY + 10.16), (XB, UY
 BAT_Y = pin("U2", "4")[1]
 W(pin("U2", "7"), (XR + G, pin("U2", "7")[1])); LBL("CHG_N", XR + G, pin("U2", "7")[1], 0)
 W(pin("U2", "11"), (XR + G, pin("U2", "11")[1])); GND(XR + G, pin("U2", "11")[1], 90)     # EN2 -> GND
-R("R21", R196, 137.16, pin("U2", "12")[1], 90, "ILIM", "ILIM2", text="hh")
-R("R1", R196, 157.48, pin("U2", "12")[1], 90, "ILIM2", "FOD", text="hh",
-  Note="R_ILIM = R21 + R1 + R2 = 588R -> I_BULK = 314 AOhm / 588R = 534 mA (K_ILIM spec'd for 500-1500 mA)")
-W(pin("U2", "12"), pin("R21", "1")); W(pin("R21", "2"), pin("R1", "1")); W(pin("R1", "2"), (165.1, pin("R1", "2")[1]), (165.1, pin("U2", "14")[1]))
+R("R1", R1K, 157.48, pin("U2", "12")[1], 90, "ILIM", "FOD", text="hh",
+  Note="R_ILIM = R1 + R2 = 1.196k -> I_BULK = 314 AOhm / 1196R = 262 mA (0.5C for 500 mAh). Below the 500 mA "
+       "characterised range: TI E2E says OK with reduced accuracy (keep >100 mA fast charge, >30 mA termination)")
+W(pin("U2", "12"), pin("R1", "1")); W(pin("R1", "2"), (165.1, pin("R1", "2")[1]), (165.1, pin("U2", "14")[1]))
 W(pin("U2", "14"), (165.1, pin("U2", "14")[1]))
 R("R2", R196, 165.1, pin("U2", "14")[1] + 3.81, 0, "FOD", "GND", Note="R_FOD (TI: start at ~200R before FOD calibration)"); GND(*pin("R2", "2"))
 RECT_Y = pin("U2", "18")[1]
@@ -221,17 +221,21 @@ W(pin("U2", "18"), (157.48, RECT_Y), (157.48, 104.14))
 for ref, val, x in [("C11", C10U, 127.0), ("C21", C10U, 137.16), ("C12", C100N, 147.32)]:
     C(ref, val, x, RECT_Y + 3.81, 0, "RECT", "GND"); GND(*pin(ref, "2"))
 W(pin("U2", "10"), (XR + G, pin("U2", "10")[1]))
-R("R3", R10K, XR + G, pin("U2", "10")[1] + 3.81, 0, "TERM", "GND", Note="R_TERM = 240 Ohm/% x %: 10k -> 41.7 % of 534 mA = 222 mA (min 120 mA)")
+R("R3", R10K, XR + G, pin("U2", "10")[1] + 3.81, 0, "TERM", "GND", Note="R_TERM = 240 Ohm/% x %: 10k -> 41.7 % of 262 mA = ~109 mA (TI E2E: keep > 30 mA); bench-verify")
 GND(*pin("R3", "2"))
 TP("TP8", "RECT", 157.48, 99.06, 270, text=((3.0, 2.54, "left"), (0, 0, None)))
 
 # battery (with NTC) and VBAT rail
-P("J1", "Connector_Generic:Conn_01x03", "Li-ion 1000mAh", "Connector_Wire:SolderWire-0.1sqmm_1x03_P3.6mm_D0.4mm_OD1mm",
-  154.94, pin("U2", "13")[1], 0, {"1": "VBAT", "2": "NTC", "3": "GND"},
-  Note="1S Li-ion pouch 1000 mAh (603450), protection PCM, 10k B3380 NTC lead to TS/CTRL")
-W(pin("U2", "13"), pin("J1", "2"))
+P("J1", "Connector_Generic:Conn_01x02", "500mAh", "Connector_Wire:SolderWire-0.1sqmm_1x02_P3.6mm_D0.4mm_OD1mm",
+  154.94, pin("U2", "13")[1] - 2.54, 0, {"1": "VBAT", "2": "GND"},
+  Note="1S Li-ion pouch 500 mAh, 403040 (4.0 x 30 x 40 mm), with protection PCM, 2 wires")
 W((147.32, BAT_Y), (147.32, pin("J1", "1")[1]), pin("J1", "1"))
-W(pin("J1", "3"), (144.78, pin("J1", "3")[1])); GND(144.78, pin("J1", "3")[1])
+W(pin("J1", "2"), (144.78, pin("J1", "2")[1]), (144.78, pin("J1", "2")[1] + 2.54)); GND(144.78, pin("J1", "2")[1] + 2.54)
+# battery temperature: PCB-mounted NTC pressed against the cell (so any 2-wire cell can be used)
+P("TH1", "Device:Thermistor_NTC", "10k B3380", "Resistor_SMD:R_0402_1005Metric", 132.08, pin("U2", "13")[1] + 3.81, 0,
+  {"1": "NTC", "2": "GND"}, text="l", MPN="Murata NCP15XH103F03RC",
+  Note="On B.Cu under the battery, thermal pad to the cell. Matches the BQ51050B internal 20k bias (10k, B3380)")
+W(pin("U2", "13"), pin("TH1", "1")); GND(*pin("TH1", "2"))
 TP("TP7", "VBAT", 121.92, BAT_Y, 0, text=((-1.5, -4.5, "right"), (0, 0, None)))
 PWR("VBAT", 127.0, BAT_Y)
 C("C13", C1U, 129.54, BAT_Y + 3.81, 0, "VBAT", "GND"); GND(*pin("C13", "2"))

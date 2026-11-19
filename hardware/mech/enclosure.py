@@ -29,24 +29,26 @@ IMG = os.path.join(HERE, "..", "..", "docs", "img")
 
 # ---------------- parameters (mm) ----------------
 PCB_W, PCB_L, PCB_T = 38.0, 112.0, 1.0           # incl. thermal tab; top corners R5.5
-CLR_SIDE, CLR_END = 0.7, 0.8                      # PCB-to-cavity clearance
-CAV_W, CAV_L, CAV_R = PCB_W + 2 * CLR_SIDE, PCB_L + 2 * CLR_END, 6.0
+CLR_SIDE, CLR_TOP, CLR_BOT = 0.7, 2.6, 0.8         # PCB-to-cavity clearance; top keeps the module clear of the plug skirt
+CAV_W, CAV_L, CAV_R = PCB_W + 2 * CLR_SIDE, PCB_L + CLR_TOP + CLR_BOT, 6.0
 T_FRONT, T_SIDE, T_BACK = 1.2, 2.2, 1.5           # wall thicknesses
-STACK = PCB_T + 6.0 + 1.2 + 0.6                   # PCB + battery 603450 + coil + foam = 8.8
+BATT_T = 4.0                                      # Li-ion 403040, 500 mAh (4.0 x 30 x 40)
+STACK = PCB_T + BATT_T + 1.2 + 1.2                # PCB + battery + coil + foam (1.6 mm PORON -> 1.2) = 7.4
 DEPTH = T_FRONT + STACK + T_BACK                  # overall thickness 11.5
 OUT_W, OUT_L, OUT_R = CAV_W + 2 * T_SIDE, CAV_L + 2 * T_SIDE, CAV_R + T_SIDE
 EDGE_FILLET = 1.5
 
 # plug / radial gland (ISO 3601-style starting values for CS 1.5 mm, static radial)
-ORING_CS, ORING_ID = 1.5, 88.0
+ORING_CS, ORING_ID = 1.5, 90.0
 PLUG_CLR = 0.10                                   # radial clearance plug skirt <-> bore
 GLAND_DEPTH, GLAND_W = 1.05, 2.30                 # radial gap 1.15 mm -> ~22 % squeeze, ~70 % fill
-SKIRT_T, SKIRT_Z0 = 2.2, 5.0                      # skirt from Z=5.0 to the back wall
-GROOVE_Z0 = 5.9                                   # groove spans Z 5.9 .. 8.0
+SKIRT_T = 2.2
+SKIRT_Z0 = DEPTH - 6.4                            # skirt bottom: 1.5 mm above the PCB back (clears 0805 parts)
+GROOVE_Z0 = SKIRT_Z0 + 0.6                        # groove: 0.6 mm land below it
 BORE_CHAMFER = 0.6                                # lead-in at the cup opening (protects the O-ring)
 
 # retention screws: M2 self-tapping, axis at Z = 9.6 (outboard of the groove)
-SCREW_Z, SCREW_Y = 9.6, (-30.0, 30.0)
+SCREW_Z, SCREW_Y = DEPTH - 2.1, (-30.0, 30.0)     # screw axis outboard of the groove
 SCREW_CLEAR, SCREW_PILOT = 2.3, 1.6
 
 # thermal window (TMP117 on the PCB tab): front wall thinned to 0.8 mm
@@ -58,7 +60,7 @@ CAV_TOP = CAV_L / 2
 
 def pcb_to_dev(x, y):
     """PCB placement-study coordinates (x right, y down from top edge) -> device X, Y."""
-    return x - PCB_W / 2, CAV_TOP - CLR_END - y
+    return x - PCB_W / 2, CAV_TOP - CLR_TOP - y
 
 
 def rrect(w, l, r):
@@ -133,7 +135,12 @@ def make_plug():
 
 
 # ---------------- bracket (stays on the tub) ----------------
-BR_L, BR_T, BR_WALL, BR_LIP, BR_GAP = 80.0, 2.5, 2.0, 3.0, 0.3
+BR_L, BR_T, BR_WALL, BR_LIP, BR_GAP = 80.0, 5.0, 2.0, 3.0, 0.3
+# Keyhole for a 40 mm mushroom-head suction cup (e.g. Bambu Lab HA011). Vendors don't publish the
+# head/neck sizes, so the keyhole takes heads up to 12 mm and necks up to 5.8 mm: measure yours and
+# adjust.  The head sits in a pocket on the device side of the plate; the neck runs in a slot through
+# a 1.5 mm web on the tub side.  Hang the bracket: cups slide to the TOP of each slot.
+KEY_HEAD_D, KEY_NECK_W, KEY_SLIDE, KEY_WEB, KEY_POCKET = 12.5, 6.0, 7.0, 1.5, 3.5
 
 
 def make_bracket():
@@ -155,11 +162,14 @@ def make_bracket():
         stop = (cq.Workplane("XY").workplane(offset=-1.2).center(side * (iw / 2 - 4.0), y0 + 1.0)
                 .rect(8.0, 2.0).extrude(z_back + 1.2))
         plate = plate.union(stop)
-    # keyhole slots for 2 x 40 mm suction cups with mushroom heads (head ~10 mm, neck ~5 mm)
+    # keyholes for 2 x 40 mm mushroom-head suction cups
     for ky in (y0 + 18.0, y0 + BR_L - 18.0):
-        kh = (cq.Workplane("XY").workplane(offset=z_back - 1).center(0, ky).circle(5.4).extrude(BR_T + 2))
-        sl = (cq.Workplane("XY").workplane(offset=z_back - 1).center(0, ky + 4.0).slot2D(8.0, 5.6, 90).extrude(BR_T + 2))
-        plate = plate.cut(kh).cut(sl)
+        entry = cq.Workplane("XY").workplane(offset=z_back - 1).center(0, ky).circle(KEY_HEAD_D / 2).extrude(BR_T + 2)
+        slot = (cq.Workplane("XY").workplane(offset=z_back - 1).center(0, ky + KEY_SLIDE / 2)
+                .slot2D(KEY_SLIDE + KEY_NECK_W, KEY_NECK_W, 90).extrude(BR_T + 2))
+        pocket = (cq.Workplane("XY").workplane(offset=z_back - 1).center(0, ky + KEY_SLIDE / 2)
+                  .slot2D(KEY_SLIDE + KEY_HEAD_D + 1.0, KEY_HEAD_D + 1.0, 90).extrude(1 + KEY_POCKET))
+        plate = plate.cut(entry).cut(slot).cut(pocket)
     # drain / flow windows in the back plate
     for wy in (y0 + 38.0, y0 + 48.0):
         plate = plate.cut(cq.Workplane("XY").workplane(offset=z_back - 1).center(0, wy).slot2D(30.0, 5.0).extrude(BR_T + 2))
