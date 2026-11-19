@@ -14,7 +14,9 @@ overflows, and reports the water temperature.
 - [`hardware/kicad/`](hardware/kicad/): KiCad 7 project (schematic rev A)
 - [`hardware/bom_jlc.csv`](hardware/bom_jlc.csv): JLCPCB assembly BOM (generated; LCSC numbers still to be filled)
 - [`hardware/tools/gen_schematic.py`](hardware/tools/gen_schematic.py): regenerates the schematic and BOM
+- [`hardware/tools/verify_netlist.py`](hardware/tools/verify_netlist.py): checks that the drawn wiring matches the intended netlist
 
 ```
 python3 hardware/tools/gen_schematic.py    # needs KiCad 7+ symbol libraries
+python3 hardware/tools/verify_netlist.py   # needs kicad-cli
 ```

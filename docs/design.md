@@ -248,7 +248,7 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 | I²C SDA / SCL | 10 / 11 | TMP117 at address 0x48 |
 | Sensor power | 12 | Feeds TMP117 VDD and the I²C pull-ups |
 | Qi present (`QI_DET_N`) | 13 | Active-low from BSS138, RTC GPIO, ext0 wake |
-| CHG status | 15 | Open-drain from BQ51050B, pulled up internally |
+| CHG status | 40 | Open-drain from BQ51050B, pulled up internally (moved from GPIO15 to the right side of the module for a cleaner schematic) |
 | Status LED | 21 | Through a 1 kΩ resistor, visible through a thin wall spot |
 | USB D− / D+ | 19 / 20 | Test pads only |
 | EN / BOOT | EN / 0 | Test pads + RC on EN |
@@ -256,9 +256,11 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 ---
 
 ## 7a. Schematic (rev A)
-- The KiCad 7 project is in `hardware/kicad/`. The schematic is **generated** by `hardware/tools/gen_schematic.py` from a single parts/netlist table, so edit the script and rerun it.
+- The KiCad 7 project is in `hardware/kicad/`. The schematic is **generated** by `hardware/tools/gen_schematic.py`, so edit the script and rerun it.
+- Drawing style: signal flows left to right, series parts are horizontal, shunt parts are vertical, and connections are real wires. GND, +3V3 and VBAT use power symbols. Net labels are used only for six signals that cross between blocks: `CHG_N`, `QI_DET_N`, `VBAT_SENSE`, `SDA`, `SCL` and `SENSE_3V3`.
+- Each part in the script also carries its *intended* pin-to-net map. `hardware/tools/verify_netlist.py` exports the netlist with kicad-cli and fails if the drawn wiring differs from that map in any way.
 - `hardware/bom_jlc.csv` is generated in JLCPCB's assembly format. The **LCSC part numbers are still blank** and need filling from the JLC parts library before ordering.
-- Checks performed: KiCad loaded and exported the netlist, and every net matched the design table (44 nets). A pin-type check found no undriven power inputs and no output conflicts. KiCad 7's CLI has no ERC, so run ERC in the KiCad GUI (or KiCad 8+) before layout.
+- Checks performed: `verify_netlist.py` reports an exact match (44 nets, all unconnected pins flagged). A pin-type check found no undriven power inputs and no output conflicts. KiCad 7's CLI has no ERC, so run ERC in the KiCad GUI (or KiCad 8+) before layout.
 - Values marked "verify" or "TBD" (R1/R2 charge-current set, R3 termination, C1–C4 resonant tuning, TS/NTC network) must be checked against the BQ51050B datasheet and the chosen coil.
 - `BathMonitor.pretty` holds the project footprints: `TouchPad_25x8mm` (electrode) and `ShieldTap`.
 
