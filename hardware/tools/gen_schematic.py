@@ -40,13 +40,13 @@ TPFP = "TestPoint:TestPoint_Pad_D1.5mm"
 
 # Canonical part values: every resistor/capacitor in the design is one of these,
 # so the JLC BOM has as few unique lines as possible.
-C100N = ("100nF 50V X7R", C0603)
-C22N = ("22nF 50V X7R", C0402)
-C10N = ("10nF 50V X7R", C0402)
-C470N = ("470nF 25V X7R", C0603)
-C2N7 = ("2.7nF 50V C0G", C0603)
-C1U = ("1uF 25V X5R", C0402)
-C10U = ("10uF 25V X5R", C0805)
+C100N = ("100nF", "50V X7R", C0603)
+C22N = ("22nF", "50V X7R", C0402)
+C10N = ("10nF", "50V X7R", C0402)
+C470N = ("470nF", "25V X7R", C0603)
+C2N7 = ("2.7nF", "50V C0G", C0603)
+C1U = ("1uF", "25V X5R", C0402)
+C10U = ("10uF", "25V X5R", C0805)
 R1K, R10K, R1M, R196 = "1k 1%", "10k 1%", "1M 1%", "196R 1%"
 
 # ---------------------------------------------------------------------------
@@ -129,7 +129,9 @@ def R(ref, value, x, y, r, a, b, fp=R0402, text=None, **f):
 
 
 def C(ref, value, x, y, r, a, b, fp=None, text=None, **f):
-    value, fp = value if isinstance(value, tuple) else (value, fp or C0402)
+    value, rating, fp = value if isinstance(value, tuple) else (value, "", fp or C0402)
+    if rating:
+        f["Rating"] = rating
     return P(ref, "Device:C", value, fp, x, y, r, {"1": a, "2": b}, text or ("r" if r == 0 else "h"), **f)
 
 
@@ -208,41 +210,43 @@ W(pin("C1", "1"), pin("L1", "1")); W(pin("L1", "2"), (25.4, UY + 10.16), (XB, UY
 BAT_Y = pin("U2", "4")[1]
 W(pin("U2", "7"), (XR + G, pin("U2", "7")[1])); LBL("CHG_N", XR + G, pin("U2", "7")[1], 0)
 W(pin("U2", "11"), (XR + G, pin("U2", "11")[1])); GND(XR + G, pin("U2", "11")[1], 90)     # EN2 -> GND
-R("R1", R1K, 152.4, pin("U2", "12")[1], 90, "ILIM", "FOD", text="hh",
-  Note="R_ILIM = R1 + R2 = 1.196k -> I_BULK = K_ILIM / 1196; ~260 mA if K_ILIM = 314; verify")
-W(pin("U2", "12"), pin("R1", "1")); W(pin("R1", "2"), (160.02, pin("R1", "2")[1]), (160.02, pin("U2", "14")[1]))
-W(pin("U2", "14"), (160.02, pin("U2", "14")[1]))
-R("R2", R196, 160.02, pin("U2", "14")[1] + 3.81, 0, "FOD", "GND", Note="R_FOD"); GND(*pin("R2", "2"))
+R("R21", R196, 137.16, pin("U2", "12")[1], 90, "ILIM", "ILIM2", text="hh")
+R("R1", R196, 157.48, pin("U2", "12")[1], 90, "ILIM2", "FOD", text="hh",
+  Note="R_ILIM = R21 + R1 + R2 = 588R -> I_BULK = 314 AOhm / 588R = 534 mA (K_ILIM spec'd for 500-1500 mA)")
+W(pin("U2", "12"), pin("R21", "1")); W(pin("R21", "2"), pin("R1", "1")); W(pin("R1", "2"), (165.1, pin("R1", "2")[1]), (165.1, pin("U2", "14")[1]))
+W(pin("U2", "14"), (165.1, pin("U2", "14")[1]))
+R("R2", R196, 165.1, pin("U2", "14")[1] + 3.81, 0, "FOD", "GND", Note="R_FOD (TI: start at ~200R before FOD calibration)"); GND(*pin("R2", "2"))
 RECT_Y = pin("U2", "18")[1]
-W(pin("U2", "18"), (147.32, RECT_Y), (147.32, 104.14))
-for ref, val, x in [("C11", C10U, 127.0), ("C12", C100N, 137.16)]:
+W(pin("U2", "18"), (157.48, RECT_Y), (157.48, 104.14))
+for ref, val, x in [("C11", C10U, 127.0), ("C21", C10U, 137.16), ("C12", C100N, 147.32)]:
     C(ref, val, x, RECT_Y + 3.81, 0, "RECT", "GND"); GND(*pin(ref, "2"))
 W(pin("U2", "10"), (XR + G, pin("U2", "10")[1]))
-R("R3", "TBD", XR + G, pin("U2", "10")[1] + 3.81, 0, "TERM", "GND", Note="R_TERM sets I_TERM (~10 %) per datasheet")
+R("R3", R10K, XR + G, pin("U2", "10")[1] + 3.81, 0, "TERM", "GND", Note="R_TERM = 240 Ohm/% x %: 10k -> 41.7 % of 534 mA = 222 mA (min 120 mA)")
 GND(*pin("R3", "2"))
-TP("TP8", "RECT", 147.32, 99.06, 270)
+TP("TP8", "RECT", 157.48, 99.06, 270, text=((3.0, 2.54, "left"), (0, 0, None)))
 
 # battery (with NTC) and VBAT rail
-P("J1", "Connector_Generic:Conn_01x03", "Li-ion 500mAh", "Connector_Wire:SolderWire-0.1sqmm_1x03_P3.6mm_D0.4mm_OD1mm",
+P("J1", "Connector_Generic:Conn_01x03", "Li-ion 1000mAh", "Connector_Wire:SolderWire-0.1sqmm_1x03_P3.6mm_D0.4mm_OD1mm",
   154.94, pin("U2", "13")[1], 0, {"1": "VBAT", "2": "NTC", "3": "GND"},
-  Note="1S Li-ion pouch ~500 mAh, integrated protection, 10k NTC lead")
+  Note="1S Li-ion pouch 1000 mAh (603450), protection PCM, 10k B3380 NTC lead to TS/CTRL")
 W(pin("U2", "13"), pin("J1", "2"))
-W((144.78, BAT_Y), (144.78, pin("J1", "1")[1]), pin("J1", "1"))
-W(pin("J1", "3"), (147.32, pin("J1", "3")[1])); GND(147.32, pin("J1", "3")[1])
+W((147.32, BAT_Y), (147.32, pin("J1", "1")[1]), pin("J1", "1"))
+W(pin("J1", "3"), (144.78, pin("J1", "3")[1])); GND(144.78, pin("J1", "3")[1])
 TP("TP7", "VBAT", 121.92, BAT_Y, 0, text=((-1.5, -4.5, "right"), (0, 0, None)))
 PWR("VBAT", 127.0, BAT_Y)
-C("C13", C1U, 132.08, BAT_Y + 3.81, 0, "VBAT", "GND"); GND(*pin("C13", "2"))
+C("C13", C1U, 129.54, BAT_Y + 3.81, 0, "VBAT", "GND"); GND(*pin("C13", "2"))
+C("C22", C100N, 137.16, BAT_Y + 3.81, 0, "VBAT", "GND"); GND(*pin("C22", "2"))
 
 # ===========================================================================
 # B. Qi-present wake detector
 # ===========================================================================
-R("R4", R1M, 147.32, 107.95, 0, "RECT", "QI_GATE")
-R("R5", R1M, 147.32, 115.57, 0, "QI_GATE", "GND"); GND(*pin("R5", "2"))
-P("Q1", "Transistor_FET:BSS138", "BSS138", "Package_TO_SOT_SMD:SOT-23", 175.26, 111.76, 0,
+R("R4", R1M, 157.48, 107.95, 0, "RECT", "QI_GATE")
+R("R5", R1M, 157.48, 115.57, 0, "QI_GATE", "GND"); GND(*pin("R5", "2"))
+P("Q1", "Transistor_FET:BSS138", "BSS138", "Package_TO_SOT_SMD:SOT-23", 180.34, 111.76, 0,
   {"1": "QI_GATE", "2": "GND", "3": "QI_DET_N"}, text=((5.08, -1.27, "left"), (5.08, 1.27, "left")))
 W(pin("R4", "2"), pin("Q1", "1")); GND(*pin("Q1", "2"))
-R("R6", R1M, 177.8, 97.79, 0, "+3V3", "QI_DET_N"); PWR("+3V3", *pin("R6", "1"))
-W(pin("Q1", "3"), pin("R6", "2"), (185.42, 101.6)); LBL("QI_DET_N", 185.42, 101.6, 0)
+R("R6", R1M, 182.88, 97.79, 0, "+3V3", "QI_DET_N"); PWR("+3V3", *pin("R6", "1"))
+W(pin("Q1", "3"), pin("R6", "2"), (190.5, 101.6)); LBL("QI_DET_N", 190.5, 101.6, 0)
 
 # ===========================================================================
 # C. 3.3 V LDO
@@ -470,7 +474,7 @@ def main():
     groups = {}
     for p in PARTS:
         if not p["ref"].startswith(("#", "E", "TP")):
-            groups.setdefault((p["value"], p["fp"]), []).append(p["ref"])
+            groups.setdefault((" ".join(filter(None, [p["value"], p["fields"].get("Rating")])), p["fp"]), []).append(p["ref"])
     key = lambda r: (r.rstrip("0123456789"), int("".join(c for c in r if c.isdigit()) or 0))  # noqa: E731
     with open(os.path.join(HW, "bom_jlc.csv"), "w", newline="") as f:
         w = csv.writer(f)

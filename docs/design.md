@@ -61,7 +61,7 @@ alert to an iPhone over Wi-Fi before the tub overflows.
           TS ◄─NTC│ OUT            │  Touch T14  ──► shield driver│
          ┌───────▼────────┐        │  I²C ◄────────► TMP117       │
          │ Li-ion 1S      │        │  GPIO ──► sensor power       │
-         │ ~500 mAh + PCM │        │  ADC  ◄── VBAT/2             │
+         │ 1000 mAh + PCM │        │  ADC  ◄── VBAT/2             │
          └───────┬────────┘        │  GPIO ──► status LED         │
                  │ VBAT            │  Wi-Fi ⇢ router ⇢ ntfy.sh     │
          ┌───────▼────────┐  3V3   │          ⇢ iPhone            │
@@ -93,8 +93,8 @@ Full study, simulation and figures: **[placement-and-electrodes.md](placement-an
 
 ### 3.4 Wireless charging: BQ51050B
 - A single chip combining a Qi (WPC 1.2) receiver and a 4.20 V Li-ion charger, with no separate charger IC needed. It charges on any phone Qi pad.
-- Charge current is set by R_ILIM = 1k + 196R to **~260 mA (0.5 C)**, assuming K_ILIM = 314 (verify). That's gentle and keeps the coil cool.
-- The battery NTC goes to the TS pin, so charging stops when the cell is hot or cold.
+- Charge current is set by R_ILIM = 3 × 196R = 588 Ω to **534 mA (0.5 C for the 1000 mAh cell)**. The datasheet only specifies K_ILIM = 314 AΩ for 500–1500 mA, which is why the cell was enlarged from 500 to 1000 mAh instead of charging at 1C. R_TERM = 10k sets termination at 222 mA (minimum 120 mA).
+- The battery NTC (10 kΩ, B = 3380, the type the BQ51050B's internal 20 kΩ bias is designed for) goes straight to TS/CTRL. Charging stops when the cell is too cold or hot (0 / 60 °C) and is reduced between 45 and 60 °C, with no extra resistors.
 - The `CHG` output goes to an MCU GPIO. **Qi-present wake:** `RECT` swings from about 5 V up to its clamp level, which is too wide for a plain divider into a 3.3 V pin. So `RECT` drives a BSS138 through a 1M/1M divider, and the BSS138 pulls `QI_DET_N` (1 MΩ pull-up) low on an RTC GPIO. Placing the device on the pad wakes the MCU, and the detector draws 0 µA off the pad.
 - **Rx coil**: an ~11 µH Qi receiver coil with a ferrite backing, ≤32 mm diameter (Würth WE-WPCC receiver family or equivalent stocked at LCSC). It sits against the **back wall**. Coil-to-pad distance must stay ≤5 mm including the wall.
 - **Resonant capacitors** (per the WPC spec and the BQ51050B datasheet):
@@ -106,7 +106,7 @@ Full study, simulation and figures: **[placement-and-electrodes.md](placement-an
 ### 3.5 Power
 | Item | Choice |
 |------|--------|
-| Cell | 1S Li-ion pouch, ~500 mAh, ≤5 mm thick (e.g. 503040 size), **with integrated protection module (PCM) and 10 k NTC lead** |
+| Cell | 1S Li-ion pouch, **1000 mAh, 603450 (6 × 34 × 50 mm)**, **with integrated protection module (PCM) and 10 kΩ B3380 NTC lead** |
 | Regulator | **XC6220B331MR** LDO (1 A, Iq ≈ 8 µA), with RT9080-33 (600 mA, 2 µA) as a drop-in alternative footprint. It must cover the ESP32 Wi-Fi TX peaks of ~350 mA |
 | Battery monitor | 1 M / 1 M divider + 100 nF into ADC1 (≈2 µA) |
 | Sensor rail | TMP117 and its I²C pull-ups are powered from a GPIO, switched on only during measurement |
@@ -123,7 +123,7 @@ Why not a buck converter: from a 3.6–4.2 V battery to 3.3 V, an LDO is 80–90
 | Wi-Fi bursts (~5 events × ~3 s × ~120 mA) | — | — | ~0.5 |
 | **Total (one bath per day)** | | | **~2.3** |
 
-With 500 mAh, that's about **6–7 months between charges** at one bath per day. Even at 3× worse in practice, it's still 2 months.
+With 1000 mAh, that's about **12 months between charges** at one bath per day. Even at 3× worse in practice, it's still 4 months.
 
 ---
 
@@ -144,7 +144,7 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
   ├──────────────┤  │
   │ ◉ TMP117 window ~15 mm          
   └──────────────┘  ▼
-   ~44 × 118 × 13 mm
+   ~44 × 118 × 14 mm
 ```
 
 - **Mounting: a two-part design.** A small *bracket* with two silicone suction cups stays stuck to the tub wall, and the *sensor* slides into it (a snap rail with no metal and no magnets, since magnets disturb Qi).
@@ -166,7 +166,7 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 ## 5. Electrical safety and user safety
 
 1. Maximum internal voltage is 4.2 V and the enclosure is sealed with no conductive path to the water, so there's no shock hazard.
-2. The Li-ion cell has three protection layers: the cell's PCM (overcharge, overdischarge, short circuit), the BQ51050B charge control with NTC temperature cut-off, and the firmware undervoltage cut-off. Charge current is limited to 0.5 C.
+2. The Li-ion cell has three protection layers: the cell's PCM (overcharge, overdischarge, short circuit), the BQ51050B charge control with NTC temperature cut-off, and the firmware undervoltage cut-off. Charge current is limited to 0.5 C (534 mA into 1000 mAh).
 3. Charging only happens **out of the bath** on a standard Qi pad. The user guide must state that the pad (a mains device) stays outside the wet zone.
 4. The device never heats the water, and the electronics dissipate < 10 mW while sensing.
 5. The level alarm fails safe. If a sensor reading is invalid, the battery is critical, or Wi-Fi fails during an active fill, the device keeps retrying and records the event. The low-battery warning is sent while there's still ≥20 % charge.
@@ -262,7 +262,7 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 - Each part in the script also carries its *intended* pin-to-net map. `hardware/tools/verify_netlist.py` exports the netlist with kicad-cli and fails if the drawn wiring differs from that map in any way.
 - `hardware/bom_jlc.csv` is generated in JLCPCB's assembly format. The **LCSC part numbers are still blank** and need filling from the JLC parts library before ordering.
 - Checks performed: `verify_netlist.py` reports an exact match (44 nets, all unconnected pins flagged). A pin-type check found no undriven power inputs and no output conflicts. KiCad 7's CLI has no ERC, so run ERC in the KiCad GUI (or KiCad 8+) before layout.
-- Values marked "verify" or "TBD" (R1/R2 charge-current set, R3 termination, C1–C4 resonant tuning, TS/NTC network) must be checked against the BQ51050B datasheet and the chosen coil.
+- The BQ51050B values have been checked against the TI datasheet (SLUSB42F). Only the resonant capacitors (C1–C4, depend on the chosen coil) and R_FOD (FOD calibration) remain to be tuned on the bench.
 - `BathMonitor.pretty` holds the project footprints: `TouchPad_30x9mm`, `RefPad_30x6mm` and `ShieldTap`.
 - The BOM uses only 7 capacitor values and 4 resistor values (20 lines in total). See the placement study, section 1.
 - The placement-study PCB (`bath_monitor.kicad_pcb`) is generated by `hardware/tools/gen_pcb.py`. It is placed but not routed.
@@ -285,3 +285,4 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 | 2026-11-19 | BOM minimised to 7 capacitor + 4 resistor values. Dry reference electrode added (IO7) |
 | 2026-11-19 | Placement: electronics band on top under the antenna, electrodes below, battery behind the electrodes, thermal tab at the bottom. All parts on the back |
 | 2026-11-19 | Electrodes 30 × 9 mm, driven hatched L2 shield, idle pads HIGHZ. Polypropylene 1.2 mm wall recommended for production |
+| 2026-11-19 | BQ51050B datasheet checked: charge current must be ≥ 500 mA, so the cell grows to 1000 mAh (0.5 C). R_ILIM = 3 × 196R (534 mA), R_TERM = 10k (222 mA), NTC 10k B3380 direct. Added a 2nd 10 µF on RECT and 100 nF on BAT per the reference design |

@@ -20,16 +20,16 @@ All passives were collapsed onto a few standard values. That gives fewer JLC fee
 | | Before | After |
 |---|---|---|
 | Unique capacitor lines | 12 | **7**: 100nF 50V 0603, 22nF 50V 0402, 10nF 50V 0402, 470nF 25V 0603, 2.7nF C0G 0603, 1uF 25V 0402, 10uF 25V 0805 |
-| Unique resistor lines | 9 | **4 (+1 TBD)**: 1k, 10k, 1M, 196R (all 1 %), R3 TBD |
-| Total BOM lines (incl. ICs, LED, FET, hand-soldered coil + battery) | 29 | **20** |
+| Unique resistor lines | 9 | **4**: 1k, 10k, 1M, 196R (all 1 %) |
+| Total BOM lines (incl. ICs, LED, FET, hand-soldered coil + battery) | 29 | **19** |
 
 How each merge was done:
 - **Qi series resonant capacitor C_s** = 100n + 100n + **22n** = 222 nF, reusing the decoupling and COMM-cap values. That replaces the dedicated 33 nF part. Resonance with an 11 µH coil is 102 kHz, within the coil's own tolerance, and is bench-tuned anyway.
-- **Charge-current setting**: R_ILIM = R1 + R_FOD = 1k + 196R = 1.196 kΩ. That gives about 260 mA if K_ILIM = 314 AΩ (**verify against the datasheet**).
+- **Charge-current setting**: R_ILIM = R21 + R1 + R_FOD = 3 × 196R = 588 Ω, giving I_BULK = 314 AΩ / 588 Ω = **534 mA** (515–546 mA over the K_ILIM tolerance). The datasheet only specifies K_ILIM for 500–1500 mA, so the original 260 mA target was out of spec. TI recommends starting R_FOD at about 200 Ω, which matches 196R.
 - **Qi-present detector**: the 100k/100k divider became 1M/1M. The BSS138 gate still sees RECT/2 (2.5 V at 5 V RECT, 7.5 V worst case), and the off-pad current is still 0.
 - **Touch series resistors**: 510R → 1k, shared with the LED resistor. With about 1 pF of pad capacitance the RC is 1 ns, which doesn't matter at the touch peripheral's ~1 MHz rate, and the larger value improves ESD/RF filtering.
 - **Decoupling and bulk**: all 1 µF caps are one 25 V part, all 10 µF caps are one 25 V 0805 part (also good enough for RECT), and all 100 nF caps are one 50 V 0603 part (also good enough for the resonant tank).
-- **R3 (TERM)** stays TBD until the BQ51050B datasheet can be checked. If the datasheet allows, it should become 1k or 10k and remove that line.
+- **R3 (TERM)** = 10k: R_TERM = 240 Ω/% × %I_BULK, so charging stops at 41.7 % of 534 mA = 222 mA. That's above the datasheet's 120 mA minimum and ends at roughly 90 % full, which is easier on cycle life.
 - **Added**: a dry reference electrode (E8) on IO7 with its own 1k. It adds a part but **no new BOM line**.
 
 ---
@@ -56,9 +56,9 @@ the **back** (single-sided SMT at JLC). Height bands, from the top (dry) to the 
 - **Power / housekeeping column** (front-view right): LDO + caps, EN RC, Qi-present detector, battery divider, I²C pull-ups, LED.
 - **Touch resistors**: a row directly under the module's GPIO edge, so every electrode trace leaves the electronics zone after one 1k resistor.
 - **Pogo test pads**: 3V3, GND, EN, IO0, USB D+/D−, VBAT, RECT, used for programming before the battery is fitted.
-- **Battery** (503040, 5 mm) sits behind the electrode band. **Qi coil** (Ø30 mm) sits behind the battery against the back wall. Its ferrite faces the battery and shields it.
+- **Battery** (603450, 1000 mAh, 6 × 34 × 50 mm) sits behind the electrode band. **Qi coil** (Ø30 mm) sits behind the battery against the back wall. Its ferrite faces the battery and shields it.
 
-**Stack in the electrode band** (front to back): wall 1.2 | PCB 1.0 | battery 5.0 | coil + ferrite 1.2 | back wall 1.5, giving about **11 mm**. Because the electronics band has no battery behind it, the module (2.4 mm) fits within the same envelope. Enclosure is about **44 × 118 × 13 mm**.
+**Stack in the electrode band** (front to back): wall 1.2 | PCB 1.0 | battery 6.0 | coil + ferrite 1.2 | back wall 1.5, giving about **12 mm**. Because the electronics band has no battery behind it, the module (2.4 mm) fits within the same envelope. Enclosure is about **44 × 118 × 14 mm**.
 
 **Checks run on the placement**: no courtyard overlaps, every part inside the outline, KiCad DRC shows
 no clearance / keep-out / footprint errors. Only unrouted nets, silkscreen cosmetics,
@@ -177,8 +177,9 @@ a thin, even adhesive (no air gaps: 0.1 mm of air costs about 20 % of the signal
   That doesn't change any decision above, and the margins are 100× or more.
 - The "HIGHZ ≈ driven" assumption for idle pads must be confirmed on hardware (log raw counts
   with a wetted wall).
-- **The BQ51050B datasheet could not be read from this session** (ti.com is blocked by the
-  environment's network policy). R1/R2 (charge current), R3 (termination), the NTC network and the
-  BOOT/COMM/CLAMP values are still unverified.
+- The BQ51050B values have been checked against the TI datasheet (SLUSB42F): K_ILIM, K_TERM, the
+  120 mA termination minimum, the BOOT/COMM/CLAMP/RECT/BAT capacitors, AD/AD-EN/EN2 handling, and the
+  internal NTC bias (designed for a 10 kΩ B3380 NTC directly). Still to tune on the bench:
+  the resonant capacitors for the chosen coil, and R_FOD (FOD calibration).
 - The PCB is placed but **not routed**. Routing, 0.3 mm thermal vias under the QFN, and silkscreen
   clean-up are next.
