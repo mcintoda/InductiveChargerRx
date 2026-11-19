@@ -95,7 +95,7 @@ alert to an iPhone over Wi-Fi before the tub overflows.
 - A single chip combining a Qi (WPC 1.2) receiver and a 4.20 V Li-ion charger, with no separate charger IC needed. It charges on any phone Qi pad.
 - Charge current is set by R_ILIM to **~250 mA (0.5 C)**. That's gentle and keeps the coil cool.
 - The battery NTC goes to the TS pin, so charging stops when the cell is hot or cold.
-- The `CHG` output goes to an MCU GPIO. `RECT` goes through a 100k/47k divider to an RTC GPIO, so placing the device on the pad wakes the MCU. The divider draws no current when off the pad.
+- The `CHG` output goes to an MCU GPIO. **Qi-present wake:** `RECT` swings from about 5 V up to its clamp level, which is too wide for a plain divider into a 3.3 V pin. So `RECT` drives a BSS138 through a 100k/100k divider, and the BSS138 pulls `QI_DET_N` (1 MΩ pull-up) low on an RTC GPIO. Placing the device on the pad wakes the MCU, and the detector draws 0 µA off the pad.
 - **Rx coil**: an ~11 µH Qi receiver coil with a ferrite backing, ≤32 mm diameter (Würth WE-WPCC receiver family or equivalent stocked at LCSC). It sits against the **back wall**. Coil-to-pad distance must stay ≤5 mm including the wall.
 - **Resonant capacitors** (per the WPC spec and the BQ51050B datasheet):
   - `C1 = 1 / ((2π·100 kHz)² · Ls′)` where Ls′ is the coil inductance measured *on a transmitter* ferrite. With Ls′ = 11 µH this gives about **230 nF** (build from C0G/X7R 50 V caps in parallel).
@@ -107,7 +107,7 @@ alert to an iPhone over Wi-Fi before the tub overflows.
 | Item | Choice |
 |------|--------|
 | Cell | 1S Li-ion pouch, ~500 mAh, ≤5 mm thick (e.g. 503040 size), **with integrated protection module (PCM) and 10 k NTC lead** |
-| Regulator | RT9080-33 LDO (600 mA, Iq ≈ 2 µA) or XC6220B331 (1 A, 8 µA). It must cover the ESP32 Wi-Fi TX peaks of ~350 mA |
+| Regulator | **XC6220B331MR** LDO (1 A, Iq ≈ 8 µA), with RT9080-33 (600 mA, 2 µA) as a drop-in alternative footprint. It must cover the ESP32 Wi-Fi TX peaks of ~350 mA |
 | Battery monitor | 1 M / 1 M divider + 100 nF into ADC1 (≈2 µA) |
 | Sensor rail | TMP117 and its I²C pull-ups are powered from a GPIO, switched on only during measurement |
 | Cut-off | Firmware stops at 3.4 V and sends a low-battery notification at 20 % |
@@ -242,18 +242,25 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 
 | Function | GPIO | Notes |
 |----------|------|-------|
-| Level pads 1–6 | 1–6 | Touch T1–T6. T1 is the deep-sleep wake channel |
+| Level pads 1–6 | 1–6 | Touch T1–T6 through 510 Ω series resistors (Espressif recommendation). T1 is the deep-sleep wake channel |
 | Shield driver | 14 | Touch T14 → L1 hatch + L2 plane |
 | VBAT sense | 9 | ADC1_CH8, 1M/1M divider |
 | I²C SDA / SCL | 10 / 11 | TMP117 at address 0x48 |
 | Sensor power | 12 | Feeds TMP117 VDD and the I²C pull-ups |
-| Qi present (RECT/3.1) | 13 | RTC GPIO, ext0 wake |
+| Qi present (`QI_DET_N`) | 13 | Active-low from BSS138, RTC GPIO, ext0 wake |
 | CHG status | 15 | Open-drain from BQ51050B, pulled up internally |
 | Status LED | 21 | Through a 1 kΩ resistor, visible through a thin wall spot |
 | USB D− / D+ | 19 / 20 | Test pads only |
 | EN / BOOT | EN / 0 | Test pads + RC on EN |
 
 ---
+
+## 7a. Schematic (rev A)
+- The KiCad 7 project is in `hardware/kicad/`. The schematic is **generated** by `hardware/tools/gen_schematic.py` from a single parts/netlist table, so edit the script and rerun it.
+- `hardware/bom_jlc.csv` is generated in JLCPCB's assembly format. The **LCSC part numbers are still blank** and need filling from the JLC parts library before ordering.
+- Checks performed: KiCad loaded and exported the netlist, and every net matched the design table (44 nets). A pin-type check found no undriven power inputs and no output conflicts. KiCad 7's CLI has no ERC, so run ERC in the KiCad GUI (or KiCad 8+) before layout.
+- Values marked "verify" or "TBD" (R1/R2 charge-current set, R3 termination, C1–C4 resonant tuning, TS/NTC network) must be checked against the BQ51050B datasheet and the chosen coil.
+- `BathMonitor.pretty` holds the project footprints: `TouchPad_25x8mm` (electrode) and `ShieldTap`.
 
 ## 8. Validation plan (prototype)
 1. **Level.** In a tub, log the raw counts for all pads while filling, with plain water and with bubble bath. Splash and condensation tests should cause no false alarms. Check repeatability over 10 fills.

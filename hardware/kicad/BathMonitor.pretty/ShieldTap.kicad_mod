@@ -1,0 +1,8 @@
+(footprint "ShieldTap" (version 20221018) (generator pcbnew)
+  (layer "F.Cu")
+  (descr "Connection point for the driven-shield zones (L1 hatch around pads, L2 plane behind them). Assign both zones to net SHIELD.")
+  (attr smd exclude_from_pos_files exclude_from_bom)
+  (fp_text reference "REF**" (at 0 -2) (layer "F.SilkS") hide (effects (font (size 1 1) (thickness 0.15))))
+  (fp_text value "ShieldTap" (at 0 2) (layer "F.Fab") (effects (font (size 1 1) (thickness 0.15))))
+  (pad "1" thru_hole circle (at 0 0) (size 0.6 0.6) (drill 0.3) (layers "*.Cu"))
+)

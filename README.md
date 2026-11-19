@@ -10,4 +10,11 @@ overflows, and reports the water temperature.
 - **Power:** ~500 mAh Li-ion, BQ51050B Qi receiver/charger, ~6 months per charge (estimate)
 - **Build:** JLCPCB 4-layer PCB + SMT assembly, JLC3DP enclosure
 
-See [`docs/design.md`](docs/design.md) for the full design and [`hardware/bom.csv`](hardware/bom.csv) for the draft BOM.
+- [`docs/design.md`](docs/design.md): requirements, architecture, power budget, mechanics, firmware behaviour
+- [`hardware/kicad/`](hardware/kicad/): KiCad 7 project (schematic rev A)
+- [`hardware/bom_jlc.csv`](hardware/bom_jlc.csv): JLCPCB assembly BOM (generated; LCSC numbers still to be filled)
+- [`hardware/tools/gen_schematic.py`](hardware/tools/gen_schematic.py): regenerates the schematic and BOM
+
+```
+python3 hardware/tools/gen_schematic.py    # needs KiCad 7+ symbol libraries
+```
