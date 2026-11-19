@@ -77,28 +77,28 @@ alert to an iPhone over Wi-Fi before the tub overflows.
 - Alternatives considered: the ESP32-C3 and C6 have no touch peripheral, so they would need an FDC1004. The C6 also only offers Wi-Fi 6 power savings that don't matter here.
 
 ### 3.2 Level sensor: PCB capacitive ladder
-- 6 copper pads on PCB layer 1, pressed against the inside of the front wall (wall ~1.2 mm, no air gap; use a thin double-sided adhesive or a foam backer to press the board forward).
-- Pad size 25 × 8 mm at 10 mm pitch, giving **60 mm of sensing range**. Partial wetting of a pad gives a proportional reading, so the firmware can interpolate to about 2–3 mm.
-- **Shield**: the hatched copper around the pads on L1 and the solid L2 plane behind them are driven by T14 (shield driver). Droplets and condensation sitting on the wall then barely register, while a pad fully backed by bulk water still gives a large change.
-- L3 is GND, L4 holds components. Keep traces on L4 under the pad area to a minimum.
-- **Alarm level** = any pad, chosen in the settings page. The default is the top pad.
-- The bottom pad (T1) is the deep-sleep wake channel.
+Full study, simulation and figures: **[placement-and-electrodes.md](placement-and-electrodes.md)**.
+- 6 level electrodes, **30 × 9 mm at 10 mm pitch** (60 mm range), plus a 30 × 6 mm **dry reference electrode** 4 mm above the top pad (IO7). All on L1, pressed against a flat 1.2 mm wall with no air gap.
+- Simulated: about 0.9 pF dry, **+5.8 pF fully wet** per pad. The response is linear across each pad, so interpolation gives the level to **±0.9 mm** over the full range.
+- **Driven shield** (T14): L1 side strips plus a hatched L2 plane behind every electrode, with L3 empty and L4 carrying traces only in the electrode band. Driven rather than grounded, the baseline drops from 41 pF to 0.9 pF.
+- **Idle electrodes in HIGHZ**, not GND. Simulation shows this is what removes false readings from water films on the wall.
+- **Alarm level** = any pad, chosen in the settings page. The default is the top pad. PAD1 (bottom, T1) is the deep-sleep wake channel.
 
 ### 3.3 Temperature: TMP117AIDRVR
 - ±0.1 °C max from −20 to +50 °C, 16-bit, I²C, ~3.5 µA at 1 Hz. In practice it's powered from a GPIO only while measuring, so ~0 µA when off.
-- Placed at the **bottom** of the device (the deepest point), on a PCB tongue isolated by routed slots on three sides. This cuts heat conduction from the rest of the board.
+- Placed at the **bottom** of the device (the deepest point), on a 12 × 10 mm PCB tab joined to the board by a 6 mm neck. TMP117 is on the back. A GND copper window on the front, stitched with vias to the TMP117's exposed pad, couples it to the wall.
 - A thermal gap pad couples the TMP117 to a **0.8 mm thin-wall window** in the front face.
 - Expected performance: steady-state error < 0.2 °C relative to the water, with a time constant of ~60–90 s. Bath temperature changes slowly, so this is acceptable.
 - *Upgrade if faster response is needed:* replace the thin wall with a bonded 316L stainless disc (body-safe, nickel-bearing but passive). Keep it ≥15 mm from the Qi coil to avoid eddy heating and foreign-object-detection (FOD) trips.
 
 ### 3.4 Wireless charging: BQ51050B
 - A single chip combining a Qi (WPC 1.2) receiver and a 4.20 V Li-ion charger, with no separate charger IC needed. It charges on any phone Qi pad.
-- Charge current is set by R_ILIM to **~250 mA (0.5 C)**. That's gentle and keeps the coil cool.
+- Charge current is set by R_ILIM = 1k + 196R to **~260 mA (0.5 C)**, assuming K_ILIM = 314 (verify). That's gentle and keeps the coil cool.
 - The battery NTC goes to the TS pin, so charging stops when the cell is hot or cold.
-- The `CHG` output goes to an MCU GPIO. **Qi-present wake:** `RECT` swings from about 5 V up to its clamp level, which is too wide for a plain divider into a 3.3 V pin. So `RECT` drives a BSS138 through a 100k/100k divider, and the BSS138 pulls `QI_DET_N` (1 MΩ pull-up) low on an RTC GPIO. Placing the device on the pad wakes the MCU, and the detector draws 0 µA off the pad.
+- The `CHG` output goes to an MCU GPIO. **Qi-present wake:** `RECT` swings from about 5 V up to its clamp level, which is too wide for a plain divider into a 3.3 V pin. So `RECT` drives a BSS138 through a 1M/1M divider, and the BSS138 pulls `QI_DET_N` (1 MΩ pull-up) low on an RTC GPIO. Placing the device on the pad wakes the MCU, and the detector draws 0 µA off the pad.
 - **Rx coil**: an ~11 µH Qi receiver coil with a ferrite backing, ≤32 mm diameter (Würth WE-WPCC receiver family or equivalent stocked at LCSC). It sits against the **back wall**. Coil-to-pad distance must stay ≤5 mm including the wall.
 - **Resonant capacitors** (per the WPC spec and the BQ51050B datasheet):
-  - `C1 = 1 / ((2π·100 kHz)² · Ls′)` where Ls′ is the coil inductance measured *on a transmitter* ferrite. With Ls′ = 11 µH this gives about **230 nF** (build from C0G/X7R 50 V caps in parallel).
+  - `C1 = 1 / ((2π·100 kHz)² · Ls′)` where Ls′ is the coil inductance measured *on a transmitter* ferrite. With Ls′ = 11 µH this gives about **230 nF**. The schematic builds it as 100n + 100n + 22n = 222 nF (102 kHz), reusing BOM values.
   - `C2 = 1 / ((2π·1 MHz)² · Ls − 1/C1)` where Ls is the free-space inductance.
   - Tune on the bench with an LCR meter. The exact values depend on the coil chosen.
 - Note: if the MCU stays awake with Wi-Fi on while on the pad, its load can keep the charger from reaching termination. The firmware therefore keeps the settings web page up for 10 minutes after placement, then sleeps.
@@ -144,7 +144,7 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
   ├──────────────┤  │
   │ ◉ TMP117 window ~15 mm          
   └──────────────┘  ▼
-   ~42 × 110 × 15 mm
+   ~44 × 118 × 13 mm
 ```
 
 - **Mounting: a two-part design.** A small *bracket* with two silicone suction cups stays stuck to the tub wall, and the *sensor* slides into it (a snap rail with no metal and no magnets, since magnets disturb Qi).
@@ -230,9 +230,9 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 
 | Parameter | Value |
 |-----------|-------|
-| Layers | 4 (L1 pads + shield hatch, L2 shield, L3 GND, L4 components + signals) |
+| Layers | 4. Electronics band: GND on L1–L3, components on L4. Electrode band: L1 electrodes + shield strips, L2 hatched shield, L3 empty, L4 traces |
 | Thickness | 1.0 mm |
-| Size | ~38 × 104 mm, with routed slots isolating the TMP117 tongue |
+| Size | 38 × 102 mm body + 12 × 10 mm thermal tab on a 6 mm neck (see placement study) |
 | Assembly | Single-side SMT (L4) |
 | Finish | ENIG (flat pads for the module, better for test pads) |
 | Keep-outs | No copper beneath or beside the module antenna. No copper pour on L1–L3 under the Qi coil footprint (coil is on the battery side, so this mainly matters for the ferrite outline) |
@@ -242,7 +242,8 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 
 | Function | GPIO | Notes |
 |----------|------|-------|
-| Level pads 1–6 | 1–6 | Touch T1–T6 through 510 Ω series resistors (Espressif recommendation). T1 is the deep-sleep wake channel |
+| Level pads 1–6 | 1–6 | Touch T1–T6 through 1 kΩ series resistors. T1 is the deep-sleep wake channel |
+| Reference pad | 7 | Touch T7 through 1 kΩ. Dry reference electrode for drift compensation |
 | Shield driver | 14 | Touch T14 → L1 hatch + L2 plane |
 | VBAT sense | 9 | ADC1_CH8, 1M/1M divider |
 | I²C SDA / SCL | 10 / 11 | TMP117 at address 0x48 |
@@ -262,7 +263,9 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 - `hardware/bom_jlc.csv` is generated in JLCPCB's assembly format. The **LCSC part numbers are still blank** and need filling from the JLC parts library before ordering.
 - Checks performed: `verify_netlist.py` reports an exact match (44 nets, all unconnected pins flagged). A pin-type check found no undriven power inputs and no output conflicts. KiCad 7's CLI has no ERC, so run ERC in the KiCad GUI (or KiCad 8+) before layout.
 - Values marked "verify" or "TBD" (R1/R2 charge-current set, R3 termination, C1–C4 resonant tuning, TS/NTC network) must be checked against the BQ51050B datasheet and the chosen coil.
-- `BathMonitor.pretty` holds the project footprints: `TouchPad_25x8mm` (electrode) and `ShieldTap`.
+- `BathMonitor.pretty` holds the project footprints: `TouchPad_30x9mm`, `RefPad_30x6mm` and `ShieldTap`.
+- The BOM uses only 7 capacitor values and 4 resistor values (20 lines in total). See the placement study, section 1.
+- The placement-study PCB (`bath_monitor.kicad_pcb`) is generated by `hardware/tools/gen_pcb.py`. It is placed but not routed.
 
 ## 8. Validation plan (prototype)
 1. **Level.** In a tub, log the raw counts for all pads while filling, with plain water and with bubble bath. Splash and condensation tests should cause no false alarms. Check repeatability over 10 fills.
@@ -279,3 +282,6 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 | 2026-11-19 | Notifications: ntfy (free). Pushover dropped |
 | 2026-11-19 | No local beeper |
 | 2026-11-19 | Tub is acrylic, so the PCB antenna module stays (no -1U variant needed) and standard silicone suction cups are used |
+| 2026-11-19 | BOM minimised to 7 capacitor + 4 resistor values. Dry reference electrode added (IO7) |
+| 2026-11-19 | Placement: electronics band on top under the antenna, electrodes below, battery behind the electrodes, thermal tab at the bottom. All parts on the back |
+| 2026-11-19 | Electrodes 30 × 9 mm, driven hatched L2 shield, idle pads HIGHZ. Polypropylene 1.2 mm wall recommended for production |

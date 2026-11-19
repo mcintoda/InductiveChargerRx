@@ -3890,7 +3890,7 @@
         (justify right)
       )
     )
-    (property "Footprint" "Package_DFN_QFN:Texas_VQFN-RHL-20_ThermalVias"
+    (property "Footprint" "Package_DFN_QFN:Texas_VQFN-RHL-20"
       (at 101.6 76.2 0)
       (effects
         (font
@@ -4116,7 +4116,7 @@
         )
       )
     )
-    (property "Value" "470n 25V"
+    (property "Value" "470nF 25V X7R"
       (at 66.04 50.8 90)
       (effects
         (font
@@ -4173,7 +4173,7 @@
         )
       )
     )
-    (property "Value" "22n 25V"
+    (property "Value" "22nF 50V X7R"
       (at 66.04 58.42 90)
       (effects
         (font
@@ -4230,7 +4230,7 @@
         )
       )
     )
-    (property "Value" "10n 25V"
+    (property "Value" "10nF 50V X7R"
       (at 66.04 66.04 90)
       (effects
         (font
@@ -4287,7 +4287,7 @@
         )
       )
     )
-    (property "Value" "10n 25V"
+    (property "Value" "10nF 50V X7R"
       (at 66.04 99.06 90)
       (effects
         (font
@@ -4344,7 +4344,7 @@
         )
       )
     )
-    (property "Value" "22n 25V"
+    (property "Value" "22nF 50V X7R"
       (at 66.04 106.68 90)
       (effects
         (font
@@ -4401,7 +4401,7 @@
         )
       )
     )
-    (property "Value" "470n 25V"
+    (property "Value" "470nF 25V X7R"
       (at 66.04 114.3 90)
       (effects
         (font
@@ -4459,7 +4459,7 @@
         (justify left)
       )
     )
-    (property "Value" "2.7n 50V C0G"
+    (property "Value" "2.7nF 50V C0G"
       (at 50.8 81.28 0)
       (effects
         (font
@@ -4526,7 +4526,7 @@
         )
       )
     )
-    (property "Value" "100n 50V X7R"
+    (property "Value" "100nF 50V X7R"
       (at 38.1 78.74 90)
       (effects
         (font
@@ -4534,7 +4534,7 @@
         )
       )
     )
-    (property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+    (property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
       (at 38.1 76.2 0)
       (effects
         (font
@@ -4552,7 +4552,7 @@
         hide
       )
     )
-    (property "Note" "Series resonant cap C_s (sum ~233 nF, tune)"
+    (property "Note" "Series resonant cap C_s = 100n+100n+22n = 222 nF (tune to coil)"
       (at 38.1 76.2 0)
       (effects
         (font
@@ -4592,7 +4592,7 @@
         )
       )
     )
-    (property "Value" "100n 50V X7R"
+    (property "Value" "100nF 50V X7R"
       (at 38.1 71.12 90)
       (effects
         (font
@@ -4600,7 +4600,7 @@
         )
       )
     )
-    (property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+    (property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
       (at 38.1 68.58 0)
       (effects
         (font
@@ -4618,7 +4618,7 @@
         hide
       )
     )
-    (property "Note" "Series resonant cap C_s (sum ~233 nF, tune)"
+    (property "Note" "Series resonant cap C_s = 100n+100n+22n = 222 nF (tune to coil)"
       (at 38.1 68.58 0)
       (effects
         (font
@@ -4658,7 +4658,7 @@
         )
       )
     )
-    (property "Value" "33n 50V C0G"
+    (property "Value" "22nF 50V X7R"
       (at 38.1 63.5 90)
       (effects
         (font
@@ -4666,7 +4666,7 @@
         )
       )
     )
-    (property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+    (property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
       (at 38.1 60.96 0)
       (effects
         (font
@@ -4684,7 +4684,7 @@
         hide
       )
     )
-    (property "Note" "Series resonant cap C_s (sum ~233 nF, tune)"
+    (property "Note" "Series resonant cap C_s = 100n+100n+22n = 222 nF (tune to coil)"
       (at 38.1 60.96 0)
       (effects
         (font
@@ -4846,7 +4846,7 @@
         )
       )
     )
-    (property "Value" "1.05k 1%"
+    (property "Value" "1k 1%"
       (at 152.4 81.28 90)
       (effects
         (font
@@ -4872,7 +4872,7 @@
         hide
       )
     )
-    (property "Note" "R_ILIM = R1 + R2 = K_ILIM / I_BULK, target 250 mA; verify K_ILIM"
+    (property "Note" "R_ILIM = R1 + R2 = 1.196k -> I_BULK = K_ILIM / 1196; ~260 mA if K_ILIM = 314; verify"
       (at 152.4 83.82 0)
       (effects
         (font
@@ -4913,7 +4913,7 @@
         (justify left)
       )
     )
-    (property "Value" "196 1%"
+    (property "Value" "196R 1%"
       (at 162.56 91.44 0)
       (effects
         (font
@@ -5036,7 +5036,7 @@
         (justify left)
       )
     )
-    (property "Value" "10u 25V"
+    (property "Value" "10uF 25V X5R"
       (at 129.54 93.98 0)
       (effects
         (font
@@ -5150,7 +5150,7 @@
         (justify left)
       )
     )
-    (property "Value" "100n 25V"
+    (property "Value" "100nF 50V X7R"
       (at 139.7 93.98 0)
       (effects
         (font
@@ -5159,7 +5159,7 @@
         (justify left)
       )
     )
-    (property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+    (property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
       (at 137.16 92.71 0)
       (effects
         (font
@@ -5680,7 +5680,7 @@
         (justify left)
       )
     )
-    (property "Value" "1u 10V"
+    (property "Value" "1uF 25V X5R"
       (at 134.62 63.5 0)
       (effects
         (font
@@ -5794,7 +5794,7 @@
         (justify left)
       )
     )
-    (property "Value" "100k"
+    (property "Value" "1M 1%"
       (at 149.86 109.22 0)
       (effects
         (font
@@ -5853,7 +5853,7 @@
         (justify left)
       )
     )
-    (property "Value" "100k"
+    (property "Value" "1M 1%"
       (at 149.86 116.84 0)
       (effects
         (font
@@ -6084,7 +6084,7 @@
         (justify left)
       )
     )
-    (property "Value" "1M"
+    (property "Value" "1M 1%"
       (at 180.34 99.06 0)
       (effects
         (font
@@ -6273,7 +6273,7 @@
         (justify right)
       )
     )
-    (property "Value" "1u 10V"
+    (property "Value" "1uF 25V X5R"
       (at 170.18 63.5 0)
       (effects
         (font
@@ -6497,7 +6497,7 @@
         (justify left)
       )
     )
-    (property "Value" "1u 10V"
+    (property "Value" "1uF 25V X5R"
       (at 215.9 63.5 0)
       (effects
         (font
@@ -6839,7 +6839,7 @@
         (justify left)
       )
     )
-    (property "Value" "100n"
+    (property "Value" "100nF 50V X7R"
       (at 248.92 63.5 0)
       (effects
         (font
@@ -6848,7 +6848,7 @@
         (justify left)
       )
     )
-    (property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+    (property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
       (at 246.38 62.23 0)
       (effects
         (font
@@ -7042,7 +7042,7 @@
         (justify left)
       )
     )
-    (property "Value" "100n"
+    (property "Value" "100nF 50V X7R"
       (at 218.44 139.7 0)
       (effects
         (font
@@ -7051,7 +7051,7 @@
         (justify left)
       )
     )
-    (property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+    (property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
       (at 215.9 138.43 0)
       (effects
         (font
@@ -7156,7 +7156,7 @@
         (justify left)
       )
     )
-    (property "Value" "10k"
+    (property "Value" "10k 1%"
       (at 190.5 139.7 0)
       (effects
         (font
@@ -7215,7 +7215,7 @@
         (justify left)
       )
     )
-    (property "Value" "10k"
+    (property "Value" "10k 1%"
       (at 175.26 139.7 0)
       (effects
         (font
@@ -7761,7 +7761,7 @@
         (justify left)
       )
     )
-    (property "Value" "10u 10V"
+    (property "Value" "10uF 25V X5R"
       (at 342.9 81.28 0)
       (effects
         (font
@@ -7770,7 +7770,7 @@
         (justify left)
       )
     )
-    (property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+    (property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
       (at 340.36 80.01 0)
       (effects
         (font
@@ -7875,7 +7875,7 @@
         (justify left)
       )
     )
-    (property "Value" "100n"
+    (property "Value" "100nF 50V X7R"
       (at 355.6 81.28 0)
       (effects
         (font
@@ -7884,7 +7884,7 @@
         (justify left)
       )
     )
-    (property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+    (property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
       (at 353.06 80.01 0)
       (effects
         (font
@@ -8322,7 +8322,7 @@
         (justify left)
       )
     )
-    (property "Value" "10k"
+    (property "Value" "10k 1%"
       (at 302.26 85.09 0)
       (effects
         (font
@@ -8435,7 +8435,7 @@
         )
       )
     )
-    (property "Value" "1u"
+    (property "Value" "1uF 25V X5R"
       (at 284.48 86.36 90)
       (effects
         (font
@@ -8646,22 +8646,22 @@
   )
   (symbol
     (lib_id "Device:R")
-    (at 256.54 116.84 90)
+    (at 254.0 116.84 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "f250eec8-2656-5d86-a7fe-626ab175fe82")
     (property "Reference" "R11"
-      (at 256.54 114.3 90)
+      (at 254.0 114.3 90)
       (effects
         (font
           (size 1.27 1.27)
         )
       )
     )
-    (property "Value" "510"
-      (at 256.54 119.38 90)
+    (property "Value" "1k 1%"
+      (at 254.0 119.38 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -8669,7 +8669,7 @@
       )
     )
     (property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-      (at 256.54 116.84 0)
+      (at 254.0 116.84 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8678,7 +8678,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 256.54 116.84 0)
+      (at 254.0 116.84 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8703,14 +8703,14 @@
   )
   (symbol
     (lib_id "Connector:TestPoint")
-    (at 246.38 116.84 90)
+    (at 243.84 116.84 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "fb74909d-8dbe-5ccf-81bb-139db302f2fd")
     (property "Reference" "E1"
-      (at 243.38 114.3 90)
+      (at 240.84 114.3 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -8727,8 +8727,8 @@
         hide
       )
     )
-    (property "Footprint" "BathMonitor:TouchPad_25x8mm"
-      (at 246.38 116.84 0)
+    (property "Footprint" "BathMonitor:TouchPad_30x9mm"
+      (at 243.84 116.84 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8737,7 +8737,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 246.38 116.84 0)
+      (at 243.84 116.84 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8746,7 +8746,7 @@
       )
     )
     (property "Note" "Level electrode 1 (1 = bottom / wake, 6 = default alarm)"
-      (at 246.38 116.84 0)
+      (at 243.84 116.84 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8768,22 +8768,22 @@
   )
   (symbol
     (lib_id "Device:R")
-    (at 256.54 124.46 90)
+    (at 254.0 124.46 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "6172224a-0861-588e-9388-2639e33a63df")
     (property "Reference" "R12"
-      (at 256.54 121.92 90)
+      (at 254.0 121.92 90)
       (effects
         (font
           (size 1.27 1.27)
         )
       )
     )
-    (property "Value" "510"
-      (at 256.54 127.0 90)
+    (property "Value" "1k 1%"
+      (at 254.0 127.0 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -8791,7 +8791,7 @@
       )
     )
     (property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-      (at 256.54 124.46 0)
+      (at 254.0 124.46 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8800,7 +8800,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 256.54 124.46 0)
+      (at 254.0 124.46 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8825,14 +8825,14 @@
   )
   (symbol
     (lib_id "Connector:TestPoint")
-    (at 246.38 124.46 90)
+    (at 243.84 124.46 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "4f58f5d8-5821-525d-996c-b67a4a2b6b29")
     (property "Reference" "E2"
-      (at 243.38 121.92 90)
+      (at 240.84 121.92 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -8849,8 +8849,8 @@
         hide
       )
     )
-    (property "Footprint" "BathMonitor:TouchPad_25x8mm"
-      (at 246.38 124.46 0)
+    (property "Footprint" "BathMonitor:TouchPad_30x9mm"
+      (at 243.84 124.46 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8859,7 +8859,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 246.38 124.46 0)
+      (at 243.84 124.46 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8868,7 +8868,7 @@
       )
     )
     (property "Note" "Level electrode 2 (1 = bottom / wake, 6 = default alarm)"
-      (at 246.38 124.46 0)
+      (at 243.84 124.46 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8890,22 +8890,22 @@
   )
   (symbol
     (lib_id "Device:R")
-    (at 256.54 132.08 90)
+    (at 254.0 132.08 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "3fb1f0e4-7dec-5756-93f4-ee2feac8d511")
     (property "Reference" "R13"
-      (at 256.54 129.54 90)
+      (at 254.0 129.54 90)
       (effects
         (font
           (size 1.27 1.27)
         )
       )
     )
-    (property "Value" "510"
-      (at 256.54 134.62 90)
+    (property "Value" "1k 1%"
+      (at 254.0 134.62 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -8913,7 +8913,7 @@
       )
     )
     (property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-      (at 256.54 132.08 0)
+      (at 254.0 132.08 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8922,7 +8922,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 256.54 132.08 0)
+      (at 254.0 132.08 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8947,14 +8947,14 @@
   )
   (symbol
     (lib_id "Connector:TestPoint")
-    (at 246.38 132.08 90)
+    (at 243.84 132.08 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "1a370488-cb9d-5e1f-b157-e722b1a6dd84")
     (property "Reference" "E3"
-      (at 243.38 129.54 90)
+      (at 240.84 129.54 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -8971,8 +8971,8 @@
         hide
       )
     )
-    (property "Footprint" "BathMonitor:TouchPad_25x8mm"
-      (at 246.38 132.08 0)
+    (property "Footprint" "BathMonitor:TouchPad_30x9mm"
+      (at 243.84 132.08 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8981,7 +8981,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 246.38 132.08 0)
+      (at 243.84 132.08 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -8990,7 +8990,7 @@
       )
     )
     (property "Note" "Level electrode 3 (1 = bottom / wake, 6 = default alarm)"
-      (at 246.38 132.08 0)
+      (at 243.84 132.08 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9012,22 +9012,22 @@
   )
   (symbol
     (lib_id "Device:R")
-    (at 256.54 139.7 90)
+    (at 254.0 139.7 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "2beb7469-d0b0-51d8-80fa-dab59f869672")
     (property "Reference" "R14"
-      (at 256.54 137.16 90)
+      (at 254.0 137.16 90)
       (effects
         (font
           (size 1.27 1.27)
         )
       )
     )
-    (property "Value" "510"
-      (at 256.54 142.24 90)
+    (property "Value" "1k 1%"
+      (at 254.0 142.24 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -9035,7 +9035,7 @@
       )
     )
     (property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-      (at 256.54 139.7 0)
+      (at 254.0 139.7 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9044,7 +9044,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 256.54 139.7 0)
+      (at 254.0 139.7 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9069,14 +9069,14 @@
   )
   (symbol
     (lib_id "Connector:TestPoint")
-    (at 246.38 139.7 90)
+    (at 243.84 139.7 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "649de434-d1a5-5dc2-8507-cf28f5adabd2")
     (property "Reference" "E4"
-      (at 243.38 137.16 90)
+      (at 240.84 137.16 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -9093,8 +9093,8 @@
         hide
       )
     )
-    (property "Footprint" "BathMonitor:TouchPad_25x8mm"
-      (at 246.38 139.7 0)
+    (property "Footprint" "BathMonitor:TouchPad_30x9mm"
+      (at 243.84 139.7 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9103,7 +9103,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 246.38 139.7 0)
+      (at 243.84 139.7 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9112,7 +9112,7 @@
       )
     )
     (property "Note" "Level electrode 4 (1 = bottom / wake, 6 = default alarm)"
-      (at 246.38 139.7 0)
+      (at 243.84 139.7 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9134,22 +9134,22 @@
   )
   (symbol
     (lib_id "Device:R")
-    (at 256.54 147.32 90)
+    (at 254.0 147.32 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "1880f956-e47a-50c0-b6cd-71821fbb3da8")
     (property "Reference" "R15"
-      (at 256.54 144.78 90)
+      (at 254.0 144.78 90)
       (effects
         (font
           (size 1.27 1.27)
         )
       )
     )
-    (property "Value" "510"
-      (at 256.54 149.86 90)
+    (property "Value" "1k 1%"
+      (at 254.0 149.86 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -9157,7 +9157,7 @@
       )
     )
     (property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-      (at 256.54 147.32 0)
+      (at 254.0 147.32 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9166,7 +9166,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 256.54 147.32 0)
+      (at 254.0 147.32 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9191,14 +9191,14 @@
   )
   (symbol
     (lib_id "Connector:TestPoint")
-    (at 246.38 147.32 90)
+    (at 243.84 147.32 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "4fc982d7-ef51-522e-8085-3569cbc3870a")
     (property "Reference" "E5"
-      (at 243.38 144.78 90)
+      (at 240.84 144.78 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -9215,8 +9215,8 @@
         hide
       )
     )
-    (property "Footprint" "BathMonitor:TouchPad_25x8mm"
-      (at 246.38 147.32 0)
+    (property "Footprint" "BathMonitor:TouchPad_30x9mm"
+      (at 243.84 147.32 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9225,7 +9225,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 246.38 147.32 0)
+      (at 243.84 147.32 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9234,7 +9234,7 @@
       )
     )
     (property "Note" "Level electrode 5 (1 = bottom / wake, 6 = default alarm)"
-      (at 246.38 147.32 0)
+      (at 243.84 147.32 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9256,22 +9256,22 @@
   )
   (symbol
     (lib_id "Device:R")
-    (at 256.54 154.94 90)
+    (at 254.0 154.94 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "d8b28524-e893-558e-815c-dc69564c347d")
     (property "Reference" "R16"
-      (at 256.54 152.4 90)
+      (at 254.0 152.4 90)
       (effects
         (font
           (size 1.27 1.27)
         )
       )
     )
-    (property "Value" "510"
-      (at 256.54 157.48 90)
+    (property "Value" "1k 1%"
+      (at 254.0 157.48 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -9279,7 +9279,7 @@
       )
     )
     (property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-      (at 256.54 154.94 0)
+      (at 254.0 154.94 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9288,7 +9288,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 256.54 154.94 0)
+      (at 254.0 154.94 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9313,14 +9313,14 @@
   )
   (symbol
     (lib_id "Connector:TestPoint")
-    (at 246.38 154.94 90)
+    (at 243.84 154.94 90)
     (unit 1)
     (in_bom yes)
     (on_board yes)
     (dnp no)
     (uuid "2aa61faa-821e-5c2f-b581-26f6bdbe9011")
     (property "Reference" "E6"
-      (at 243.38 152.4 90)
+      (at 240.84 152.4 90)
       (effects
         (font
           (size 1.27 1.27)
@@ -9337,8 +9337,8 @@
         hide
       )
     )
-    (property "Footprint" "BathMonitor:TouchPad_25x8mm"
-      (at 246.38 154.94 0)
+    (property "Footprint" "BathMonitor:TouchPad_30x9mm"
+      (at 243.84 154.94 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9347,7 +9347,7 @@
       )
     )
     (property "Datasheet" "~"
-      (at 246.38 154.94 0)
+      (at 243.84 154.94 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9356,7 +9356,7 @@
       )
     )
     (property "Note" "Level electrode 6 (1 = bottom / wake, 6 = default alarm)"
-      (at 246.38 154.94 0)
+      (at 243.84 154.94 0)
       (effects
         (font
           (size 1.27 1.27)
@@ -9378,6 +9378,128 @@
   )
   (symbol
     (lib_id "Device:R")
+    (at 254.0 162.56 90)
+    (unit 1)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "5c458d64-4e2a-5ce5-b086-fd02ec08cf22")
+    (property "Reference" "R20"
+      (at 254.0 160.02 90)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property "Value" "1k 1%"
+      (at 254.0 165.1 90)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+      (at 254.0 162.56 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "Datasheet" "~"
+      (at 254.0 162.56 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (pin "1"
+      (uuid "dc9f338d-2272-57f5-a97a-1fea3ffde607")
+    )
+    (pin "2"
+      (uuid "e2e98ada-b591-53c8-a121-6e1dc27219e8")
+    )
+    (instances
+      (project "bath_monitor"
+        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
+          (reference "R20")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (symbol
+    (lib_id "Connector:TestPoint")
+    (at 243.84 162.56 90)
+    (unit 1)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "114d60a2-ad60-57bf-97cf-471a079aedd3")
+    (property "Reference" "E8"
+      (at 240.84 160.02 90)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        (justify left)
+      )
+    )
+    (property "Value" "REF"
+      (at 0 0 90)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "Footprint" "BathMonitor:RefPad_30x6mm"
+      (at 243.84 162.56 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "Datasheet" "~"
+      (at 243.84 162.56 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "Note" "Dry reference electrode above the ladder (drift compensation)"
+      (at 243.84 162.56 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (pin "1"
+      (uuid "86a707bf-807e-56ec-bf52-1ef8e4228de6")
+    )
+    (instances
+      (project "bath_monitor"
+        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
+          (reference "E8")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (symbol
+    (lib_id "Device:R")
     (at 294.64 129.54 90)
     (unit 1)
     (in_bom yes)
@@ -9392,7 +9514,7 @@
         )
       )
     )
-    (property "Value" "510"
+    (property "Value" "1k 1%"
       (at 294.64 133.99 90)
       (effects
         (font
@@ -9627,7 +9749,7 @@
         (justify left)
       )
     )
-    (property "Value" "1k"
+    (property "Value" "1k 1%"
       (at 342.9 106.68 0)
       (effects
         (font
@@ -10941,266 +11063,310 @@
   (wire
     (pts
       (xy 302.26 96.52)
-      (xy 269.24 96.52)
+      (xy 266.7 96.52)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "88017d90-3e6f-511b-b450-59d225948252")
+    (uuid "b38d0550-88ae-5e3d-aac7-3d1b19e1f013")
   )
   (wire
     (pts
-      (xy 269.24 96.52)
-      (xy 269.24 116.84)
+      (xy 266.7 96.52)
+      (xy 266.7 116.84)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "7bd9525e-71e3-5309-8d8e-2bf82d17b029")
+    (uuid "450d3a67-5c56-5a6a-809e-5a85b0601871")
   )
   (wire
     (pts
-      (xy 269.24 116.84)
-      (xy 260.35 116.84)
+      (xy 266.7 116.84)
+      (xy 257.81 116.84)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "9f20b6f4-65f5-553e-bc61-e7eb8bb16d76")
+    (uuid "888baedc-f766-547a-9268-d30c41f5adb1")
   )
   (wire
     (pts
-      (xy 252.73 116.84)
-      (xy 246.38 116.84)
+      (xy 250.19 116.84)
+      (xy 243.84 116.84)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "eec4b3c1-9c40-5705-a460-04e4dfafa07c")
+    (uuid "9a08d2d5-db86-5520-a658-b15fd5f6b142")
   )
   (wire
     (pts
       (xy 302.26 99.06)
-      (xy 271.78 99.06)
+      (xy 269.24 99.06)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "de0e56d1-2833-5c6e-a3e7-7280991a5529")
+    (uuid "3623fff9-0582-5420-895c-d75139b11bf1")
   )
   (wire
     (pts
-      (xy 271.78 99.06)
-      (xy 271.78 124.46)
+      (xy 269.24 99.06)
+      (xy 269.24 124.46)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "1abe0b26-e10f-5d6d-9d70-fa9d7e2632a5")
+    (uuid "4472ebf9-226a-5184-817d-bec9d56f5b8b")
   )
   (wire
     (pts
-      (xy 271.78 124.46)
-      (xy 260.35 124.46)
+      (xy 269.24 124.46)
+      (xy 257.81 124.46)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "5d741862-3c67-5a61-979a-e070d659dce7")
+    (uuid "d8d10e9c-d9e4-5f56-b6b5-c043f8814f76")
   )
   (wire
     (pts
-      (xy 252.73 124.46)
-      (xy 246.38 124.46)
+      (xy 250.19 124.46)
+      (xy 243.84 124.46)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "d24907b7-3798-574d-ac67-f6317c23c0f6")
+    (uuid "80802bae-4703-5449-975c-73f074a8af2c")
   )
   (wire
     (pts
       (xy 302.26 101.6)
-      (xy 274.32 101.6)
+      (xy 271.78 101.6)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "16fc0493-36b3-5090-bb30-1f0426c34bae")
+    (uuid "e8254c1c-bc9a-59ad-80bf-64481c3b410b")
   )
   (wire
     (pts
-      (xy 274.32 101.6)
-      (xy 274.32 132.08)
+      (xy 271.78 101.6)
+      (xy 271.78 132.08)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "ea4b7166-ae49-53a2-a8f5-47bdfd956e85")
+    (uuid "0601a4e6-dfd4-56fc-9a40-4c0f36892de6")
   )
   (wire
     (pts
-      (xy 274.32 132.08)
-      (xy 260.35 132.08)
+      (xy 271.78 132.08)
+      (xy 257.81 132.08)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "a927c484-5314-5ebb-8943-55371227222b")
+    (uuid "aeda998f-d08e-5337-8ef1-1aad3b42bb2f")
   )
   (wire
     (pts
-      (xy 252.73 132.08)
-      (xy 246.38 132.08)
+      (xy 250.19 132.08)
+      (xy 243.84 132.08)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "68ca98e4-fe94-51d2-a9a2-92748aa3cac8")
+    (uuid "38cb3c0b-6a36-5bc5-bd53-404276f547e7")
   )
   (wire
     (pts
       (xy 302.26 104.14)
-      (xy 276.86 104.14)
+      (xy 274.32 104.14)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "01ab4a75-2114-52bd-b79c-057164c0fbd0")
+    (uuid "b664132c-269a-50ff-8761-9088d05dc907")
   )
   (wire
     (pts
-      (xy 276.86 104.14)
-      (xy 276.86 139.7)
+      (xy 274.32 104.14)
+      (xy 274.32 139.7)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "c54ea9bd-1ea4-5762-ab7b-a37aaaa88fb8")
+    (uuid "9a3b1f5a-5f70-57e8-a397-6846e1dae5a6")
   )
   (wire
     (pts
-      (xy 276.86 139.7)
-      (xy 260.35 139.7)
+      (xy 274.32 139.7)
+      (xy 257.81 139.7)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "7d1bfbb7-da60-5e02-9824-a77004ef4d6a")
+    (uuid "871bcb47-f4b6-576a-8aea-5269b9d68e4e")
   )
   (wire
     (pts
-      (xy 252.73 139.7)
-      (xy 246.38 139.7)
+      (xy 250.19 139.7)
+      (xy 243.84 139.7)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "0667c78b-2004-52cc-8474-514af9208b69")
+    (uuid "6879ee60-b91f-5f20-91fb-852b9081050f")
   )
   (wire
     (pts
       (xy 302.26 106.68)
-      (xy 279.4 106.68)
+      (xy 276.86 106.68)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "475d83fc-71e4-58fc-aaf0-c5846bc1db36")
+    (uuid "0faa4d8e-9ded-53e9-9a1b-f39c42ddb5f0")
   )
   (wire
     (pts
-      (xy 279.4 106.68)
-      (xy 279.4 147.32)
+      (xy 276.86 106.68)
+      (xy 276.86 147.32)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "32d6e326-bf3b-5ffc-8901-9f19cb2e57d4")
+    (uuid "27aae576-9513-582a-99eb-35ab1b78dde3")
   )
   (wire
     (pts
-      (xy 279.4 147.32)
-      (xy 260.35 147.32)
+      (xy 276.86 147.32)
+      (xy 257.81 147.32)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "fa05b46e-d379-5573-a476-6931787e917c")
+    (uuid "5d90ee7d-9e23-5f42-8702-01cac41008b2")
   )
   (wire
     (pts
-      (xy 252.73 147.32)
-      (xy 246.38 147.32)
+      (xy 250.19 147.32)
+      (xy 243.84 147.32)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "c741010a-3028-5349-92ff-ba0d553ebbd3")
+    (uuid "c869195a-1230-5b10-9032-8b6639e1d405")
   )
   (wire
     (pts
       (xy 302.26 109.22)
-      (xy 281.94 109.22)
+      (xy 279.4 109.22)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "165d0f2d-e9f1-5ac1-8f49-d518b1840c73")
+    (uuid "c067f1be-335c-53e4-83b0-e064bc6c2613")
   )
   (wire
     (pts
-      (xy 281.94 109.22)
-      (xy 281.94 154.94)
+      (xy 279.4 109.22)
+      (xy 279.4 154.94)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "386dcc3e-45b4-59cb-a12c-31eb91430056")
+    (uuid "55ac9060-2638-5ed1-8f1a-7c19252d260b")
   )
   (wire
     (pts
-      (xy 281.94 154.94)
-      (xy 260.35 154.94)
+      (xy 279.4 154.94)
+      (xy 257.81 154.94)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "81bcd115-d97d-5883-844d-55c8bde4cc8c")
+    (uuid "0bebc350-d711-5b0b-83f6-2a3f8b36711b")
   )
   (wire
     (pts
-      (xy 252.73 154.94)
-      (xy 246.38 154.94)
+      (xy 250.19 154.94)
+      (xy 243.84 154.94)
     )
     (stroke
       (width 0)
       (type default)
     )
-    (uuid "7d4a852d-ecf8-5f11-aea2-bbd0b29cf684")
+    (uuid "38f47c1f-b927-5c17-9afd-b180299e277f")
+  )
+  (wire
+    (pts
+      (xy 302.26 111.76)
+      (xy 281.94 111.76)
+    )
+    (stroke
+      (width 0)
+      (type default)
+    )
+    (uuid "b3169249-c53e-5dcd-b5d0-370f708971dc")
+  )
+  (wire
+    (pts
+      (xy 281.94 111.76)
+      (xy 281.94 162.56)
+    )
+    (stroke
+      (width 0)
+      (type default)
+    )
+    (uuid "51915fde-33af-5593-9470-3d77e849e1bf")
+  )
+  (wire
+    (pts
+      (xy 281.94 162.56)
+      (xy 257.81 162.56)
+    )
+    (stroke
+      (width 0)
+      (type default)
+    )
+    (uuid "e96bb276-d9bc-54b1-bc71-8a555740c6a6")
+  )
+  (wire
+    (pts
+      (xy 250.19 162.56)
+      (xy 243.84 162.56)
+    )
+    (stroke
+      (width 0)
+      (type default)
+    )
+    (uuid "ddb13351-2158-57c4-b74a-ebf9b4970aff")
   )
   (wire
     (pts
@@ -11211,7 +11377,7 @@
       (width 0)
       (type default)
     )
-    (uuid "31c437fe-faef-50f3-8035-f6257f9186e8")
+    (uuid "9c3ac28d-0e2d-56bb-a160-1b10fd15dcf5")
   )
   (wire
     (pts
@@ -11222,7 +11388,7 @@
       (width 0)
       (type default)
     )
-    (uuid "ba8a91fc-d3bb-5d33-99dd-2f7d3e253fed")
+    (uuid "c8c797a6-fdf3-55c6-8eb2-662c00afcf46")
   )
   (wire
     (pts
@@ -11233,7 +11399,7 @@
       (width 0)
       (type default)
     )
-    (uuid "d1c147f5-ca1c-58ec-b8a7-b82d5d99beef")
+    (uuid "df2060a4-12ed-5477-9b8d-3d9aed445f05")
   )
   (wire
     (pts
@@ -11244,7 +11410,7 @@
       (width 0)
       (type default)
     )
-    (uuid "638f656a-0d4b-5969-b5ed-c56a98fb3616")
+    (uuid "79a85ab5-9a0b-5f4c-91bb-038ce9af5dc7")
   )
   (wire
     (pts
@@ -11255,7 +11421,7 @@
       (width 0)
       (type default)
     )
-    (uuid "766f1246-2027-5489-9d98-48c7c0f9fd91")
+    (uuid "47afa63c-cc5a-507c-a3fa-f42da5875d3f")
   )
   (wire
     (pts
@@ -11266,7 +11432,7 @@
       (width 0)
       (type default)
     )
-    (uuid "400df198-ad50-511a-8e9a-faf3ae5566e6")
+    (uuid "17053f2a-8732-572d-87d2-0922df8c453b")
   )
   (wire
     (pts
@@ -11277,7 +11443,7 @@
       (width 0)
       (type default)
     )
-    (uuid "e0299857-24d0-5c20-a475-6a555eae1927")
+    (uuid "4d869e4b-ae8d-5b42-80be-24b8ec8d6dfa")
   )
   (wire
     (pts
@@ -11288,7 +11454,7 @@
       (width 0)
       (type default)
     )
-    (uuid "b2da9b07-9677-5162-913b-a6cd0b4c71fd")
+    (uuid "c06737e4-27fa-5ab1-8db1-489deab550e5")
   )
   (wire
     (pts
@@ -11299,7 +11465,7 @@
       (width 0)
       (type default)
     )
-    (uuid "19ee458f-24a8-56f2-bbb1-9430d95ada1a")
+    (uuid "b4a40c41-5e0f-5ff0-a0e0-f109dcacc9a2")
   )
   (wire
     (pts
@@ -11310,7 +11476,7 @@
       (width 0)
       (type default)
     )
-    (uuid "10c48756-ef7d-5f12-b030-17bdc79b593f")
+    (uuid "ac894d16-b2f9-5d44-9ab0-94e40c953658")
   )
   (wire
     (pts
@@ -11321,7 +11487,7 @@
       (width 0)
       (type default)
     )
-    (uuid "7a38a343-4f23-51d9-ae5b-1c2d3e46adec")
+    (uuid "ac8f03e6-edd2-59d8-a412-919bf43a1ce1")
   )
   (junction
     (at 33.02 68.58)
@@ -11706,10 +11872,6 @@
   (no_connect
     (at 213.36 147.32)
     (uuid "de22196c-8a60-5081-b282-1293764dd254")
-  )
-  (no_connect
-    (at 302.26 111.76)
-    (uuid "f25f911b-5538-59e1-9f14-c66bd831b34d")
   )
   (no_connect
     (at 302.26 114.3)
