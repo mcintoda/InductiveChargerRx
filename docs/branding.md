@@ -55,9 +55,8 @@ Details that keep the markings from hurting function:
 | JLC3DP MJF PP | Natural PP (translucent grey-white) | Natural or dyed grey |
 | Production (injection-molded PP) | Natural PP, light matte texture (VDI 24) except the sensing wall, which stays smooth | PP with a slate masterbatch matched to `#61798A` |
 
-Leave the debosses unpainted for the quiet look. For more contrast on the scale only, wipe ink-coloured enamel into the
-ticks and numbers and scrape off the excess.
+Leave the debosses unpainted for the quiet look.
 
 ## Files
-- `hardware/mech/brand.py`: name, palette, ripple mark, scale, waterline, coil outline (used by `enclosure.py`; set `BRANDING = False` for plain parts)
+- `hardware/mech/brand.py`: name, palette, ripple mark, alarm arrows, waterline, coil outline (used by `enclosure.py`; set `BRANDING = False` for plain parts)
 - `hardware/mech/brand_render.py`: regenerates `docs/img/brand_logo.svg/.png`, `brand_mockup.svg/.png` and `brand_cad_faces.png`
