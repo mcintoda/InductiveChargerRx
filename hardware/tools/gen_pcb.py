@@ -91,8 +91,18 @@ def text(layer, s, x, y, size=1.0, mirror=False):
 # --- board outline: body + thermal tab on a narrow neck --------------------
 tx0, tx1, ty0, ty1 = TAB
 nx0, nx1, ny0, ny1 = NECK
-poly_outline(pcbnew.Edge_Cuts, [(0, 0), (W_B, 0), (W_B, H_B), (nx1, H_B), (nx1, ny1), (tx1, ny1), (tx1, ty1),
-                                 (tx0, ty1), (tx0, ny1), (nx0, ny1), (nx0, H_B), (0, H_B)], 0.1)
+import math  # noqa: E402
+R_TOP = 5.5   # top corners rounded so the board passes the enclosure's R6 bore (hardware/mech)
+
+
+def arc_pts(cx, cy, r, a0, a1, n=10):
+    return [(cx + r * math.cos(math.radians(a0 + (a1 - a0) * i / n)),
+             cy + r * math.sin(math.radians(a0 + (a1 - a0) * i / n))) for i in range(n + 1)]
+
+
+poly_outline(pcbnew.Edge_Cuts, arc_pts(R_TOP, R_TOP, R_TOP, 180, 270) + arc_pts(W_B - R_TOP, R_TOP, R_TOP, 270, 360) +
+             [(W_B, H_B), (nx1, H_B), (nx1, ny1), (tx1, ny1), (tx1, ty1),
+              (tx0, ty1), (tx0, ny1), (nx0, ny1), (nx0, H_B), (0, H_B)], 0.1)
 
 # --- nets --------------------------------------------------------------------
 nets = {}

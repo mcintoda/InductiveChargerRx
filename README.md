@@ -12,6 +12,7 @@ overflows, and reports the water temperature.
 
 - [`docs/design.md`](docs/design.md): requirements, architecture, power budget, mechanics, firmware behaviour
 - [`docs/placement-and-electrodes.md`](docs/placement-and-electrodes.md): board placement study and electrode design (with field simulation)
+- [`docs/enclosure.md`](docs/enclosure.md): watertight enclosure (O-ring, no epoxy) with CAD in [`hardware/mech/`](hardware/mech/)
 - [`hardware/kicad/`](hardware/kicad/): KiCad 7 project (schematic rev A, placement-study PCB)
 - [`hardware/bom_jlc.csv`](hardware/bom_jlc.csv): JLCPCB assembly BOM (generated; LCSC numbers still to be filled)
 - [`hardware/tools/gen_schematic.py`](hardware/tools/gen_schematic.py): regenerates the schematic and BOM

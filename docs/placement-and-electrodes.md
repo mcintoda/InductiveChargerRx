@@ -38,7 +38,7 @@ How each merge was done:
 
 ![Front copper (water side)](img/pcb_front.png)
 
-Board: **38 × 102 mm body + 12 × 10 mm thermal tab**, 4 layers, 1.0 mm FR-4, all components on
+Board: **38 × 102 mm body + 12 × 10 mm thermal tab** (top corners R5.5 to pass the enclosure's O-ring bore), 4 layers, 1.0 mm FR-4, all components on
 the **back** (single-sided SMT at JLC). Height bands, from the top (dry) to the bottom (first to get wet):
 
 | Band (from top) | Height | Contents | Why here |
@@ -58,7 +58,7 @@ the **back** (single-sided SMT at JLC). Height bands, from the top (dry) to the 
 - **Pogo test pads**: 3V3, GND, EN, IO0, USB D+/D−, VBAT, RECT, used for programming before the battery is fitted.
 - **Battery** (603450, 1000 mAh, 6 × 34 × 50 mm) sits behind the electrode band. **Qi coil** (Ø30 mm) sits behind the battery against the back wall. Its ferrite faces the battery and shields it.
 
-**Stack in the electrode band** (front to back): wall 1.2 | PCB 1.0 | battery 6.0 | coil + ferrite 1.2 | back wall 1.5, giving about **12 mm**. Because the electronics band has no battery behind it, the module (2.4 mm) fits within the same envelope. Enclosure is about **44 × 118 × 14 mm**.
+**Stack in the electrode band** (front to back): wall 1.2 | PCB 1.0 | battery 6.0 | coil + ferrite 1.2 | foam 0.6 | back wall 1.5, giving **11.5 mm**. Because the electronics band has no battery behind it, the module (2.4 mm) fits within the same envelope. The enclosure ([enclosure.md](enclosure.md)) is **43.8 × 118 × 11.5 mm**, with an 8.8 mm cavity: PCB 1.0 + battery 6.0 + coil 1.2 + foam 0.6.
 
 **Checks run on the placement**: no courtyard overlaps, every part inside the outline, KiCad DRC shows
 no clearance / keep-out / footprint errors. Only unrouted nets, silkscreen cosmetics,
