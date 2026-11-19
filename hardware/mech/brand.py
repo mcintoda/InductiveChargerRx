@@ -2,12 +2,12 @@
 """Brand identity + industrial-design features for the bath monitor (rev B).
 
 All features are shallow debosses or grooves: no paint, inserts or glue required.
-  front (cup) : ripple mark + wordmark in the dry top band; a GRADUATED SCALE on both front
-                margins (tick at every electrode boundary over the 60 mm range, pad numbers 1-6,
-                alarm chevron at the default alarm level). Nothing is cut over the electrodes.
+  front (cup) : ripple mark + wordmark in the dry top band; a level SCALE on the left margin
+                (equal horizontal ticks at every electrode boundary, pad numbers 1-6) and an alarm
+                chevron on the right at the default alarm level. Nothing is cut over the electrodes.
   sides (cup) : a WATERLINE groove around both long sides at the default alarm level.
-  back (plug) : ripple mark + wordmark, the Qi COIL OUTLINE (dashed 30 mm circle + 4 alignment
-                ticks, exactly over the coil), "charge this side", rating line.
+  back (plug) : ripple mark + wordmark, the Qi COIL OUTLINE (one 30 mm ring exactly over the coil),
+                "Qi" / "charge this side", rating line.
 The same 2-D geometry drives the CAD and the SVG logo, so they always match.
 """
 import math
@@ -82,10 +82,9 @@ def scale_geometry(E):
     return x_in, x_out
 
 
-def tick(x0, x1, y, w, depth, drop=0.5):
-    """Tick from x0 to x1 (|x1| > |x0|), falling by `drop` mm towards the outer edge so water drains."""
-    pts = [(x0, y + w / 2), (x1, y + w / 2 - drop), (x1, y - w / 2 - drop), (x0, y - w / 2)]
-    return cq.Workplane("XY").polyline(pts).close().extrude(depth)
+def tick(x0, x1, y, w, depth):
+    """Level horizontal tick from x0 to x1."""
+    return cq.Workplane("XY").center((x0 + x1) / 2, y).rect(abs(x1 - x0), w).extrude(depth)
 
 
 # ---------------- features ----------------
@@ -97,16 +96,12 @@ def front_features(E):
     feats.append(front(text_solid(NAME, 6.5, DEBOSS), 0, y_word))
     ticks, centres = pad_levels(E)
     x_in, x_out = scale_geometry(E)
-    for i, y in enumerate(ticks):
-        major = i in (0, len(ticks) - 1)
-        for side in (-1, 1):
-            if side == -1 and i == len(ticks) - 1:
-                continue                         # alarm chevron instead (below)
-            x1 = x_out if major else x_in + 0.62 * (x_out - x_in)
-            feats.append(tick(side * x_in, side * x1, y, 0.5, DEBOSS))
+    # one clean scale on the viewer's LEFT margin (device +X): equal, level ticks at every pad boundary
+    for y in ticks:
+        feats.append(tick(x_in, x_in + 1.8, y, 0.5, DEBOSS))
     # pad numbers on the viewer's left margin (seen from the front, device +X is on the viewer's left)
     for k, y in enumerate(centres, 1):
-        feats.append(front(text_solid(str(k), 2.4, DEBOSS, FONT_SMALL), (x_in + x_out) / 2, y))
+        feats.append(front(text_solid(str(k), 2.2, DEBOSS, FONT_SMALL), x_in + 0.9, y))   # same column as the ticks
     # default alarm chevron on the viewer's right, tip at the alarm line
     y_alarm = ticks[-1]
     tip = x_in
@@ -136,20 +131,10 @@ def back_features(E):
     feats.append(back(ripple_solid(12.0, DEBOSS), 0, y_mark, z))
     feats.append(back(text_solid(NAME, 6.0, DEBOSS), 0, y_word, z))
     feats.append(back(text_solid(TAGLINE, 2.6, DEBOSS, FONT_SMALL), 0, y_tag, z))
-    # Qi coil outline: dashed circle at the coil's 30 mm OD + 4 alignment ticks
+    # Qi coil outline: one continuous ring at the coil's 30 mm outside diameter
     _, yc = E.pcb_to_dev(19.0, 70.0)
-    r, st, n = 15.0, 0.55, 24
-    for i in range(n):
-        if i % 2:
-            continue
-        a0, a1 = 2 * math.pi * i / n, 2 * math.pi * (i + 1) / n
-        pts = [((r + st / 2) * math.cos(a0 + (a1 - a0) * t / 6), (r + st / 2) * math.sin(a0 + (a1 - a0) * t / 6)) for t in range(7)]
-        pts += [((r - st / 2) * math.cos(a1 - (a1 - a0) * t / 6), (r - st / 2) * math.sin(a1 - (a1 - a0) * t / 6)) for t in range(7)]
-        feats.append(back(cq.Workplane("XY").polyline(pts).close().extrude(DEBOSS), 0, yc, z))
-    for ang in (0, 90, 180, 270):
-        ca, sa = math.cos(math.radians(ang)), math.sin(math.radians(ang))
-        seg = cq.Workplane("XY").center((r + 2.3) * ca, (r + 2.3) * sa).rect(2.4 if ca else 0.55, 0.55 if ca else 2.4).extrude(DEBOSS)
-        feats.append(back(seg, 0, yc, z))
+    ring = cq.Workplane("XY").circle(15.0 + 0.25).circle(15.0 - 0.25).extrude(DEBOSS)
+    feats.append(back(ring, 0, yc, z))
     feats.append(back(text_solid("Qi", 3.2, DEBOSS), 0, yc + 1.2, z))
     feats.append(back(text_solid("charge this side", 2.4, DEBOSS, FONT_SMALL), 0, yc - 3.2, z))
     _, y_rate = E.pcb_to_dev(19.0, 106.0)
