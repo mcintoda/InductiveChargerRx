@@ -14,6 +14,7 @@ overflows, and reports the water temperature.
 
 - [`docs/design.md`](docs/design.md): requirements, architecture, power budget, mechanics, firmware behaviour
 - [`docs/placement-and-electrodes.md`](docs/placement-and-electrodes.md): board placement study and electrode design (with field simulation)
+- [`docs/sensing-infographic.html`](docs/sensing-infographic.html): interactive explainer of how the level and temperature sensing work electrically
 - [`docs/branding.md`](docs/branding.md): name, mark, palette, and the debossed design features on the enclosure
 - [`docs/enclosure.md`](docs/enclosure.md): watertight enclosure (O-ring, no epoxy) with CAD in [`hardware/mech/`](hardware/mech/)
 - [`hardware/kicad/`](hardware/kicad/): KiCad 7 project (schematic rev A, placement-study PCB)
