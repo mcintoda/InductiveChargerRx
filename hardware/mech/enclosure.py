@@ -43,7 +43,8 @@ BATT_T = 4.0                                      # Li-ion 403040, 500 mAh (4.0 
 STACK = PCB_T + BATT_T + 1.2 + 1.2                # PCB + battery + coil + foam (1.6 mm PORON -> 1.2) = 7.4
 DEPTH = T_FRONT + STACK + T_BACK                  # overall thickness 11.5
 OUT_W, OUT_L, OUT_R = CAV_W + 2 * T_SIDE, CAV_L + 2 * T_SIDE, CAV_R + T_SIDE
-EDGE_FILLET = 1.5
+EDGE_FILLET = 2.5                                 # soft front edge (sensing wall stays flat inside it)
+FRONT_ROUND = EDGE_FILLET
 
 # plug / radial gland (ISO 3601-style starting values for CS 1.5 mm, static radial)
 ORING_CS, ORING_ID = 1.5, 90.0
@@ -105,7 +106,7 @@ def make_cup():
                    .center(sy, SCREW_Z).circle(2.0).extrude(-side * 1.0, taper=45))
             cup = cup.cut(hole).cut(csk)
     if BRANDING:
-        for f in brand.front_features(sys.modules[__name__]):
+        for f in brand.front_features(sys.modules[__name__]) + brand.side_features(sys.modules[__name__]):
             cup = cup.cut(f)
     return cup
 
