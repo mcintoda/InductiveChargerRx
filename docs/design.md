@@ -1,4 +1,4 @@
-# Bath Monitor — System Design (rev A)
+# Bath Monitor — System Design (rev B)
 
 A sealed, wirelessly charged device that suction-mounts inside the bathtub,
 senses the water level **through its plastic wall** (no electrical contact with
@@ -14,7 +14,7 @@ alert to an iPhone over Wi-Fi before the tub overflows.
 | R1 | Detect water reaching a user-chosen level | 6-segment capacitive ladder behind the front wall. Any segment can be the alarm level, and the lower segments give an early warning and a fill-rate estimate |
 | R2 | Non-contact water sensing | Electrodes sit on the PCB inside the enclosure and sense through a 1.2 mm plastic wall. No metal touches the water |
 | R3 | Accurate water temperature | TI TMP117 (±0.1 °C, −20…50 °C) on a thermally isolated PCB tongue behind a thin wall window |
-| R4 | iOS notification, no BLE pairing | Wi-Fi → HTTPS push via **Pushover** (supports iOS Critical Alerts and repeats until acknowledged), with **ntfy** as a free alternative. No custom app |
+| R4 | iOS notification, no BLE pairing, free | Wi-Fi → HTTPS POST to **ntfy** (free, open-source, iOS app on the App Store). No account, no custom app, no server to run |
 | R5 | Fully waterproof | Sealed enclosure (IP68 target) with no connectors, buttons or holes |
 | R6 | Wireless recharging | Qi-compatible receiver, so it charges on any standard Qi pad |
 | R7 | Safe for skin contact | ≤4.2 V internal, no exposed conductors, body-safe plastics and silicone, protected Li-ion cell with temperature-monitored charging |
@@ -26,7 +26,7 @@ alert to an iPhone over Wi-Fi before the tub overflows.
 - **Display or physical buttons.** Phone notifications cover it, and buttons break the seal.
 - **USB port.** It's a water path. Firmware updates go over Wi-Fi (OTA). Factory programming uses test pads before sealing.
 - **Separate capacitance-to-digital IC (e.g. FDC1004).** The ESP32-S3's touch peripheral has a hardware *shield driver* designed for water rejection, and it can wake the chip from deep sleep. The FDC1004 would add about $3, an I²C device, and ~29 µA of standby current.
-- **Accelerometer, buzzer or RGB LED.** An optional piezo footprint can be added later if a local audible alarm is wanted.
+- **Accelerometer, buzzer or RGB LED.** The owner decided against a local beeper (rev B).
 
 ---
 
@@ -63,7 +63,7 @@ alert to an iPhone over Wi-Fi before the tub overflows.
          │ Li-ion 1S      │        │  GPIO ──► sensor power       │
          │ ~500 mAh + PCM │        │  ADC  ◄── VBAT/2             │
          └───────┬────────┘        │  GPIO ──► status LED         │
-                 │ VBAT            │  Wi-Fi ⇢ router ⇢ Pushover   │
+                 │ VBAT            │  Wi-Fi ⇢ router ⇢ ntfy.sh     │
          ┌───────▼────────┐  3V3   │          ⇢ iPhone            │
          │ LDO 3.3 V,     ├───────►│                              │
          │ Iq ≈ 2 µA      │        └──────────────────────────────┘
@@ -150,7 +150,7 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 - **Mounting: a two-part design.** A small *bracket* with two silicone suction cups stays stuck to the tub wall, and the *sensor* slides into it (a snap rail with no metal and no magnets, since magnets disturb Qi).
   - Positioning the bracket once sets the alarm height, so you take the sensor out to charge without moving the bracket.
   - The sensor's back stays flat, so the coil sits within ~2 mm of the Qi pad.
-- **Antenna at the top**, ≥20 mm above the top pad, so it stays above water. Water strongly absorbs 2.4 GHz, so mount the bracket with the top of the device above the overflow rim. If the RSSI is weak (steel tub, distant router), switch to the ESP32-S3-MINI-1**U** with a short internal antenna routed to the top cap.
+- **Antenna at the top**, ≥20 mm above the top pad, so it stays above water. Water strongly absorbs 2.4 GHz, so mount the bracket with the top of the device above the overflow rim. The owner's tub is **acrylic**, which is RF-transparent and smooth, so it's ideal for suction cups. If the RSSI is still weak (distant router), switch to the ESP32-S3-MINI-1**U** with a short internal antenna routed to the top cap.
 - **Sealing**:
   - Prototype: two shells with a silicone O-ring in a groove and A4 (316) stainless screws, or a bonded seam with a marine silicone sealant.
   - Production: ultrasonic weld (no screws).
@@ -196,7 +196,7 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 **Notifications (examples)**
 - `Bath filling — 37.8 °C` (optional, off by default)
 - `Bath nearly full — ~2 min to target, 39.1 °C`
-- 🔴 `BATH AT TARGET LEVEL — turn off the tap. 39.4 °C` (Critical Alert, repeats until acknowledged)
+- 🔴 `BATH AT TARGET LEVEL — turn off the tap. 39.4 °C` (urgent priority, repeats every 60 s while still rising)
 - `Water too hot: 43.0 °C` (threshold configurable, default 42 °C)
 - `Sensor detached / submerged` (all pads wet within one sample, which means it fell in)
 - `Bath monitor battery low (18 %)`
@@ -205,7 +205,7 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 
 **Setup (no app, no pairing)**
 1. On first power-up, or after a reset, the device starts an access point called `BathMonitor-XXXX` with a captive portal.
-2. The iPhone joins it, and a page asks for the Wi-Fi network, Pushover user/app key (or ntfy topic), the alarm pad and the temperature limit.
+2. The iPhone joins it, and a page asks for the Wi-Fi network, the alarm pad and the temperature limit. It then shows the generated ntfy topic as a subscribe link.
 3. Afterwards, settings are at `http://bathmonitor.local` whenever the device is on the Qi pad.
 4. **Factory reset with no buttons:** put it on the pad and lift it off 3 times within 15 s.
 
@@ -214,10 +214,14 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 - Each pad's wet/dry threshold is set at 50 % of the dry→wet delta measured during the first bath. A per-pad "learn" step is also available on the settings page.
 - The capacitance drift with temperature is compensated using the TMP117 reading.
 
-**Notification transport**
-- Pushover: an HTTPS POST to `api.pushover.net`. Priority 2 gives an emergency alert that repeats until acknowledged. Pushover is a one-time ~$5 iOS purchase.
-- ntfy: an HTTPS POST to `ntfy.sh/<topic>`. It's free, but there are no iOS Critical Alerts.
-- Both are fire-and-forget from the device. No server to run.
+**Notification transport: ntfy (owner's choice, rev B)**
+- The device sends an HTTPS POST to `https://ntfy.sh/<topic>`, with headers `Title`, `Priority` and `Tags`. The iPhone subscribes to the same topic in the free ntfy iOS app.
+- The topic name acts as the password. Setup generates a long random one (e.g. `bath-7f3k9q2m…`) and shows it as a QR code / link to subscribe.
+- **Limitation: ntfy can't send iOS Critical Alerts** (Apple only grants those to approved apps), so it won't sound through Silent or Focus. The firmware makes up for this:
+  - The alarm notification uses priority `5` (urgent).
+  - It **repeats every 60 s while the alarm pad stays wet and the level keeps rising**, for up to 15 min. It stops automatically once the level stops rising (tap turned off).
+  - The setup guide tells the user to allow ntfy in their Focus modes and to enable its sound.
+- If ntfy.sh is ever unwanted, the same firmware works with a self-hosted ntfy server (just change the URL).
 - To speed up reconnecting, the device stores the BSSID and channel in RTC memory and uses a static IP if configured, giving ~1 s connects.
 
 ---
@@ -259,8 +263,10 @@ With 500 mAh, that's about **6–7 months between charges** at one bath per day.
 5. **Ingress.** 1 h at 0.5 m, plus 20 hot/cold cycles (15 °C ↔ 45 °C) to stress the seal.
 6. **Power.** Use a Nordic PPK2 or similar to measure deep-sleep current and the charge consumed per bath.
 
-## 9. Open decisions for the owner
-- The alarm-level range is 60 mm. Is that enough, or should the ladder be longer?
-- Pushover (critical alerts, one-time $5) or ntfy (free)? Firmware can support both.
-- Do you want an optional piezo beeper for a local alarm?
-- What is the tub material (acrylic, steel or cast iron)? It affects the antenna and suction-cup choice.
+## 9. Decisions log
+| Date | Decision |
+|------|----------|
+| 2026-11-19 | 60 mm alarm-level range: accepted |
+| 2026-11-19 | Notifications: ntfy (free). Pushover dropped |
+| 2026-11-19 | No local beeper |
+| 2026-11-19 | Tub is acrylic, so the PCB antenna module stays (no -1U variant needed) and standard silicone suction cups are used |
