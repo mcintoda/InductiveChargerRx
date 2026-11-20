@@ -176,7 +176,7 @@ place("U1", W_B / 2, 10.35)            # S3 body top (-10.35 in the footprint) o
 # Qi receiver/charger column (left), next to the coil pads
 place("U2", 5.6, 12.6)
 pack(["C7", "C9", "C5", "C8", "C10", "C6"], 0.6, 5.6, 10.9, 10.4)
-pack(["C1", "C2", "C3", "C4", "C11", "C21", "C12", "C13", "C22", "R1", "R2", "R3"], 0.6, 15.5, 10.9, 25.2, gap=0.25)
+pack(["C1", "C2", "C3", "C23", "C4", "C11", "C21", "C12", "C13", "C22", "R1", "R2", "R3"], 0.6, 15.5, 10.9, 25.2, gap=0.25)
 # power / housekeeping column (right)
 place("U4", 32.3, 7.6)
 pack(["C14", "C15", "C17", "C18", "R9", "C19", "Q1", "R4", "R5", "R6", "R7", "R8", "C16",

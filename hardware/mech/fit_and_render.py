@@ -4,7 +4,7 @@
 Internal parts are modelled as simple solids at their real positions:
   PCB 38 x 112 x 1.0 (top corners R5.5) pressed on the front wall,
   ESP32-S3-MINI-1 module 15.4 x 20.65 x 2.4 (KiCad outline) on the back of the PCB,
-  Li-ion 403040 (30 x 40 x 4) behind the electrode band, Qi coil 30 x 1.2 behind the battery,
+  Li-ion 403040 (30 x 40 x 4) behind the electrode band, Qi coil TDK WR303050 (30 x 29.6 x 0.94) behind the battery,
   1.2 mm (compressed) foam between coil and plug, and a 1.35 mm-tall envelope for all other
   back-side components (0805 is the tallest passive) across the electronics band.
 
@@ -46,7 +46,7 @@ def parts():
     mx, my = E.pcb_to_dev(19.0, 20.65 / 2)          # body top on the PCB edge
     bx, by = E.pcb_to_dev(19.0, 70.0)
     batt = box(bx, by, 30.0, 40.0, Z_BACK_PCB, E.BATT_T)
-    coil = cq.Workplane("XY").workplane(offset=Z_BACK_PCB + E.BATT_T).center(bx, by).circle(15.0).extrude(1.2)
+    coil = box(bx, by, 30.0, 29.6, Z_BACK_PCB + E.BATT_T, 0.94)          # TDK WR303050-12F5-ID
     foam = cq.Workplane("XY").workplane(offset=Z_BACK_PCB + E.BATT_T + 1.2).center(bx, by).circle(15.0).extrude(1.15)
     # passives envelope: electronics band (PCB y 4.6..29.5), full width, minus the module footprint
     ex, ey = E.pcb_to_dev(19.0, (4.6 + 29.5) / 2)

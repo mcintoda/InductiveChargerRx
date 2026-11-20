@@ -44,7 +44,7 @@ C100N = ("100nF", "50V X7R", C0603)
 C22N = ("22nF", "50V X7R", C0402)
 C10N = ("10nF", "50V X7R", C0402)
 C470N = ("470nF", "25V X7R", C0603)
-C2N7 = ("2.7nF", "50V C0G", C0603)
+C3N3 = ("3.3nF", "50V C0G", C0603)
 C1U = ("1uF", "25V X5R", C0402)
 C10U = ("10uF", "25V X5R", C0805)
 R1K, R10K, R1M, R196 = "1k 1%", "10k 1%", "1M 1%", "196R 1%"
@@ -196,14 +196,14 @@ W(pin("U2", "2"), (XB, UY), (XB, UY - 27.94))           # AC1 bus
 W(pin("U2", "19"), (XB, UY + 10.16), (XB, UY + 35.56))  # AC2 bus
 
 # resonant tank: series C1 (3 caps in parallel) + parallel C2, Rx coil
-C("C4", C2N7, XB - 7.62, UY + 3.81, 0, "AC1", "AC2", Note="Parallel detection cap C_d (~1 MHz, tune)")
+C("C4", C3N3, XB - 7.62, UY + 3.81, 0, "AC1", "AC2", Note="C_d = 1/((2pi 1MHz)^2 Ls - 1/C_s) = 3.1 nF for Ls 8.23 uH; bench-tune")
 W(pin("C4", "2"), (XB - 7.62, UY + 10.16))
-for ref, val, dy in [("C1", C100N, 0), ("C2", C100N, -7.62), ("C3", C22N, -15.24)]:
-    C(ref, val, 38.1, UY + dy, 90, "COIL_A", "AC1", Note="Series resonant cap C_s = 100n+100n+22n = 222 nF (tune to coil)")
+for ref, val, dy in [("C1", C100N, 0), ("C2", C100N, -7.62), ("C3", C100N, -15.24), ("C23", C10N, -22.86)]:
+    C(ref, val, 38.1, UY + dy, 90, "COIL_A", "AC1", Note="Series resonant cap C_s = 3 x 100n + 10n = 310 nF -> 99.6 kHz with Ls' 8.23 uH (bench-tune)")
     W(pin(ref, "2"), (43.18, UY + dy)); W(pin(ref, "1"), (33.02, UY + dy))
-W((XB, UY), pin("C1", "2")); W((43.18, UY - 15.24), (43.18, UY)); W((33.02, UY - 15.24), (33.02, UY))
-P("L1", "Device:L", "Qi Rx coil 11uH", "Connector_Wire:SolderWire-0.1sqmm_1x02_P3.6mm_D0.4mm_OD1mm",
-  25.4, UY + 3.81, 0, {"1": "COIL_A", "2": "AC2"}, text=((0, 8.89, None), (0, 11.43, None)), Note="Qi receiver coil ~11 uH, ferrite backed, <=32 mm; leads hand-soldered")
+W((XB, UY), pin("C1", "2")); W((43.18, UY - 22.86), (43.18, UY)); W((33.02, UY - 22.86), (33.02, UY))
+P("L1", "Device:L", "TDK WR303050-12F5-ID", "Connector_Wire:SolderWire-0.1sqmm_1x02_P3.6mm_D0.4mm_OD1mm",
+  25.4, UY + 3.81, 0, {"1": "COIL_A", "2": "AC2"}, text=((0, 8.89, None), (0, 11.43, None)), MPN="TDK WR303050-12F5-ID", LCSC="C6357742", Note="Qi Rx coil 8.23 uH @100 kHz, 30 x 29.6 x 0.94 mm, 0.28 ohm; tabs hand-soldered")
 W(pin("C1", "1"), pin("L1", "1")); W(pin("L1", "2"), (25.4, UY + 10.16), (XB, UY + 10.16))
 
 # right side of the BQ51050B
