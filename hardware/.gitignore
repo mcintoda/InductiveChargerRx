@@ -1,3 +1,6 @@
 fab/
 kicad/route/*.ses
 kicad/route/drc.rpt
+kicad/route/fr.log
+kicad/route/logs/
+kicad/route/freerouting.json
