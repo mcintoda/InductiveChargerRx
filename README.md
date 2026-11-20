@@ -16,6 +16,9 @@ overflows, and reports the water temperature.
 - [`docs/placement-and-electrodes.md`](docs/placement-and-electrodes.md): board placement study and electrode design (with field simulation)
 - [`docs/sensing-infographic.html`](docs/sensing-infographic.html): interactive explainer of how the level and temperature sensing work electrically
 - [`docs/branding.md`](docs/branding.md): name, mark, palette, and the debossed design features on the enclosure
+- [`docs/pcb-routing.md`](docs/pcb-routing.md): routing pipeline and JLC order settings
+- [`docs/bring-up.md`](docs/bring-up.md): bench test plan for the first boards
+- [`firmware/`](firmware/): ESP-IDF firmware (ESP32-S3) with host unit tests
 - [`docs/enclosure.md`](docs/enclosure.md): watertight enclosure (O-ring, no epoxy) with CAD in [`hardware/mech/`](hardware/mech/)
 - [`hardware/kicad/`](hardware/kicad/): KiCad 7 project (schematic rev A, placement-study PCB)
 - [`hardware/bom_jlc.csv`](hardware/bom_jlc.csv): JLCPCB assembly BOM (generated; LCSC numbers still to be filled)
