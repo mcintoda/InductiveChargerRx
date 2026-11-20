@@ -31,3 +31,5 @@ make -C test          # level estimation, film rejection, drift, fill rate, alar
    The page shows the ntfy topic: subscribe to it in the free ntfy iOS app.
 2. While on the Qi charger, the same page is at the device's IP on your network for 10 minutes.
 3. Factory reset: put it on the charger 3 times within 20 s.
+4. Level sensing (settings page): `Touch` (ratiometric, default), `FDC1004` (boards with U5 fitted) or `Compare`.
+   Compare logs `CMP,...` lines on the USB console for the bench protocol in `docs/sensing-options.md`.

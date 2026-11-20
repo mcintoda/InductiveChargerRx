@@ -117,7 +117,7 @@ static const char *PAGE_HEAD =
 
 static esp_err_t page_root(httpd_req_t *req)
 {
-    char buf[2400];
+    char buf[3000];
     const settings_t *s = s_settings;
     int n = snprintf(buf, sizeof(buf), "%s", PAGE_HEAD);
     if (s_status)
@@ -136,9 +136,14 @@ static esp_err_t page_root(httpd_req_t *req)
                   "</select></label><label>Hot-water warning above (&deg;C)<input name=tlim type=number step=0.5 min=30 "
                   "max=50 value=%.1f></label><label><input name=fill type=checkbox style='width:auto'%s> Also tell me when "
                   "a bath starts filling</label><label>ntfy server<input name=host value='%s'></label>"
+                  "<label>Level sensing<select name=sense><option value=0%s>Touch (ratiometric)</option>"
+                  "<option value=1%s>FDC1004</option><option value=2%s>Compare: log both, alarm from touch</option>"
+                  "</select></label>"
                   "<p>Notifications go to topic <code>%s</code>. In the ntfy app tap + and subscribe to it.</p>"
                   "<button>Save</button></form>",
-                  s->temp_limit_c, s->notify_filling ? " checked" : "", s->ntfy_host, s->topic);
+                  s->temp_limit_c, s->notify_filling ? " checked" : "", s->ntfy_host,
+                  s->sense_mode == SENSE_TOUCH ? " selected" : "", s->sense_mode == SENSE_FDC ? " selected" : "",
+                  s->sense_mode == SENSE_COMPARE ? " selected" : "", s->topic);
     if (s_status)
         n += snprintf(buf + n, sizeof(buf) - n,
                       "<h3>Firmware update</h3><form method=post action=/update enctype=application/octet-stream "
@@ -161,6 +166,7 @@ static esp_err_t page_save(httpd_req_t *req)
     if (form_get(body, "pad", v, sizeof(v))) { int p = atoi(v); if (p >= 1 && p <= 6) s->alarm_pad = p; }
     if (form_get(body, "tlim", v, sizeof(v))) { float t = strtof(v, NULL); if (t >= 30 && t <= 50) s->temp_limit_c = t; }
     s->notify_filling = form_get(body, "fill", v, sizeof(v));
+    if (form_get(body, "sense", v, sizeof(v))) { int m = atoi(v); if (m >= SENSE_TOUCH && m <= SENSE_COMPARE) s->sense_mode = m; }
     if (!s->topic[0]) settings_new_topic(s->topic, sizeof(s->topic));
     settings_save(s);
     s_saved = true;

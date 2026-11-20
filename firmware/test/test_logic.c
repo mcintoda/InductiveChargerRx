@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../main/fdclevel.h"
 #include "../main/level.h"
 #include "../main/policy.h"
 #include "../main/rate.h"
@@ -14,6 +15,8 @@ static int fails, checks;
 // --- pad model: linear over the pad with ~1 mm fringe each side (matches electrode_sim.py) ---
 static const float BASE[LVL_CH] = {20000, 19500, 19800, 20200, 19900, 20100, 15000};
 static const float FULL_FRAC[LVL_CH] = {0.30f, 0.32f, 0.31f, 0.33f, 0.32f, 0.31f, 0.21f};   // true wet gains
+
+static float g_wet_scale = 1.0f;   // return-path coupling: scales every wet pad together
 
 static float frac_model(float level, float bottom, float h)
 {
@@ -26,7 +29,7 @@ static void sample(float level, float drift, float film_pad, float film_frac, ui
     for (int k = 0; k < LVL_PADS; k++) {
         float f = frac_model(level, k * 10.0f, 9.0f);
         if (k == (int)film_pad) f = fmaxf(f, film_frac);
-        raw[k] = (uint32_t)(BASE[k] * (1 + drift) + BASE[k] * FULL_FRAC[k] * f);
+        raw[k] = (uint32_t)(BASE[k] * (1 + drift) + BASE[k] * FULL_FRAC[k] * f * g_wet_scale);
     }
     float fr = frac_model(level, 63.0f, 6.0f);
     raw[LVL_REF] = (uint32_t)(BASE[LVL_REF] * (1 + drift) + BASE[LVL_REF] * FULL_FRAC[LVL_REF] * fr);
@@ -75,6 +78,63 @@ static void test_level(void)
     r = lvl_compute(&cal, raw);
     CHECK(r.all_wet && r.ref_wet && fabsf(r.level_mm - 60) < 0.01f && r.top_full == 6, "submerged: all %d ref %d (%.2f) level %.1f top %d", r.all_wet, r.ref_wet, r.raw_frac[LVL_REF], r.level_mm, r.top_full);
     CHECK(fabsf(lvl_pad_top_mm(6) - 59) < 0.01f && fabsf(lvl_pad_top_mm(1) - 9) < 0.01f, "pad tops");
+}
+
+static float worst_error(lvl_cal_t *cal)
+{
+    uint32_t raw[LVL_CH];
+    float worst = 0;
+    for (float L = 12; L <= 58; L += 0.5f) {   // above PAD1: below it there is no wet pad to refer to
+        sample(L, 0, -1, 0, raw);
+        lvl_result_t r = lvl_compute(cal, raw);
+        if (fabsf(r.level_mm - L) > worst) worst = fabsf(r.level_mm - L);
+    }
+    return worst;
+}
+
+static void test_return_path(void)
+{
+    // learn on one fill, then change the water's coupling back to the device (a person gets in,
+    // different water level around the case, salts): every wet pad reads 15 % lower / higher
+    for (int mode = 0; mode < 2; mode++) {
+        lvl_cal_t cal; uint32_t raw[LVL_CH];
+        g_wet_scale = 1.0f;
+        sample(-10, 0, -1, 0, raw); lvl_cal_init(&cal, raw); cal.ratiometric = mode;
+        for (float L = -5; L <= 62; L += 0.5f) { sample(L, 0, -1, 0, raw); lvl_compute(&cal, raw); }
+        lvl_cal_t snap = cal;
+        float e[3]; float sc[3] = {0.85f, 1.0f, 1.15f};
+        for (int i = 0; i < 3; i++) { cal = snap; g_wet_scale = sc[i]; e[i] = worst_error(&cal); }
+        g_wet_scale = 1.0f;
+        printf("  %-12s worst error  x0.85: %5.2f mm   x1.00: %5.2f mm   x1.15: %5.2f mm\n",
+               mode ? "ratiometric" : "learned-only", e[0], e[1], e[2]);
+        if (mode) CHECK(e[0] < 2.0f && e[2] < 2.0f, "ratiometric should cancel a 15 %% return-path change");
+    }
+}
+
+// FDC1004 model in pF: base includes the ESP32 pin / trace parasitics on the shared nets
+static void fdc_sample(float level, float s, float drift, float pf[FDC_CH])
+{
+    const float base[FDC_CH] = {25.0f, 24.0f, 24.5f, 20.0f}, full[FDC_CH] = {5.5f, 5.8f, 5.8f, 3.9f};
+    const float bottom[FDC_CH] = {0, 40, 50, 63}, h[FDC_CH] = {9, 9, 9, 6};
+    for (int i = 0; i < FDC_CH; i++) pf[i] = base[i] * (1 + drift) + full[i] * frac_model(level, bottom[i], h[i]) * s;
+}
+
+static void test_fdc(void)
+{
+    float sc[3] = {0.85f, 1.0f, 1.15f};
+    for (int i = 0; i < 3; i++) {
+        fdc_cal_t c; float pf[FDC_CH]; float worst = 0; int alarm6_at = -1;
+        fdc_sample(-10, sc[i], 0, pf); fdc_cal_init(&c, pf); fdc_bath_start(&c);
+        for (float L = 0; L <= 62; L += 0.5f) {
+            fdc_sample(L, sc[i], 0.01f, pf);           // + 1 % common drift, compensated by REF
+            fdc_result_t r = fdc_level(&c, pf);
+            if (L >= 41 && L <= 58 && fabsf(r.level_mm - L) > worst) worst = fabsf(r.level_mm - L);
+            if (r.top_full == 6 && alarm6_at < 0) alarm6_at = (int)(L * 10);
+        }
+        printf("  FDC x%.2f: worst error 41..58 mm = %.2f mm, pad-6 'full' at %.1f mm\n", sc[i], worst, alarm6_at / 10.0);
+        CHECK(worst < 2.0f, "FDC level error %.2f mm at scale %.2f", worst, sc[i]);
+        CHECK(alarm6_at >= 570 && alarm6_at <= 600, "FDC pad-6 alarm at %.1f mm", alarm6_at / 10.0);
+    }
 }
 
 static void test_rate(void)
@@ -149,6 +209,8 @@ static void test_policy(void)
 int main(void)
 {
     printf("level\n"); test_level();
+    printf("return path\n"); test_return_path();
+    printf("fdc1004\n"); test_fdc();
     printf("rate\n"); test_rate();
     printf("policy\n"); test_policy();
     printf("%d/%d checks passed\n", checks - fails, checks);

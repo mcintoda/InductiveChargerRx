@@ -15,6 +15,9 @@ void lvl_cal_init(lvl_cal_t *cal, const uint32_t raw[LVL_CH])
         cal->full[k] = cal->base[k] * LVL_DEFAULT_FULL_FRAC * area;
     }
     cal->valid = true;
+    cal->ratiometric = true;
+    for (int k = 1; k < LVL_PADS; k++) cal->rgain[k] = cal->full[k] / cal->full[k - 1];
+    cal->rgain[0] = 1.0f;
 }
 
 void lvl_track_dry(lvl_cal_t *cal, const uint32_t raw[LVL_CH], float alpha)
@@ -30,9 +33,10 @@ float lvl_pad_top_mm(int pad)
     return (pad - 1) * LVL_PITCH_MM + LVL_PAD_H_MM;
 }
 
-uint32_t lvl_wake_threshold(const lvl_cal_t *cal)
+uint32_t lvl_wake_threshold(const lvl_cal_t *cal, int pad)
 {
-    return (uint32_t)(cal->full[0] * 0.5f);   // the sleep FSM compares (raw - benchmark) to this
+    if (pad < 1 || pad > LVL_PADS) pad = 1;
+    return (uint32_t)(cal->full[pad - 1] * 0.5f);   // the sleep FSM compares (raw - benchmark) to this
 }
 
 static void learn_full(lvl_cal_t *cal, int k, float delta)
@@ -60,9 +64,31 @@ lvl_result_t lvl_compute(lvl_cal_t *cal, const uint32_t raw[LVL_CH])
         delta[k] = (float)raw[k] - cal->base[k] * (1.0f + r.drift);
         r.raw_frac[k] = clampf(delta[k] / cal->full[k], 0, 1);
     }
+    // live reference: the pad below is fully wet once the water is clearly into pad k (or k-1)
+    float ratio_frac[LVL_PADS];
+    for (int k = 0; k < LVL_PADS; k++) {
+        ratio_frac[k] = r.raw_frac[k];
+        if (!cal->ratiometric || k == 0) continue;
+        int j = -1;
+        if (r.raw_frac[k] > 0.25f) j = k - 1;
+        else if (k >= 2 && r.raw_frac[k - 1] > 0.25f) j = k - 2;
+        if (j >= 0 && delta[j] > 0.3f * cal->full[j]) {
+            float g = 1.0f;
+            for (int i = j + 1; i <= k; i++) g *= cal->rgain[i];
+            ratio_frac[k] = clampf(delta[k] / (delta[j] * g), 0, 1);
+        }
+    }
+    // PAD1 has no pad below it: as soon as pad 2 (index 1) sees water, PAD1 is full by definition
+    if (cal->ratiometric && r.raw_frac[1] > 0.08f) ratio_frac[0] = 1.0f;
     // learn each pad's full-wet value once the water is clearly above it
     for (int k = 0; k < LVL_PADS - 1; k++)
         if (r.raw_frac[k + 1] > 0.3f && r.raw_frac[k] > 0.8f) learn_full(cal, k, delta[k]);
+    // learn pad-to-pad gain ratios from simultaneous readings (independent of the return-path scale)
+    for (int k = 1; k < LVL_PADS - 1; k++)
+        if (r.raw_frac[k + 1] > 0.3f && delta[k - 1] > 0.3f * cal->full[k - 1]) {
+            float g = delta[k] / delta[k - 1];
+            if (g > 0.5f * cal->rgain[k] && g < 2.0f * cal->rgain[k]) cal->rgain[k] += 0.3f * (g - cal->rgain[k]);
+        }
     // the top pad has nothing above it: use the mean of the learned middle pads
     // (relative gain full/base, so pads with different baselines compare)
     float sum = 0; int n = 0;
@@ -76,7 +102,7 @@ lvl_result_t lvl_compute(lvl_cal_t *cal, const uint32_t raw[LVL_CH])
     // chained fractions: pad k+1 only counts when pad k is nearly full (films and splashes are ignored)
     float level = 0;
     for (int k = 0; k < LVL_PADS; k++) {
-        float f = r.raw_frac[k];
+        float f = ratio_frac[k];
         if (k > 0 && r.frac[k - 1] < LVL_CHAIN_FRAC) f = 0;
         r.frac[k] = f;
         level += f * LVL_PITCH_MM;

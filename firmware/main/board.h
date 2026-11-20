@@ -8,7 +8,7 @@
 // touch channels: index 0..5 = PAD1 (bottom, wake) .. PAD6 (top), index 6 = REF
 static const touch_pad_t SENSE_CH[N_SENSE_PADS] = {
     TOUCH_PAD_NUM1, TOUCH_PAD_NUM2, TOUCH_PAD_NUM3, TOUCH_PAD_NUM4, TOUCH_PAD_NUM5, TOUCH_PAD_NUM6, TOUCH_PAD_NUM7};
-#define WAKE_CH          TOUCH_PAD_NUM1   // PAD1, bottom electrode
+// deep-sleep wake pad: PAD1, or PAD2 when the FDC1004 links are fitted (its ESD diodes clamp PAD1 with the rail off)
 #define GUARD_CH         TOUCH_PAD_NUM8   // unconnected (IO8); the shield, not a guard ring, does the work
 // shield = TOUCH_PAD_NUM14 (GPIO14), selected automatically by the waterproof function
 

@@ -40,6 +40,7 @@ esp_err_t settings_load(settings_t *s)
     if (nvs_get_i32(h, "tlim10", &v) == ESP_OK && v > 200 && v < 600) s->temp_limit_c = v / 10.0f;
     uint8_t b;
     if (nvs_get_u8(h, "fill", &b) == ESP_OK) s->notify_filling = b;
+    if (nvs_get_u8(h, "sense", &b) == ESP_OK && b <= SENSE_COMPARE) s->sense_mode = b;
     nvs_close(h);
     return ESP_OK;
 }
@@ -56,6 +57,7 @@ esp_err_t settings_save(const settings_t *s)
     nvs_set_i32(h, "pad", s->alarm_pad);
     nvs_set_i32(h, "tlim10", (int32_t)(s->temp_limit_c * 10));
     nvs_set_u8(h, "fill", s->notify_filling);
+    nvs_set_u8(h, "sense", (uint8_t)s->sense_mode);
     err = nvs_commit(h);
     nvs_close(h);
     return err;

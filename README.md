@@ -14,6 +14,7 @@ overflows, and reports the water temperature.
 
 - [`docs/design.md`](docs/design.md): requirements, architecture, power budget, mechanics, firmware behaviour
 - [`docs/placement-and-electrodes.md`](docs/placement-and-electrodes.md): board placement study and electrode design (with field simulation)
+- [`docs/sensing-options.md`](docs/sensing-options.md): touch vs FDC1004 level sensing: board variants, compare mode, bench protocol, decision rules
 - [`docs/sensing-infographic.html`](docs/sensing-infographic.html): interactive explainer of how the level and temperature sensing work electrically
 - [`docs/branding.md`](docs/branding.md): name, mark, palette, and the debossed design features on the enclosure
 - [`docs/pcb-routing.md`](docs/pcb-routing.md): routing pipeline and JLC order settings

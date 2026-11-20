@@ -23,7 +23,8 @@ a spray bottle, salt, a vacuum jar or hand vacuum pump.
 | Lower into water in 5 mm steps, log `level`, `top pad` against the ruler | Each pad gains ≥ 15 % when fully covered. Level within ±2 mm after one fill | `LVL_FRINGE_MM` (level.h) is the fixed offset: set it to the mean error |
 | Spray water on the dry wall above the waterline | The level does not move by more than one pad and settles within 30 s | If worse: confirm idle channels are HIGHZ. Compare `TOUCH_PAD_CONN_GND` to see the difference |
 | Repeat with salty water (1 tsp per litre) | As above | Raise `LVL_WET_FRAC` / `LVL_CHAIN_FRAC` if films chain up |
-| Deep-sleep wake: lower until PAD1 is half covered | Wakes within 1 s | `lvl_wake_threshold()` factor (0.5) and `touch_pad_sleep_channel_set_work_time` |
+| Deep-sleep wake: lower until the wake pad (PAD1, or PAD2 with the FDC1004 fitted) is half covered | Wakes within 1 s | `lvl_wake_threshold()` factor (0.5) and `touch_pad_sleep_channel_set_work_time` |
+| FDC1004 (if fitted): the boot log says `FDC1004 fitted`. In `compare` mode the dry `pf1..pf4` are steady to ±0.01 pF and CAPDAC settles | Each covered pad gains ≥ 3 pF | CAPDAC auto-range in `fdc1004.c`. Then run the protocol in [sensing-options.md](sensing-options.md) |
 
 ## 3. Temperature
 | Check | Pass |

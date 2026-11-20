@@ -5,12 +5,19 @@
 //            3 placements within 20 s = factory reset
 //   BATH     deep sleep until PAD1 gets wet (touch wake); then track the fill every 2 s,
 //            notify via ntfy, sleep again once the level is steady or the bath is drained
+//
+// Level sensing (settings page, docs/sensing-options.md):
+//   touch    ESP32-S3 touch, ratiometric live reference (default)
+//   fdc      FDC1004 on PAD1 / PAD5 / PAD6 / REF (alarm region 40..60 mm only)
+//   compare  both run; every sample is logged as a CMP line on the USB console; alarms from touch
 #include <math.h>
 #include <string.h>
 #include <sys/time.h>
 
 #include "board.h"
 #include "esp_log.h"
+#include "fdc1004.h"
+#include "fdclevel.h"
 #include "esp_pm.h"
 #include "esp_sleep.h"
 #include "esp_system.h"
@@ -22,6 +29,7 @@
 #include "policy.h"
 #include "power.h"
 #include "rate.h"
+#include "sensor_bus.h"
 #include "sense_touch.h"
 #include "settings.h"
 #include "tmp117.h"
@@ -33,6 +41,10 @@ static RTC_DATA_ATTR lvl_cal_t s_cal;
 static RTC_DATA_ATTR policy_t s_policy;
 static RTC_DATA_ATTR bool s_policy_ready;
 static RTC_DATA_ATTR double s_placed_at[3];   // last three charger placements (for factory reset)
+static RTC_DATA_ATTR fdc_cal_t s_fdc;
+static RTC_DATA_ATTR fdc_state_t s_fdc_st;      // CAPDAC per channel
+static RTC_DATA_ATTR bool s_fdc_probed, s_fdc_fitted;
+static bool s_rail_held;                       // sensor rail kept on while awake (FDC fitted)
 
 static settings_t s_set;
 
@@ -51,11 +63,47 @@ static void blink(int n, int ms)
     }
 }
 
+// PAD1 cannot wake the chip when the FDC1004 links are fitted: with the rail off its ESD diodes clamp the pad
+static int wake_pad(void) { return s_fdc_fitted ? 2 : 1; }
+
+// with the FDC1004 fitted the sensor rail must stay on while the touch peripheral measures (see wake_pad)
+static void hold_rail(bool on)
+{
+    i2c_master_bus_handle_t bus;
+    if (on && !s_rail_held && s_fdc_fitted) s_rail_held = sensor_bus_acquire(&bus) == ESP_OK;
+    else if (!on && s_rail_held) { sensor_bus_release(); s_rail_held = false; }
+}
+
+static bool fdc_sample(float pf[FDC_CH])
+{
+    sense_pause();                                    // the touch FSM must not drive the pads meanwhile
+    esp_err_t err = fdc_read_all(&s_fdc_st, pf);
+    sense_resume();
+    if (err != ESP_OK) ESP_LOGW(TAG, "FDC1004 read failed: %s", esp_err_to_name(err));
+    return err == ESP_OK;
+}
+
+// out of the water: refresh the dry baselines (alpha 1 = replace)
+static void calibrate_dry(float alpha)
+{
+    hold_rail(true);
+    uint32_t raw[LVL_CH];
+    sense_read(raw, 8);
+    if (!s_cal.valid || alpha >= 1) lvl_cal_init(&s_cal, raw);
+    else lvl_track_dry(&s_cal, raw, alpha);
+    float pf[FDC_CH];
+    if (s_fdc_fitted && fdc_sample(pf)) {
+        if (!s_fdc.valid || alpha >= 1) fdc_cal_init(&s_fdc, pf);
+        else for (int i = 0; i < FDC_CH; i++) s_fdc.base[i] += alpha * (pf[i] - s_fdc.base[i]);
+    }
+}
+
 static void sleep_now(bool pad1_wet, uint64_t timer_s)
 {
     net_wifi_stop();
     power_led(false);
-    if (!pad1_wet) sense_arm_wake(lvl_wake_threshold(&s_cal));       // wake when the bath reaches PAD1
+    hold_rail(false);
+    if (!pad1_wet) sense_arm_wake(wake_pad(), lvl_wake_threshold(&s_cal, wake_pad()));   // wake when the bath arrives
     if (!power_on_charger()) esp_sleep_enable_ext1_wakeup(1ULL << PIN_QI_DET_N, ESP_EXT1_WAKEUP_ANY_LOW);
     if (timer_s) esp_sleep_enable_timer_wakeup(timer_s * 1000000ULL);
     ESP_LOGI(TAG, "deep sleep (pad1 %s, timer %llus)", pad1_wet ? "wet" : "dry", timer_s);
@@ -87,11 +135,7 @@ static void charger_mode(void)
         memset(s_placed_at, 0, sizeof(s_placed_at));
         esp_restart();
     }
-    // out of the water: refresh the dry baseline
-    uint32_t raw[LVL_CH];
-    sense_read(raw, 8);
-    if (!s_cal.valid) lvl_cal_init(&s_cal, raw);
-    else lvl_track_dry(&s_cal, raw, 0.5f);
+    calibrate_dry(0.5f);
 
     net_status_t st = {.battery_pct = -1, .temp_c = NAN};
     bool online = net_wifi_connect(&s_set, 15000);
@@ -120,6 +164,20 @@ static void bath_mode(void)
     }
     s_policy.alarm_mm = lvl_pad_top_mm(s_set.alarm_pad);
 
+    int mode = s_set.sense_mode;
+    if (mode != SENSE_TOUCH && !(s_fdc_fitted && s_fdc.valid)) {
+        ESP_LOGW(TAG, "FDC1004 not fitted: using touch sensing");
+        mode = SENSE_TOUCH;
+    }
+    int alarm_pad = s_set.alarm_pad;
+    if (mode == SENSE_FDC && alarm_pad < 5) {            // the FDC only sees PAD5 / PAD6 in the alarm region
+        ESP_LOGW(TAG, "FDC mode: alarm pad %d not covered, using pad 5", alarm_pad);
+        alarm_pad = 5;
+        s_policy.alarm_mm = lvl_pad_top_mm(alarm_pad);
+    }
+    if (!s_policy.active) fdc_bath_start(&s_fdc);        // a new bath: forget the last reference-liquid value
+    hold_rail(true);
+
     rate_t rate;
     rate_init(&rate, 60);
     uint32_t raw[LVL_CH];
@@ -133,7 +191,31 @@ static void bath_mode(void)
         double t = now_s();
         if (power_on_charger()) esp_restart();            // taken out and put on the charger
         sense_read(raw, 4);
+        lvl_cal_t other = s_cal;                          // the other touch method, without learning (compare only)
         lvl_result_t r = lvl_compute(&s_cal, raw);
+        float pf[FDC_CH] = {0};
+        fdc_result_t fr = {0};
+        bool fdc_ok = mode != SENSE_TOUCH && fdc_sample(pf);
+        if (fdc_ok) fr = fdc_level(&s_fdc, pf);
+        if (mode == SENSE_COMPARE) {
+            other.ratiometric = !s_cal.ratiometric;
+            lvl_result_t o = lvl_compute(&other, raw);
+            float learned = s_cal.ratiometric ? o.level_mm : r.level_mm, ratio = s_cal.ratiometric ? r.level_mm : o.level_mm;
+            // CMP,t,learned_mm,ratio_mm,fdc_mm(-1 = below window),top_touch,top_fdc,drift,raw1..raw7,pf1..pf4
+            ESP_LOGI("CMP", "%.1f,%.1f,%.1f,%.1f,%d,%d,%.4f,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%.3f,%.3f,%.3f,%.3f", t - t_start,
+                     learned, ratio, fdc_ok && fr.in_window ? fr.level_mm : -1.0f, r.top_full, fr.top_full, r.drift,
+                     (unsigned long)raw[0], (unsigned long)raw[1], (unsigned long)raw[2], (unsigned long)raw[3],
+                     (unsigned long)raw[4], (unsigned long)raw[5], (unsigned long)raw[6], pf[0], pf[1], pf[2], pf[3]);
+        }
+        if (mode == SENSE_FDC) {                          // drive the policy from the FDC
+            if (!fdc_ok) { vTaskDelay(pdMS_TO_TICKS(2000)); continue; }
+            r.wet = fr.pad1_wet;
+            // below the alarm window the FDC only knows that PAD1 is covered
+            r.level_mm = fr.in_window ? fr.level_mm : (fr.pad1_wet ? LVL_PAD_H_MM : 0);
+            r.top_full = fr.top_full;
+            r.raw_frac[LVL_REF] = fr.ref_frac;
+            r.all_wet = fr.ref_wet && fr.top_full == 6;
+        }
         if (r.wet && (t - t_temp > 10 || isnan(temp))) {  // the TMP117 tab is underwater before PAD1
             float c;
             if (tmp117_read(&c) == ESP_OK) temp = c;
@@ -147,7 +229,7 @@ static void bath_mode(void)
         if (r.wet) rate_add(&rate, (float)(t - t_start), r.level_mm);
 
         policy_in_t in = {.now_s = (float)(t - 1.7e9), .wet = r.wet, .all_wet = r.all_wet, .level_mm = r.level_mm,
-                          .ref_frac = r.raw_frac[LVL_REF], .at_alarm = r.top_full >= s_set.alarm_pad,
+                          .ref_frac = r.raw_frac[LVL_REF], .at_alarm = r.top_full >= alarm_pad,
                           .temp_c = temp, .battery_pct = batt};
         in.rate_ok = rate_mm_per_min(&rate, &in.rate_mm_min);
         in.eta_s = rate_eta_s(&rate, r.level_mm, s_policy.alarm_mm - 1.0f);
@@ -159,7 +241,7 @@ static void bath_mode(void)
         if (!r.wet) {
             if (t_dry == 0) t_dry = t;
             if (t - t_dry > 60) {                         // drained or a splash: back to sleep
-                lvl_track_dry(&s_cal, raw, 0.1f);
+                calibrate_dry(0.1f);
                 sleep_now(false, s_policy.active ? 15 * 60 : 6 * 3600);
             }
         } else t_dry = 0;
@@ -190,11 +272,12 @@ void app_main(void)
     esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
     ESP_LOGI(TAG, "wake cause %d, on charger %d, provisioned %d", cause, power_on_charger(), settings_provisioned(&s_set));
 
-    if (!s_cal.valid) {                                   // first power-up: assume dry
-        uint32_t raw[LVL_CH];
-        sense_read(raw, 8);
-        lvl_cal_init(&s_cal, raw);
+    if (!s_fdc_probed) {                                  // which board variant is this?
+        s_fdc_fitted = fdc_present();
+        s_fdc_probed = true;
+        ESP_LOGI(TAG, "FDC1004 %s, wake pad %d", s_fdc_fitted ? "fitted" : "not fitted", wake_pad());
     }
+    if (!s_cal.valid) calibrate_dry(1);                   // first power-up: assume dry
     if (!settings_provisioned(&s_set)) {
         blink(3, 300);
         if (net_provision(&s_set, 15 * 60 * 1000)) esp_restart();

@@ -3,6 +3,9 @@
 // Model (docs/placement-and-electrodes.md): each pad's reading rises linearly as water climbs it.
 //   delta_k = raw_k - base_k * (1 + drift)      drift from the dry REF pad
 //   f_k     = clamp(delta_k / full_k, 0, 1)      full_k learned per pad as the water passes it
+//   ratiometric (default): f_k = delta_k / (delta_j * full_k / full_j), j = a fully-wet pad below k.
+//   Anything that scales every wet pad together (water-to-ground return path, a person in the bath,
+//   water conductivity, wall temperature) cancels in the ratio.
 //   level   = sum(f_k) * pitch - fringe offset    (only counting pad k if pad k-1 is >= 90 % wet)
 #pragma once
 #include <stdbool.h>
@@ -25,6 +28,8 @@ typedef struct {
     float full[LVL_CH];      // raw-count increase when fully wet
     uint8_t learned[LVL_CH]; // number of times full[] was learned
     bool valid;
+    bool ratiometric;        // divide by a fully-wet pad below (live reference) instead of the learned full[]
+    float rgain[LVL_PADS];   // wet gain of pad k relative to pad k-1, learned with both covered (scale-free)
 } lvl_cal_t;
 
 typedef struct {
@@ -45,5 +50,5 @@ void lvl_track_dry(lvl_cal_t *cal, const uint32_t raw[LVL_CH], float alpha);
 lvl_result_t lvl_compute(lvl_cal_t *cal, const uint32_t raw[LVL_CH]);
 // top edge of pad n (1..6) in mm above the bottom of PAD1: the alarm level for "alarm at pad n"
 float lvl_pad_top_mm(int pad);
-// raw-count threshold for PAD1 used as the deep-sleep wake threshold (50 % wet)
-uint32_t lvl_wake_threshold(const lvl_cal_t *cal);
+// raw-count threshold for pad n (1..6) used as the deep-sleep wake threshold (50 % wet)
+uint32_t lvl_wake_threshold(const lvl_cal_t *cal, int pad);

@@ -50,11 +50,20 @@ esp_err_t sense_read(uint32_t raw[LVL_CH], int n)
     return ESP_OK;
 }
 
-esp_err_t sense_arm_wake(uint32_t delta_counts)
+void sense_pause(void) { touch_pad_fsm_stop(); }
+
+void sense_resume(void)
 {
-    ESP_RETURN_ON_ERROR(touch_pad_sleep_channel_enable(WAKE_CH, true), TAG, "sleep ch");
-    ESP_RETURN_ON_ERROR(touch_pad_sleep_set_threshold(WAKE_CH, delta_counts), TAG, "sleep thr");
-    // sample PAD1 every ~200 ms in deep sleep: low current, fast enough for a filling bath
+    touch_pad_fsm_start();
+    vTaskDelay(pdMS_TO_TICKS(30));   // let every channel complete a fresh measurement
+}
+
+esp_err_t sense_arm_wake(int pad, uint32_t delta_counts)
+{
+    touch_pad_t ch = SENSE_CH[(pad >= 1 && pad <= N_LEVEL_PADS) ? pad - 1 : 0];
+    ESP_RETURN_ON_ERROR(touch_pad_sleep_channel_enable(ch, true), TAG, "sleep ch");
+    ESP_RETURN_ON_ERROR(touch_pad_sleep_set_threshold(ch, delta_counts), TAG, "sleep thr");
+    // sample the wake pad every ~200 ms in deep sleep: low current, fast enough for a filling bath
     ESP_RETURN_ON_ERROR(touch_pad_sleep_channel_set_work_time(3000, 500), TAG, "sleep work");
     return esp_sleep_enable_touchpad_wakeup();
 }
