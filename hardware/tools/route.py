@@ -99,6 +99,18 @@ def prep():
     # TH1 GND pad joins the GND lane through a short stub downwards then across (stays clear of the NTC stub)
     track(board, gnd.GetNet(), (gx, gy), (gx, gy + 1.2)); track(board, gnd.GetNet(), (gx, gy + 1.2), (tmp_lanes["GND"], gy + 1.2))
 
+    # --- driven shield: R17 (touch) and R26 (FDC) reach the E7 tap on In2, just below the electronics band ---
+    # (In2 is empty there; the hatched In1 shield sits between this trace and the electrodes)
+    sh = net("SHIELD")
+    r17 = bxy(pads(fps["R17"])["1"].GetPosition()); r26 = bxy(pads(fps["R26"])["1"].GetPosition())
+    e7 = bxy(pads(fps["E7"])["1"].GetPosition())
+    SH_Y = 31.0
+    track(board, sh, r17, (r17[0], 30.0)); track(board, sh, (r17[0], 30.0), (22.9, 30.0))
+    track(board, sh, (22.9, 30.0), (22.9, SH_Y)); via(board, sh, (22.9, SH_Y))
+    track(board, sh, r26, (r26[0], 33.2)); track(board, sh, (r26[0], 33.2), (34.6, 33.2)); via(board, sh, (34.6, 33.2))
+    track(board, sh, (34.6, 33.2), (34.6, SH_Y), pcbnew.In2_Cu)
+    track(board, sh, (34.6, SH_Y), (e7[0], SH_Y), pcbnew.In2_Cu); track(board, sh, (e7[0], SH_Y), e7, pcbnew.In2_Cu)
+
     # --- thermal vias: BQ51050B exposed pad (2 x 2) and the ESP32 module ground pad (3 x 3 grid corners) ---
     u2 = pads(fps["U2"]).get("21")
     if u2:
@@ -131,9 +143,29 @@ def again():
     print(f"DSN with {n} movable autorouted items -> {os.path.relpath(DSN, HW)}; run the autorouter, then finish")
 
 
+def edge_rules(board, inset=0.35):
+    """The autorouter knows only the 0.2 mm clearance, KiCad / JLC want 0.5 mm to the board edge: route inside
+    an outline shrunk by `inset`, with the slots grown by the same amount."""
+    ps = pcbnew.SHAPE_POLY_SET()
+    board.GetBoardPolygonOutlines(ps)
+    ps.Deflate(mm(inset), 8)
+    pts = lambda ch: "  ".join(f"{ch.CPoint(i).x / 1000:.1f} {-ch.CPoint(i).y / 1000:.1f}"  # noqa: E731
+                               for i in list(range(ch.PointCount())) + [0])
+    boundary = f"    (boundary\n      (path pcb 0  {pts(ps.Outline(0))})\n    )\n"
+    holes = "".join(f"    (keepout \"\" (polygon signal 0  {pts(ps.Hole(0, h))}))\n" for h in range(ps.HoleCount(0)))
+    return boundary, holes
+
+
 def constrain_dsn(protect_all=True):
     """Autorouter-only constraints: inner layers not routable, keep-out over the electrode band."""
     s = open(DSN).read()
+    # board edge: replace KiCad's boundary and slot keepouts with inset versions
+    boundary, holes = edge_rules(pcbnew.LoadBoard(PCB))
+    b0 = s.index("    (boundary"); b1 = s.index("\n    )\n", b0) + len("\n    )\n")
+    s = s[:b0] + boundary + s[b1:]
+    s = re.sub(r'    \(keepout "" \(polygon signal 0 [^)]*\)\)\n', "", s)
+    i = s.index("    (boundary")
+    s = s[:i] + holes + s[i:]
     s = re.sub(r"\(layer In1\.Cu\s*\(type signal\)", "(layer In1.Cu (type power)", s)
     # In2 stays a signal layer: the third routing layer in the crowded electronics band. Its GND pour is
     # refilled around the traces afterwards; In1 remains the solid GND reference under everything.
@@ -161,9 +193,10 @@ def finish():
     board = pcbnew.LoadBoard(PCB)
     assert os.path.exists(SES), f"missing {SES}: run the autorouter first"
     # the session holds every autorouted wire (a second pass re-emits the first pass's too): start clean
-    for t in list(board.GetTracks()):
-        if not t.IsLocked():
-            board.Remove(t)
+    doomed = [t for t in board.GetTracks() if not t.IsLocked()]
+    for t in doomed:
+        board.Delete(t)                     # Remove() leaves SWIG owning a dangling object (segfaults later)
+    del doomed
     import_ses(board, SES)
     board.Save(PCB)
     board = pcbnew.LoadBoard(PCB)

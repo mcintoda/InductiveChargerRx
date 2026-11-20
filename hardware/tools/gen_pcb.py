@@ -44,7 +44,7 @@ NECK = (16.0, 22.0, 102.0, 104.0)         # narrow neck for thermal isolation
 # break-off USB-C flash tab on the right edge: x0 (after a 1.5 mm slot), x1, y0, y1; snapped off before assembly
 FTAB = (39.5, 53.5, 9.5, 21.5)
 FSLOTS = [(11.5, 14.0), (17.0, 19.5)]     # slots between the three bridges (y ranges, x 38.0 .. 39.5)
-FBITES = [9.9, 10.5, 11.1, 19.9, 20.5, 21.1]   # mouse-bite holes (y) on the outer two bridges, x = 38.25
+FBITES = [10.1, 10.9, 20.1, 20.9]   # mouse-bite holes (y) on the outer two bridges, x = 38.25
 
 
 def pad_center_y(k):                      # k = 1 (bottom) .. 6 (top / default alarm)
@@ -202,7 +202,7 @@ pack([f"TP{i}" for i in range(1, 9)], 7.4, 23.9, 26.3, 29.4, gap=0.2)
 pack(["U5", "C24", "C25", "R22", "R23", "R24", "R25", "R26"], 23.6, 30.2, 37.4, 35.8, gap=0.3)
 # USB-C flash tab: socket mouth on the tab's outer edge, LDO + CC resistors beside it
 place("J2", fx1 - 3.9, (fy0 + fy1) / 2, 270)
-pack(["U6", "C26", "C27", "R27", "R28", "R29", "R30"], fx0 + 0.3, fy0 + 0.4, fx0 + 4.6, fy1 - 0.4, gap=0.3)
+pack(["U6", "C26", "C27", "R27", "R28", "R29", "R30"], fx0 + 0.6, fy0 + 0.6, fx0 + 5.1, fy1 - 0.6, gap=0.3)
 # thermal tab
 place("U3", 19.0, 107.0, 90)
 place("C20", 19.0, 110.3)
