@@ -249,6 +249,9 @@ zone(pcbnew.In1_Cu, "GND", elec)
 zone(pcbnew.F_Cu, "SHIELD", box(0.4, SHIELD_Y[0], 2.5, SHIELD_Y[1]))
 zone(pcbnew.F_Cu, "SHIELD", box(W_B - 2.5, SHIELD_Y[0], W_B - 0.4, SHIELD_Y[1]))
 zone(pcbnew.In1_Cu, "SHIELD", box(0.4, SHIELD_Y[0], W_B - 0.4, SHIELD_Y[1]), hatch=(0.3, 0.7))
+# flash tab: GND pour on every layer (its parts reach GND through the middle bridge)
+for layer in (pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu):
+    zone(layer, "GND", box(fx0 + 0.5, fy0 + 0.5, fx1 - 0.5, fy1 - 0.5), clearance=0.25)
 # thermal window on the tab: F.Cu + B.Cu GND copper stitched with vias
 zone(pcbnew.F_Cu, "GND", box(tx0 + 0.6, ny1 + 0.4, tx1 - 0.6, ty1 - 0.6), clearance=0.2)
 zone(pcbnew.B_Cu, "GND", box(tx0 + 0.6, ny1 + 0.4, tx1 - 0.6, ty1 - 0.6), clearance=0.2)

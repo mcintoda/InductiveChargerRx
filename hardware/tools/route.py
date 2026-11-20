@@ -50,12 +50,14 @@ def bxy(p):
 def track(board, net, a, b, layer=pcbnew.B_Cu, w=TRACK):
     t = pcbnew.PCB_TRACK(board)
     t.SetStart(P(*a)); t.SetEnd(P(*b)); t.SetLayer(layer); t.SetWidth(mm(w)); t.SetNet(net)
+    t.SetLocked(True)                     # exported as (type protect): the autorouter keeps it
     board.Add(t)
 
 
 def via(board, net, xy, d=0.6, drill=0.3):
     v = pcbnew.PCB_VIA(board)
     v.SetPosition(P(*xy)); v.SetWidth(mm(d)); v.SetDrill(mm(drill)); v.SetNet(net)
+    v.SetLocked(True)
     board.Add(v)
 
 
@@ -88,6 +90,10 @@ def prep():
     tmp_lanes = {"SDA": 17.6, "SCL": 18.4, "SENSE_3V3": 19.2, "GND": 20.6}
     for n, x in tmp_lanes.items():
         track(board, net(n), (x, BAND[1] + 0.6), (x, LANE_TOP))   # both ends outside the keep-outs
+    # the GND lane is tied straight into the pours: via to In1/In2 GND at the top, into the tab pour at the bottom
+    gx_l = tmp_lanes["GND"]
+    track(board, net("GND"), (gx_l, LANE_TOP), (gx_l, 28.6)); via(board, net("GND"), (gx_l, 28.6))
+    track(board, net("GND"), (gx_l, BAND[1] + 0.6), (gx_l, 104.8))
     # NTC: from its pad straight right then up on its own lane (x = 22.2)
     track(board, ntc.GetNet(), (nx, ny), (22.2, ny)); track(board, ntc.GetNet(), (22.2, ny), (22.2, LANE_TOP))
     # TH1 GND pad joins the GND lane through a short stub downwards then across (stays clear of the NTC stub)
@@ -115,7 +121,17 @@ def prep():
     print(f"prep done: {len(board.GetTracks())} hand-routed items, DSN -> {os.path.relpath(DSN, HW)}")
 
 
-def constrain_dsn():
+def again():
+    """Second autorouter pass from the current routing: hand-routed / stitching copper stays protected
+    (locked), the first pass's wires may be ripped up and moved to finish the last connections."""
+    board = pcbnew.LoadBoard(PCB)
+    assert pcbnew.ExportSpecctraDSN(board, DSN), "DSN export failed"
+    constrain_dsn(protect_all=False)
+    n = sum(1 for t in board.GetTracks() if not t.IsLocked())
+    print(f"DSN with {n} movable autorouted items -> {os.path.relpath(DSN, HW)}; run the autorouter, then finish")
+
+
+def constrain_dsn(protect_all=True):
     """Autorouter-only constraints: inner layers not routable, keep-out over the electrode band."""
     s = open(DSN).read()
     s = re.sub(r"\(layer In1\.Cu\s*\(type signal\)", "(layer In1.Cu (type power)", s)
@@ -136,13 +152,18 @@ def constrain_dsn():
     i = s.index("    (boundary")                 # after the layer definitions
     s = s[:i] + ko.lstrip("\n") + "\n" + s[i:]
     # hand-routed wires and vias are fixed: the autorouter must not move or rip them up
-    s = s.replace("(type route)", "(type protect)")
+    if protect_all:
+        s = s.replace("(type route)", "(type protect)")
     open(DSN, "w").write(s)
 
 
 def finish():
     board = pcbnew.LoadBoard(PCB)
     assert os.path.exists(SES), f"missing {SES}: run the autorouter first"
+    # the session holds every autorouted wire (a second pass re-emits the first pass's too): start clean
+    for t in list(board.GetTracks()):
+        if not t.IsLocked():
+            board.Remove(t)
     import_ses(board, SES)
     board.Save(PCB)
     board = pcbnew.LoadBoard(PCB)
@@ -204,7 +225,7 @@ def stitch(board, pitch=2.5):
             v = pcbnew.PCB_VIA(board)
             v.SetPosition(P(x, y)); v.SetWidth(mm(0.6)); v.SetDrill(mm(0.3)); v.SetNet(gnd)
             if clear(board, v):
-                board.Add(v); placed += 1
+                v.SetLocked(True); board.Add(v); placed += 1
             x += pitch
         y += pitch
     print(f"stitching vias: {placed} on the grid, {island_vias(board, gnd)} into GND islands")
@@ -236,7 +257,7 @@ def island_vias(board, gnd, step=0.4):
                         v = pcbnew.PCB_VIA(board)
                         v.SetPosition(pos); v.SetWidth(mm(0.6)); v.SetDrill(mm(0.3)); v.SetNet(gnd)
                         if clear(board, v, margin=0.2) and inside_gnd_planes(board, pos):
-                            board.Add(v); added += 1; done = True; break
+                            v.SetLocked(True); board.Add(v); added += 1; done = True; break
                     x += mm(step)
                 y += mm(step)
     return added
@@ -265,4 +286,4 @@ def clear(board, v, margin=0.25):
 
 
 if __name__ == "__main__":
-    {"prep": prep, "finish": finish}[sys.argv[1]]()
+    {"prep": prep, "finish": finish, "again": again}[sys.argv[1]]()
