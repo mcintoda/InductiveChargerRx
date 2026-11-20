@@ -14,7 +14,7 @@ typedef struct {
     int alarm_pad;         // 1..6, default 6 (top)
     float temp_limit_c;    // default 42
     bool notify_filling;   // default off
-    int sense_mode;        // SENSE_TOUCH (default), SENSE_FDC or SENSE_COMPARE (see docs/sensing-options.md)
+    int sense_mode;        // SENSE_FDC (default), SENSE_TOUCH or SENSE_COMPARE (see docs/sensing-options.md)
 } settings_t;
 
 esp_err_t settings_load(settings_t *s);   // fills defaults if nothing stored

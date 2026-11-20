@@ -7,8 +7,8 @@
 //            notify via ntfy, sleep again once the level is steady or the bath is drained
 //
 // Level sensing (settings page, docs/sensing-options.md):
-//   touch    ESP32-S3 touch, ratiometric live reference (default)
-//   fdc      FDC1004 on PAD1 / PAD5 / PAD6 / REF (alarm region 40..60 mm only)
+//   fdc      FDC1004 on PAD1 / PAD5 / PAD6 / REF (alarm region 40..60 mm only) (default)
+//   touch    ESP32-S3 touch, ratiometric live reference (automatic fallback when no FDC1004 answers)
 //   compare  both run; every sample is logged as a CMP line on the USB console; alarms from touch
 #include <math.h>
 #include <string.h>
@@ -183,6 +183,7 @@ static void bath_mode(void)
     uint32_t raw[LVL_CH];
     float temp = NAN;
     int batt = -1;
+    bool fdc_window = false;
     double t_start = now_s(), t_temp = 0, t_batt = 0, t_dry = 0, t_steady = 0;
     esp_pm_config_t pm = {.max_freq_mhz = 80, .min_freq_mhz = 40, .light_sleep_enable = true};
     esp_pm_configure(&pm);
@@ -209,6 +210,7 @@ static void bath_mode(void)
         }
         if (mode == SENSE_FDC) {                          // drive the policy from the FDC
             if (!fdc_ok) { vTaskDelay(pdMS_TO_TICKS(2000)); continue; }
+            fdc_window = fr.in_window;
             r.wet = fr.pad1_wet;
             // below the alarm window the FDC only knows that PAD1 is covered
             r.level_mm = fr.in_window ? fr.level_mm : (fr.pad1_wet ? LVL_PAD_H_MM : 0);
@@ -251,7 +253,9 @@ static void bath_mode(void)
                            !s_policy.ref_rising;
         if (steady || alarm_quiet) {
             if (t_steady == 0) t_steady = t;
-            if (t - t_steady > 180) sleep_now(true, 5 * 60);   // someone is in the bath: check every 5 min
+            // someone is in the bath: check every 5 min. In FDC mode below 40 mm the level is not seen
+            // moving, so check every 2 min (20 mm at a fast 10 mm/min fill: still short of the alarm)
+            if (t - t_steady > 180) sleep_now(true, (mode == SENSE_FDC && !fdc_window) ? 2 * 60 : 5 * 60);
         } else t_steady = 0;
 
         vTaskDelay(pdMS_TO_TICKS(2000));

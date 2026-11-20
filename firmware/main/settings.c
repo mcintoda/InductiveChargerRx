@@ -13,6 +13,7 @@ static void defaults(settings_t *s)
     strcpy(s->ntfy_host, "ntfy.sh");
     s->alarm_pad = 6;
     s->temp_limit_c = 42.0f;
+    s->sense_mode = SENSE_FDC;           // falls back to touch if no FDC1004 answers
 }
 
 void settings_new_topic(char *out, int len)

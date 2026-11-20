@@ -137,7 +137,7 @@ static esp_err_t page_root(httpd_req_t *req)
                   "max=50 value=%.1f></label><label><input name=fill type=checkbox style='width:auto'%s> Also tell me when "
                   "a bath starts filling</label><label>ntfy server<input name=host value='%s'></label>"
                   "<label>Level sensing<select name=sense><option value=0%s>Touch (ratiometric)</option>"
-                  "<option value=1%s>FDC1004</option><option value=2%s>Compare: log both, alarm from touch</option>"
+                  "<option value=1%s>FDC1004 (default)</option><option value=2%s>Compare: log both, alarm from touch</option>"
                   "</select></label>"
                   "<p>Notifications go to topic <code>%s</code>. In the ntfy app tap + and subscribe to it.</p>"
                   "<button>Save</button></form>",

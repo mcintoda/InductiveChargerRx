@@ -319,6 +319,8 @@ C("C19", C1U, 284.48, EN_Y, 90, "GND", "EN", text="hh"); GND(*pin("C19", "1"), 2
 W(pin("U1", "45"), pin("C19", "2"))
 TP("TP3", "EN", 292.1, EN_Y, 0)
 W(pin("U1", "4"), (294.64, pin("U1", "4")[1])); TP("TP4", "IO0", 294.64, pin("U1", "4")[1], 90)
+# default build = FDC1004 variant: the touch links on the FDC pads are not fitted (docs/sensing-options.md)
+DNP_DEFAULT = {"R11", "R15", "R16", "R17", "R20"}
 # capacitive level ladder: fan-out of IO1..IO7 to 1k series resistors and electrodes.
 # E1..E6 = level pads (E1 bottom / wake, E6 default alarm); E8 = dry reference pad on IO7.
 for i in range(1, 8):
@@ -464,7 +466,7 @@ def main():
         ] + [[Sym("property"), k, v, [Sym("at"), p["x"], p["y"], 0], eff(hide=True)] for k, v in p["fields"].items()]
         items.append([Sym("symbol"), [Sym("lib_id"), p["lib"]], [Sym("at"), q(p["x"]), q(p["y"]), p["r"]], [Sym("unit"), 1],
                       [Sym("in_bom"), Sym("no" if virtual else "yes")], [Sym("on_board"), Sym("no" if virtual else "yes")],
-                      [Sym("dnp"), Sym("no")], [Sym("uuid"), uid(p["ref"])]] + props +
+                      [Sym("dnp"), Sym("yes" if p["ref"] in DNP_DEFAULT else "no")], [Sym("uuid"), uid(p["ref"])]] + props +
                      [[Sym("pin"), n, [Sym("uuid"), uid(p["ref"], n)]] for n in sorted(allpins)] +
                      [[Sym("instances"), [Sym("project"), "bath_monitor",
                                           [Sym("path"), "/" + ROOT, [Sym("reference"), p["ref"]], [Sym("unit"), 1]]]]])

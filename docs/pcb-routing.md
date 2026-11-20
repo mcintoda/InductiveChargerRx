@@ -8,7 +8,8 @@ python3 hardware/tools/gen_schematic.py && python3 hardware/tools/verify_netlist
 python3 hardware/tools/route.py prep          # fresh placement + hand routing -> hardware/kicad/route/bath_monitor.dsn
 <autoroute>                                   # bath_monitor.dsn -> bath_monitor.ses   (see below)
 python3 hardware/tools/route.py finish        # import, GND stitching, zone refill, DRC report
-python3 hardware/tools/jlc_outputs.py         # hardware/fab: gerbers zip, bom_jlc.csv, cpl_jlc.csv
+python3 hardware/tools/jlc_outputs.py         # hardware/fab: gerbers zip, bom_jlc.csv, cpl_jlc.csv (FDC1004 build;
+                                              #   --variant=touch or --variant=both, see docs/sensing-options.md)
 ```
 
 ## What `route.py prep` already does

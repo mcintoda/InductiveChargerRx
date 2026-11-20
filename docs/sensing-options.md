@@ -1,13 +1,20 @@
 # Level sensing options: touch vs FDC1004
 
 Rev B can be built three ways from the same PCB. The only difference is which 0R / 1k links are fitted.
-That lets us measure the options side by side on the bench before we settle on one for production.
+
+**Default: the FDC1004 build.** The schematic DNP flags, `jlc_outputs.py` and the firmware's default mode all follow it. The touch and both builds stay available for the bench comparison:
+
+```
+python3 hardware/tools/jlc_outputs.py                      # FDC1004 (default)
+python3 hardware/tools/jlc_outputs.py --variant=touch      # touch only
+python3 hardware/tools/jlc_outputs.py --variant=both       # comparison board
+```
 
 | Option | What measures | Firmware mode | Strength | Weakness |
 |---|---|---|---|---|
 | **A. Touch, learned** | ESP32-S3 touch, 7 pads, driven shield | `touch` with `ratiometric = false` | No extra parts | Everything that scales the wet signal (return path, person in the bath, conductivity) reads as level error. Simulated worst case 7.9 mm at ×0.85 coupling |
-| **B. Touch, ratiometric** (default) | Same hardware | `touch` | Live reference: a covered pad below divides out the common scale. 1.8 mm worst case at every coupling scale | Needs one fully covered pad below the one being read. Relies on pad-to-pad gain learned in earlier baths |
-| **C. FDC1004** | FDC1004 on PAD1 (reference liquid), PAD5, PAD6 (alarm region) and REF (environment), with its own shield driver | `fdc` | TI's 3-electrode scheme in hardware, femtofarad resolution, 24-bit. 1.6 mm worst case at every coupling scale | +1 IC (~US$3 at LCSC) and 750 µA while measuring. Only sees 40–60 mm, plus "PAD1 covered". Shares the pads with the touch peripheral |
+| **B. Touch, ratiometric** | Same hardware | `touch` | Live reference: a covered pad below divides out the common scale. 1.8 mm worst case at every coupling scale | Needs one fully covered pad below the one being read. Relies on pad-to-pad gain learned in earlier baths |
+| **C. FDC1004** (default) | FDC1004 on PAD1 (reference liquid), PAD5, PAD6 (alarm region) and REF (environment), with its own shield driver | `fdc` | TI's 3-electrode scheme in hardware, femtofarad resolution, 24-bit. 1.6 mm worst case at every coupling scale | +1 IC (~US$3 at LCSC) and 750 µA while measuring. Only sees 40–60 mm, plus "PAD1 covered". Shares the pads with the touch peripheral |
 
 The simulation results come from `firmware/test/test_logic.c`, which runs with `make -C firmware/test`. They are model numbers. The bench decides.
 
@@ -18,9 +25,9 @@ FDC links: R22 (PAD1→CIN1), R23 (PAD5→CIN2), R24 (PAD6→CIN3), R25 (REF→C
 
 | Variant | Fit | Do not fit | Wake pad |
 |---|---|---|---|
-| Touch only (production candidate A/B) | R11–R17, R20 | U5, C24, C25, R22–R26 | PAD1 |
-| FDC only (production candidate C) | U5, C24, C25, R22–R26, R12–R14 (PAD2–4 stay on touch for wake) | R11, R15, R16, R17, R20 | PAD2 |
-| Both (bench comparison) | everything | — | PAD2 |
+| Touch only (`--variant=touch`) | R11–R17, R20 | U5, C24, C25, R22–R26 | PAD1 |
+| **FDC only (default)** | U5, C24, C25, R22–R26, R12–R14 (PAD2–4 stay on touch for wake) | R11, R15, R16, R17, R20 | PAD2 |
+| Both (`--variant=both`, bench comparison) | everything | — | PAD2 |
 
 The firmware probes for the FDC1004 at 0x50 on the first boot. If it answers, it:
 
@@ -34,8 +41,8 @@ On the "both" board each converter still sees the other's input capacitance as a
 
 Choose the mode on the settings page (charger mode, *Level sensing*):
 
-- `touch`: production default.
-- `fdc`: the policy is driven by the FDC. The alarm pad is limited to 5 or 6. Below 40 mm the level reads as "PAD1 covered" (9 mm).
+- `fdc` (default): the policy is driven by the FDC. The alarm pad is limited to 5 or 6. Below 40 mm the level reads as "PAD1 covered" (9 mm), so during a long soak below the window the device rechecks every 2 min instead of 5. If no FDC1004 answers at boot, the firmware falls back to `touch` on its own.
+- `touch`: ratiometric touch on all six pads.
 - `compare`: alarms come from touch. Every 2 s sample is logged on the USB console as:
 
 ```
@@ -69,10 +76,12 @@ For each run:
 
 ## Decision
 
+The FDC build is the default until the bench says otherwise. The table says when to switch.
+
 | If the bench shows… | Ship |
 |---|---|
-| B meets every pass line | **Touch only, ratiometric.** No FDC, no links: the cheapest and simplest board |
-| B fails 2 or 3 and C passes | **FDC only.** Accept the extra part. Touch stays only as the wake-up on PAD2 |
+| B meets every pass line and matches C | Touch only is still worth it: it saves the FDC1004 (~US$3) and five links. Otherwise stay with FDC |
+| B fails 2 or 3 and C passes | **FDC only (current default).** Touch stays only as the wake-up on PAD2 |
 | B fails 4/5 (films) and C passes | FDC, but first try raising `LVL_CHAIN_FRAC` and the shield drive level on touch |
 | Both fail 2/3 | A grounding strip against the water is not allowed (body-safe, no wet contacts). Revisit the electrode geometry instead: wider REF and PAD1, smaller gap to the wall |
 

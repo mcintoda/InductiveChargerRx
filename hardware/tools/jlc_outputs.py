@@ -23,7 +23,21 @@ import gen_schematic as S  # noqa: E402
 
 HW = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 PCB = os.path.join(HW, "kicad", "bath_monitor.kicad_pcb")
-OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HW, "fab")
+# Level-sensing build variant (docs/sensing-options.md). Default: FDC1004.
+#   fdc    FDC1004 on PAD1/5/6/REF + shield; PAD2-4 stay on touch (PAD2 = deep-sleep wake)
+#   touch  ESP32-S3 touch on all pads, no FDC1004
+#   both   everything fitted (bench comparison board)
+VARIANTS = {
+    "fdc": ("R11", "R15", "R16", "R17", "R20"),
+    "touch": ("U5", "C24", "C25", "R22", "R23", "R24", "R25", "R26"),
+    "both": (),
+}
+_args = [a for a in sys.argv[1:] if not a.startswith("--variant=")]
+VARIANT = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--variant=")), "fdc")
+if VARIANT not in VARIANTS:
+    sys.exit(f"unknown variant {VARIANT}: use one of {', '.join(VARIANTS)}")
+DNP = set(VARIANTS[VARIANT])
+OUT = _args[0] if _args else os.path.join(HW, "fab")
 OX, OY = 100.0, 50.0
 NOT_PLACED = ("E", "TP", "J1", "L1", "#")
 ROT_FIX = {}          # e.g. {"SOT-23": 180} after checking the JLC preview
@@ -50,7 +64,7 @@ def main():
     groups, cpl, missing = {}, [], set()
     for fp in board.GetFootprints():
         ref = fp.GetReference()
-        if ref.startswith(NOT_PLACED):
+        if ref.startswith(NOT_PLACED) or ref in DNP:
             continue
         part = next((p for p in S.PARTS if p["ref"] == ref), {"fields": {}})
         rating = part["fields"].get("Rating", "")
@@ -73,7 +87,7 @@ def main():
                     "-o", pos_file, PCB], check=True, capture_output=True)
     with open(pos_file) as f:
         for r in csv.DictReader(f):
-            if r["Ref"].startswith(NOT_PLACED):
+            if r["Ref"].startswith(NOT_PLACED) or r["Ref"] in DNP:
                 continue
             rot = (float(r["Rot"]) + ROT_FIX.get(r["Package"], 0)) % 360
             cpl.append([r["Ref"], f'{float(r["PosX"]):.3f}mm', f'{float(r["PosY"]):.3f}mm',
@@ -83,6 +97,7 @@ def main():
         w = csv.writer(f)
         w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
         w.writerows(sorted(cpl, key=lambda r: key(r[0])))
+    print(f"variant {VARIANT} (not fitted: {', '.join(sorted(DNP, key=key)) or 'none'})")
     print(f"gerbers: {len(os.listdir(gdir))} files -> {os.path.relpath(OUT, HW)}; BOM lines {len(groups)}, "
           f"placed parts {len(cpl)}; LCSC still to choose: {sorted(missing) or 'none'}")
 
