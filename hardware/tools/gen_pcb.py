@@ -33,7 +33,7 @@ def mm(v):
 # geometry (board frame, mm, y downwards, viewed from the FRONT / water side)
 # ---------------------------------------------------------------------------
 W_B, H_B = 38.0, 102.0                    # main body
-ANT_Y = 4.6                               # antenna strip: no copper on any layer above this
+ANT_Y = 5.2                               # antenna strip: no copper on any layer above this
 ELEC_TOP = 29.5                           # electronics zone is y < ELEC_TOP
 PAD_X0, PAD_X1 = 4.0, 34.0                # electrode width 30 mm
 REF_Y = (32.0, 38.0)                      # dry reference electrode
@@ -172,17 +172,17 @@ def pack(refs, x0, y0, x1, y1, gap=0.35, rot=0):
 
 
 # ESP32-S3 module: antenna flush with the top edge, centred
-place("U1", W_B / 2, 9.8)
+place("U1", W_B / 2, 10.35)            # S3 body top (-10.35 in the footprint) on the board edge
 # Qi receiver/charger column (left), next to the coil pads
 place("U2", 5.6, 12.6)
-pack(["C7", "C9", "C5", "C8", "C10", "C6"], 0.6, 4.9, 10.9, 9.9)
+pack(["C7", "C9", "C5", "C8", "C10", "C6"], 0.6, 5.6, 10.9, 10.4)
 pack(["C1", "C2", "C3", "C4", "C11", "C21", "C12", "C13", "C22", "R1", "R2", "R3"], 0.6, 15.5, 10.9, 25.2, gap=0.25)
 # power / housekeeping column (right)
-place("U4", 32.3, 7.0)
+place("U4", 32.3, 7.6)
 pack(["C14", "C15", "C17", "C18", "R9", "C19", "Q1", "R4", "R5", "R6", "R7", "R8", "C16",
-      "R18", "R19", "R10", "D1"], 27.2, 9.3, 37.4, 24.5)
+      "R18", "R19", "R10", "D1"], 27.2, 9.9, 37.4, 24.5)
 # touch series resistors directly below the module's GPIO pads
-pack(["R11", "R12", "R13", "R14", "R15", "R16", "R20", "R17"], 11.4, 20.9, 26.6, 23.4, gap=0.75, rot=90)
+pack(["R11", "R12", "R13", "R14", "R15", "R16", "R20", "R17"], 11.4, 21.2, 26.6, 23.8, gap=0.75, rot=90)
 # wire pads (coil left / battery right) and pogo test pads (centre)
 place("L1", 5.6, 27.0)
 place("J1", 36.4, 27.0)

@@ -299,9 +299,9 @@ U1 = {"1": "GND", "2": "GND", "3": "+3V3", "45": "EN", "4": "IO0",
       "18": "SHIELD_DRV", "13": "VBAT_SENSE", "14": "SDA", "15": "SCL", "16": "SENSE_3V3",
       "17": "QI_DET_N", "11": "TOUCH7", "36": "CHG_N", "25": "LED_DRV", "23": "USB_DN", "24": "USB_DP"}
 U1.update({str(n): "GND" for n in range(42, 66) if n not in (44, 45)})
-P("U1", "MCU_Espressif:ESP32-S3-MINI-1", "ESP32-S3-MINI-1-N8", "RF_Module:ESP32-S2-MINI-1", MX, MY, 0, U1,
+P("U1", "MCU_Espressif:ESP32-S3-MINI-1", "ESP32-S3-MINI-1-N8", "BathMonitor:ESP32-S3-MINI-1", MX, MY, 0, U1,
   text=((5.08, -32.0, "left"), (-5.08, 34.0, "right")), MPN="ESP32-S3-MINI-1-N8",
-  Note="S2-MINI-1 and S3-MINI-1 share the 15.4x20.5 mm LGA-65 land pattern; verify vs. S3 datasheet")
+  Note="Footprint: S2-MINI-1 pads (identical per Espressif datasheets) with the S3 20.5 mm body / 5.05 mm antenna section")
 ML = MX - 15.24
 # 3V3 and decoupling
 W(pin("U1", "3"), (MX, 76.2), (363.22, 76.2)); PWR("+3V3", MX, 76.2)

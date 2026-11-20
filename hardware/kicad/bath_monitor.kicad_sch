@@ -8214,7 +8214,7 @@
         (justify right)
       )
     )
-    (property "Footprint" "RF_Module:ESP32-S2-MINI-1"
+    (property "Footprint" "BathMonitor:ESP32-S3-MINI-1"
       (at 317.5 114.3 0)
       (effects
         (font
@@ -8241,7 +8241,7 @@
         hide
       )
     )
-    (property "Note" "S2-MINI-1 and S3-MINI-1 share the 15.4x20.5 mm LGA-65 land pattern; verify vs. S3 datasheet"
+    (property "Note" "Footprint: S2-MINI-1 pads (identical per Espressif datasheets) with the S3 20.5 mm body / 5.05 mm antenna section"
       (at 317.5 114.3 0)
       (effects
         (font
