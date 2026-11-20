@@ -34,6 +34,26 @@ Freerouting (open source) reads the DSN and writes the SES. Any of these works:
 Then run `route.py finish`. Pass criteria: DRC with **0 unconnected items, 0 clearance errors**. Silkscreen
 warnings are cosmetic.
 
+## Status (2026-11-20, after the autorouter)
+
+Freerouting 1.9 (run under `xvfb-run`; it needs a display) followed by `route.py again` for a second pass
+routes everything except the items below. The board in `hardware/kicad/bath_monitor.kicad_pcb` holds that
+routing. There are no copper-to-edge errors, no footprint errors and no shorts. What is left is about
+half an hour of work in KiCad's interactive router (open the board, press **X** on each ratsnest line, then
+**B** to refill the zones and **Inspect > Design Rules Checker**):
+
+| Open connection | Where | Hint |
+|---|---|---|
+| TERM: U2 pin 10 to R3 | Qi charger column | Short B.Cu hop down the left of U2 |
+| CLAMP1: U2 pin 5 to C7 | Qi charger column | In2 under C7/C9 |
+| TAB_VBUS: J2 A9 to B4/U6; +3V3 U6 to C27 and across the middle bridge | flash tab | Room is plentiful on the tab; use B.Cu |
+| FDC_CIN1: R22 to U5 pin 2; PAD5 / PAD6 In2 stubs to R23 / R24 | FDC block | Via beside each 0R link to the In2 stub |
+| GND: U5 pin 7 and a few B.Cu pour islands | electronics band | One GND via per island to In1 |
+
+Also fix 7 clearance nits where a GND fan-out via sits 0.01–0.15 mm too close to a neighbouring pad
+(C7, C9, C3, C4, R11, U2 pin 19, C27): nudge each via 0.2 mm away. Then rerun `python3 hardware/tools/jlc_outputs.py`.
+The silkscreen warnings (overlaps / over copper) are cosmetic: the back silk only carries reference designators.
+
 ## Order settings at JLCPCB
 | Option | Value |
 |---|---|
