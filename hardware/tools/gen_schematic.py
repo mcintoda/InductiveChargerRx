@@ -347,6 +347,8 @@ x, y = pin("U1", "36"); W((x, y), (x + G, y)); LBL("CHG_N", x + G, y, 0)
 # USB test pads
 W(pin("U1", "23"), (355.6, pin("U1", "23")[1])); TP("TP6", "USB_DN", 355.6, pin("U1", "23")[1], 270)
 W(pin("U1", "24"), (365.76, pin("U1", "24")[1])); TP("TP5", "USB_DP", 365.76, pin("U1", "24")[1], 270)
+LBL("USB_DN", 360.68, pin("U1", "23")[1], 0); LBL("USB_DP", 370.84, pin("U1", "24")[1], 0)   # to the flash tab
+W((355.6, pin("U1", "23")[1]), (360.68, pin("U1", "23")[1])); W((365.76, pin("U1", "24")[1]), (370.84, pin("U1", "24")[1]))
 # status LED
 LX, LY = 340.36, pin("U1", "25")[1]
 W(pin("U1", "25"), (LX, LY))
@@ -389,8 +391,43 @@ for i, net, ang in [(1, "PAD1", 90), (5, "PAD5", 90), (6, "PAD6", 90), (7, "PAD_
     LBL(net, 246.38, 116.84 + 7.62 * (i - 1), ang)
 LBL("SHIELD", 289.56, SH_Y, 90)
 
+# ===========================================================================
+# I. Flash tab: USB-C socket + its own 3.3 V LDO on a break-off tab (mouse bites).
+#    Plug a USB-C cable into a computer and run `idf.py flash`: no battery, no buttons. Snap off afterwards.
+#    Rd = 2 x 10k in parallel = 5k on each CC pin (USB-C sink, 5.1k +-20 %), reusing the 10k value.
+# ===========================================================================
+JX, JY = 330.2, 224.79
+P("J2", "Connector:USB_C_Receptacle_USB2.0_16P", "USB-C", "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12", JX, JY, 0,
+  {"A4": "TAB_VBUS", "A9": "TAB_VBUS", "B4": "TAB_VBUS", "B9": "TAB_VBUS", "A1": "GND", "A12": "GND", "B1": "GND",
+   "B12": "GND", "S1": "GND", "A5": "TAB_CC1", "B5": "TAB_CC2", "A6": "USB_DP", "B6": "USB_DP", "A7": "USB_DN",
+   "B7": "USB_DN", "A8": None, "B8": None}, text=((0, -27.0, None), (0, 28.5, None)), MPN="TYPE-C-31-M-12",
+  Note="On the break-off flash tab: removed before the board goes into the enclosure")
+GND(*pin("J2", "A1")); GND(*pin("J2", "S1")); NC("J2", "A8", "B8")
+for a, b, net in [("A7", "B7", "USB_DN"), ("A6", "B6", "USB_DP")]:
+    xa, ya = pin("J2", a); xb, yb = pin("J2", b)
+    W((xa, ya), (xa + 5.08, ya)); W((xb, yb), (xb + 5.08, yb), (xa + 5.08, ya)); LBL(net, xa + 5.08, ya, 0)
+# CC pull-downs (shunts)
+for pnum, refs, xs in [("A5", ("R27", "R28"), (375.92, 381.0)), ("B5", ("R29", "R30"), (365.76, 370.84))]:
+    x, y = pin("J2", pnum)
+    W((x, y), (xs[1], y))
+    for ref, rx in zip(refs, xs):
+        R(ref, R10K, rx, y + 3.81, 0, {"A5": "TAB_CC1", "B5": "TAB_CC2"}[pnum], "GND"); GND(*pin(ref, "2"))
+# tab LDO (same part as U4) feeding the +3V3 rail
+VY = 194.31
+P("U6", "Regulator_Linear:XC6220B331MR", "XC6220B331MR", "Package_TO_SOT_SMD:SOT-23-5", 386.08, VY + 2.54, 0,
+  {"1": "TAB_VBUS", "3": "TAB_VBUS", "2": "GND", "5": "+3V3"}, text=((0, -10.16, None), (0, -7.62, None)),
+  Note="Flash tab: powers the board from USB, no battery needed")
+x, y = pin("J2", "A4")
+W((x, y), (x + 2.54, y), (x + 2.54, VY), pin("U6", "1"))
+W(pin("U6", "3"), (370.84, pin("U6", "3")[1]), (370.84, VY))
+C("C26", C1U, 358.14, VY + 3.81, 0, "TAB_VBUS", "GND"); GND(*pin("C26", "2"))
+GND(*pin("U6", "2")); NC("U6", "4")
+W(pin("U6", "5"), (408.94, VY)); PWR("+3V3", 408.94, VY)
+C("C27", C1U, 403.86, VY + 3.81, 0, "+3V3", "GND"); GND(*pin("C27", "2"))
+
 TEXTS += [
     ("FDC1004 option (0R links select it)", 228.6, 186.0),
+    ("USB-C flash tab (snap off after programming)", 322.58, 182.88),
     ("Qi receiver + Li-ion charger", 20.32, 40.64),
     ("Qi-present wake detector", 137.16, 127.0),
     ("3.3 V LDO", 175.26, 45.72),

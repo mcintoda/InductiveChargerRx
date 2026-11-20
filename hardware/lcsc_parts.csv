@@ -21,3 +21,4 @@ Green,C12624,verify,KT-0603G green 0603 LED
 500mAh,,hand,403040 Li-ion with PCM - hand-soldered
 FDC1004DGSR,C2865994,confirmed,TI FDC1004DGSR VSSOP-10 (LCSC); option - see docs/sensing-options.md
 0R,C17168,verify,0402 0 ohm jumper basic (widely used number); FDC1004 links R22-R26
+USB-C,C165948,verify,Korean Hroparts TYPE-C-31-M-12 16P USB 2.0 receptacle (JLC's common USB-C part); on the break-off flash tab

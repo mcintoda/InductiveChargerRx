@@ -41,6 +41,10 @@ PAD_PITCH, PAD_H, PAD6_TOP = 10.0, 9.0, 42.0
 SHIELD_Y = (30.5, 101.5)
 TAB = (13.0, 25.0, 102.0, 112.0)          # thermal tab x0, x1, y0, y1
 NECK = (16.0, 22.0, 102.0, 104.0)         # narrow neck for thermal isolation
+# break-off USB-C flash tab on the right edge: x0 (after a 1.5 mm slot), x1, y0, y1; snapped off before assembly
+FTAB = (39.5, 53.5, 9.5, 21.5)
+FSLOTS = [(11.5, 14.0), (17.0, 19.5)]     # slots between the three bridges (y ranges, x 38.0 .. 39.5)
+FBITES = [9.9, 10.5, 11.1, 19.9, 20.5, 21.1]   # mouse-bite holes (y) on the outer two bridges, x = 38.25
 
 
 def pad_center_y(k):                      # k = 1 (bottom) .. 6 (top / default alarm)
@@ -100,9 +104,14 @@ def arc_pts(cx, cy, r, a0, a1, n=10):
              cy + r * math.sin(math.radians(a0 + (a1 - a0) * i / n))) for i in range(n + 1)]
 
 
+fx0, fx1, fy0, fy1 = FTAB
 poly_outline(pcbnew.Edge_Cuts, arc_pts(R_TOP, R_TOP, R_TOP, 180, 270) + arc_pts(W_B - R_TOP, R_TOP, R_TOP, 270, 360) +
-             [(W_B, H_B), (nx1, H_B), (nx1, ny1), (tx1, ny1), (tx1, ty1),
+             [(W_B, fy0), (fx1, fy0), (fx1, fy1), (W_B, fy1),
+              (W_B, H_B), (nx1, H_B), (nx1, ny1), (tx1, ny1), (tx1, ty1),
               (tx0, ty1), (tx0, ny1), (nx0, ny1), (nx0, H_B), (0, H_B)], 0.1)
+
+for sy0, sy1 in FSLOTS:                    # slots: the tab hangs on three bridges
+    rect(pcbnew.Edge_Cuts, W_B, sy0, fx0, sy1, 0.1)
 
 # --- nets --------------------------------------------------------------------
 nets = {}
@@ -191,6 +200,9 @@ place("TH1", 25.0, 52.5)          # right of the TMP117 / NTC lanes (x 17.6 .. 2
 pack([f"TP{i}" for i in range(1, 9)], 7.4, 23.9, 26.3, 29.4, gap=0.2)
 # FDC1004 option: on the back just below the electronics band, right of the hand-routed lanes
 pack(["U5", "C24", "C25", "R22", "R23", "R24", "R25", "R26"], 23.6, 30.2, 37.4, 35.8, gap=0.3)
+# USB-C flash tab: socket mouth on the tab's outer edge, LDO + CC resistors beside it
+place("J2", fx1 - 3.9, (fy0 + fy1) / 2, 270)
+pack(["U6", "C26", "C27", "R27", "R28", "R29", "R30"], fx0 + 0.3, fy0 + 0.4, fx0 + 4.6, fy1 - 0.4, gap=0.3)
 # thermal tab
 place("U3", 19.0, 107.0, 90)
 place("C20", 19.0, 110.3)
@@ -261,6 +273,18 @@ board.Add(ka)
 U = pcbnew.Dwgs_User
 rect(U, 4.0, 50.0, 34.0, 90.0, 0.2); text(U, "Li-ion 403040, 500 mAh (behind PCB, B side)", 19, 60, 1.0)
 circle(pcbnew.Cmts_User, 19.0, 70.0, 15.0, 0.2); text(pcbnew.Cmts_User, "Qi Rx coil 30 mm (against back wall)", 19, 88.5, 1.0)
+# mouse bites: 0.5 mm NPTH holes on the outer two bridges of the flash tab (not in BOM / CPL: ref starts with '#')
+mb = pcbnew.FOOTPRINT(board)
+mb.SetReference("#MB1"); mb.Reference().SetVisible(False); mb.SetValue("mouse bites"); mb.Value().SetVisible(False)
+mb.SetPosition(P(W_B, 0))
+for y in FBITES:
+    h = pcbnew.PAD(mb)
+    h.SetAttribute(pcbnew.PAD_ATTRIB_NPTH); h.SetShape(pcbnew.PAD_SHAPE_CIRCLE)
+    h.SetSize(pcbnew.VECTOR2I(mm(0.5), mm(0.5))); h.SetDrillSize(pcbnew.VECTOR2I(mm(0.5), mm(0.5)))
+    h.SetLayerSet(pcbnew.PAD.UnplatedHoleMask())
+    mb.Add(h); h.SetPosition(P(W_B + 0.25, y))
+board.Add(mb)
+text(pcbnew.B_SilkS, "USB FLASH TAB - SNAP OFF", (fx0 + fx1) / 2, fy1 - 0.9, 0.7, mirror=True)
 rect(pcbnew.Eco1_User, -2.6, -3.0, W_B + 2.6, ty1 + 2.6, 0.2); text(pcbnew.Eco1_User, "enclosure inner wall", 19, ty1 + 1.6, 1.0)
 for y, label in [(PAD6_TOP, "default alarm level (top of pad 6)"),
                  (pad_center_y(1) + PAD_H / 2, "wake: water reaches pad 1"),
@@ -289,7 +313,7 @@ for i, a in enumerate(refs):
                 issues.append(f"courtyard overlap {a} / {b}")
 edge = board.GetBoardEdgesBoundingBox()
 for r, f in fps.items():
-    if r in ("U1",):
+    if r in ("U1", "J2"):            # antenna / socket mouth sit on the board edge by design
         continue
     cy = f.GetCourtyard(pcbnew.B_CrtYd if f.GetLayer() == pcbnew.B_Cu else pcbnew.F_CrtYd)
     if cy.OutlineCount() and not edge.Contains(cy.BBox()):

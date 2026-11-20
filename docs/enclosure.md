@@ -112,6 +112,7 @@ Sources: [JLC3DP capabilities](https://jlc3dp.com/capabilities/3d-printing-servi
 | – | Silicone O-ring grease (no epoxy anywhere) |
 
 ### 2.5 Assembly and leak test
+0. Flash the firmware through the USB-C tab, then snap the tab off and file the edge flush.
 1. Put the gap pad on the cup's thermal window. Drop the PCB in electrode-side-first, then the battery, coil and foam.
 2. Grease the O-ring lightly, roll it into the plug groove, and press the plug in (the lead-in chamfer guides it). Fit the 4 screws.
 3. **Leak test before first bath use.** Put the closed device in a jar of water and pull a light vacuum
