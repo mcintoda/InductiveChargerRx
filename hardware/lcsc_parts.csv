@@ -1,0 +1,21 @@
+comment,lcsc,status,note
+ESP32-S3-MINI-1-N8,C2913206,confirmed,JLC extended; 8 MB flash no PSRAM
+BQ51050BRHLR,C133307,confirmed,JLC extended
+TMP117AIDRVR,C699536,confirmed,JLC extended
+XC6220B331MR,C86534,confirmed,XC6220B331MR-G; JLC extended
+10k B3380,C77131,confirmed,Murata NCP15XH103F03RC; Arrow lists NRND - alternate NCP15XH103F03RC equivalents exist
+TDK WR303050-12F5-ID,C6357742,confirmed,Qi Rx coil; hand-soldered (not placed by JLC)
+BSS138,C78284,confirmed-exists,Changjiang BSS138 SOT-23; class not confirmed
+22nF 50V X7R,C1532,confirmed,0402 FH 0402B223K500NT; JLC basic
+100nF 50V X7R,C14663,verify,0603 basic (widely used number)
+10nF 50V X7R,C15195,verify,0402 basic (widely used number)
+1uF 25V X5R,C52923,verify,0402 basic (widely used number)
+10uF 25V X5R,C15850,verify,0805 basic (widely used number)
+470nF 25V X7R,C1623,confirmed,Samsung CL10B474KA8NNNC 0603; JLC basic
+3.3nF 50V C0G,C3877267,confirmed,Murata GCM1885C1H332FA16D 0603 C0G 1%
+1k 1%,C11702,verify,0402 basic
+10k 1%,C25744,verify,0402 basic
+1M 1%,C26083,verify,0402 basic
+196R 1%,C966839,confirmed,UNI-ROYAL CQ02WGF1960TCE 0402 1%; JLC extended
+Green,C12624,verify,KT-0603G green 0603 LED
+500mAh,,hand,403040 Li-ion with PCM - hand-soldered
