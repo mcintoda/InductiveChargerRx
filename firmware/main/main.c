@@ -15,6 +15,7 @@
 #include <sys/time.h>
 
 #include "board.h"
+#include "driver/usb_serial_jtag.h"
 #include "esp_log.h"
 #include "fdc1004.h"
 #include "fdclevel.h"
@@ -100,6 +101,12 @@ static void calibrate_dry(float alpha)
 
 static void sleep_now(bool pad1_wet, uint64_t timer_s)
 {
+    // deep sleep turns the USB port off: stay awake while a computer is attached so esptool can
+    // reset the chip into the bootloader by itself (no IO0 / EN buttons needed)
+    if (usb_serial_jtag_is_connected()) {
+        ESP_LOGI(TAG, "USB host attached: staying awake");
+        while (usb_serial_jtag_is_connected()) vTaskDelay(pdMS_TO_TICKS(1000));
+    }
     net_wifi_stop();
     power_led(false);
     hold_rail(false);

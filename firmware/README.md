@@ -18,7 +18,11 @@
 idf.py set-target esp32s3
 idf.py build
 ```
-First flash over the USB test pads (D+/D−, hold IO0 low at reset): `idf.py -p /dev/ttyACM0 flash monitor`.
+Flash over the USB test pads (TP5 D+, TP6 D−, TP2 GND; the board is powered by its battery, not USB 5 V):
+`idf.py -p /dev/ttyACM0 flash monitor`. No buttons: esptool resets the chip into the bootloader through the
+built-in USB-Serial/JTAG, and a blank chip enumerates on its own. The firmware stays awake while a computer is
+attached. If it was already asleep when you plugged in, wake it once by putting it on the charger or tapping EN
+(TP3) to GND. IO0 (TP4) is only for recovery if the USB port has been disabled.
 Later updates: put brim on its charger, open the settings page, upload `build/brim.bin`.
 
 ## Host tests (no hardware)

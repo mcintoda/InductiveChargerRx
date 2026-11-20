@@ -13,7 +13,7 @@ a spray bottle, salt, a vacuum jar or hand vacuum pump.
 |---|---|---|
 | Resistance VBAT–GND and 3V3–GND before power | > 10 kΩ | Look for solder bridges at U2 (QFN) and U1 |
 | 3.7 V at J1 from a bench supply, 100 mA limit | 3V3 = 3.30 V ± 2 % | Check U4 orientation |
-| Flash over the USB pads (hold IO0 low at reset) | `idf.py flash monitor` boots | Check the D+/D− and EN pads |
+| Flash over the USB pads (automatic reset; IO0 only for recovery) | `idf.py flash monitor` boots | Check the D+/D− and EN pads |
 | Idle current in deep sleep, dry, off the charger | **≤ 60 µA** (budget 40 µA) | Check that GPIO12 is low (TMP117 rail off) and nothing back-feeds through SDA/SCL |
 
 ## 2. Touch electrodes (in the closed enclosure)
