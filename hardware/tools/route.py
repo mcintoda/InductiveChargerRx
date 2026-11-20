@@ -111,6 +111,9 @@ def prep():
     track(board, sh, (34.6, 33.2), (34.6, SH_Y), pcbnew.In2_Cu)
     track(board, sh, (34.6, SH_Y), (e7[0], SH_Y), pcbnew.In2_Cu); track(board, sh, (e7[0], SH_Y), e7, pcbnew.In2_Cu)
 
+    # --- flash tab ground: In1 strap across the middle bridge joins the tab pour to the main GND plane ---
+    track(board, net("GND"), (W_B - 1.4, 15.5), (FTAB_X0 + 1.2, 15.5), pcbnew.In1_Cu, w=0.5)
+
     # --- thermal vias: BQ51050B exposed pad (2 x 2) and the ESP32 module ground pad (3 x 3 grid corners) ---
     u2 = pads(fps["U2"]).get("21")
     if u2:
