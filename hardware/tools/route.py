@@ -26,6 +26,7 @@ PCB = os.path.join(HW, "kicad", "bath_monitor.kicad_pcb")
 RDIR = os.path.join(HW, "kicad", "route")
 DSN = os.path.join(RDIR, "bath_monitor.dsn")
 SES = os.path.join(RDIR, "bath_monitor.ses")
+AGAIN = os.path.join(RDIR, "second_pass")
 OX, OY = 100.0, 50.0
 TRACK = 0.2
 BAND = (36.0, 101.5)          # electrode band (board y): autorouter keep-out on B.Cu / vias
@@ -68,6 +69,8 @@ def pads(fp):
 def prep():
     import subprocess
     subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "gen_pcb.py")], check=True)
+    if os.path.exists(AGAIN):
+        os.remove(AGAIN)
     board = pcbnew.LoadBoard(PCB)
     # always starts from a fresh placement: gen_pcb.py rebuilds the board without any routing
     # rules: KiCad defaults (0.2 mm track / 0.2 mm clearance / 0.6-0.3 mm via) suit JLC 4-layer
@@ -141,7 +144,8 @@ def again():
     (locked), the first pass's wires may be ripped up and moved to finish the last connections."""
     board = pcbnew.LoadBoard(PCB)
     assert pcbnew.ExportSpecctraDSN(board, DSN), "DSN export failed"
-    constrain_dsn(protect_all=False)
+    constrain_dsn(protect_all=True)         # earlier wires stay put; only the open connections are routed
+    open(AGAIN, "w").close()
     n = sum(1 for t in board.GetTracks() if not t.IsLocked())
     print(f"DSN with {n} movable autorouted items -> {os.path.relpath(DSN, HW)}; run the autorouter, then finish")
 
@@ -195,11 +199,16 @@ def constrain_dsn(protect_all=True):
 def finish():
     board = pcbnew.LoadBoard(PCB)
     assert os.path.exists(SES), f"missing {SES}: run the autorouter first"
-    # the session holds every autorouted wire (a second pass re-emits the first pass's too): start clean
-    doomed = [t for t in board.GetTracks() if not t.IsLocked()]
-    for t in doomed:
-        board.Delete(t)                     # Remove() leaves SWIG owning a dangling object (segfaults later)
-    del doomed
+    # a first pass replaces any earlier autorouting; a second pass (route.py again) only adds its new wires,
+    # because Freerouting's session holds just the wires it created
+    second = os.path.exists(AGAIN)
+    if not second:
+        doomed = [t for t in board.GetTracks() if not t.IsLocked()]
+        for t in doomed:
+            board.Delete(t)                 # Remove() leaves SWIG owning a dangling object (segfaults later)
+        del doomed
+    else:
+        os.remove(AGAIN)
     import_ses(board, SES)
     board.Save(PCB)
     board = pcbnew.LoadBoard(PCB)
