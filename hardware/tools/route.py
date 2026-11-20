@@ -85,7 +85,7 @@ def prep():
     # TMP117 bus lanes (bottom end just above the neck)
     tmp_lanes = {"SDA": 17.6, "SCL": 18.4, "SENSE_3V3": 19.2, "GND": 20.6}
     for n, x in tmp_lanes.items():
-        track(board, net(n), (x, BAND[1] - 0.2), (x, LANE_TOP))
+        track(board, net(n), (x, BAND[1] + 0.6), (x, LANE_TOP))   # both ends outside the keep-outs
     # NTC: from its pad straight right then up on its own lane (x = 22.2)
     track(board, ntc.GetNet(), (nx, ny), (22.2, ny)); track(board, ntc.GetNet(), (22.2, ny), (22.2, LANE_TOP))
     # TH1 GND pad joins the GND lane through a short stub downwards then across (stays clear of the NTC stub)
@@ -135,7 +135,7 @@ def constrain_dsn():
 def finish():
     board = pcbnew.LoadBoard(PCB)
     assert os.path.exists(SES), f"missing {SES}: run the autorouter first"
-    assert pcbnew.ImportSpecctraSES(board, SES), "SES import failed"
+    import_ses(board, SES)
     board.Save(PCB)
     board = pcbnew.LoadBoard(PCB)
     stitch(board)
@@ -145,6 +145,44 @@ def finish():
     rep = os.path.join(RDIR, "drc.rpt")
     pcbnew.WriteDRCReport(board, rep, pcbnew.EDA_UNITS_MILLIMETRES, True)
     print(open(rep).read()[-600:])
+
+
+def import_ses(board, path):
+    """Add the autorouter's wires and vias (KiCad 7's ImportSpecctraSES only works inside the GUI)."""
+    import sexp
+    ses = sexp.parse(open(path).read())
+    routes = sexp.find(ses, "routes")[0]
+    res = sexp.find(routes, "resolution")[0]
+    scale = {"um": 1e-3, "mm": 1.0, "mil": 0.0254, "inch": 25.4}[res[1]] / float(res[2])   # -> mm
+    xy = lambda x, y: pcbnew.VECTOR2I(pcbnew.FromMM(float(x) * scale), pcbnew.FromMM(-float(y) * scale))  # noqa: E731
+    layers = {board.GetLayerName(l): l for l in range(pcbnew.PCB_LAYER_ID_COUNT)}
+    stacks = {}
+    for lib in sexp.find(routes, "library_out"):
+        for ps in sexp.find(lib, "padstack"):
+            m = re.search(r"_(\d+):(\d+)_um", ps[1])
+            if m: stacks[ps[1]] = (int(m.group(1)) / 1000, int(m.group(2)) / 1000)
+    n_w = n_v = 0
+    for net in sexp.find(sexp.find(routes, "network_out")[0], "net"):
+        kn = board.FindNet(net[1])
+        for w in sexp.find(net, "wire"):
+            if sexp.find(w, "type"):                  # protected: the hand-routed copper already on the board
+                continue
+            path = sexp.find(w, "path")[0]
+            lay, width, pts = layers[path[1]], float(path[2]) * scale, path[3:]
+            for i in range(0, len(pts) - 2, 2):
+                t = pcbnew.PCB_TRACK(board)
+                t.SetStart(xy(pts[i], pts[i + 1])); t.SetEnd(xy(pts[i + 2], pts[i + 3]))
+                t.SetWidth(pcbnew.FromMM(width)); t.SetLayer(lay); t.SetNet(kn)
+                board.Add(t); n_w += 1
+        for v in sexp.find(net, "via"):
+            if sexp.find(v, "type"):
+                continue
+            dia, drill = stacks.get(v[1], (0.6, 0.3))
+            via = pcbnew.PCB_VIA(board)
+            via.SetPosition(xy(v[2], v[3])); via.SetWidth(pcbnew.FromMM(dia)); via.SetDrill(pcbnew.FromMM(drill))
+            via.SetNet(kn)
+            board.Add(via); n_v += 1
+    print(f"imported {n_w} track segments, {n_v} vias")
 
 
 def stitch(board, pitch=2.5):
@@ -161,7 +199,46 @@ def stitch(board, pitch=2.5):
                 board.Add(v); placed += 1
             x += pitch
         y += pitch
-    print(f"stitching vias: {placed}")
+    print(f"stitching vias: {placed} on the grid, {island_vias(board, gnd)} into GND islands")
+
+
+def island_vias(board, gnd, step=0.4):
+    """Every filled GND island on an outer layer gets at least one via to the inner GND planes."""
+    filler = pcbnew.ZONE_FILLER(board)
+    filler.Fill(board.Zones())
+    added = 0
+    for z in board.Zones():
+        if z.GetNetname() != "GND" or z.GetLayer() not in (pcbnew.F_Cu, pcbnew.B_Cu):
+            continue
+        polys = z.GetFilledPolysList(z.GetLayer())
+        for i in range(polys.OutlineCount()):
+            outline = polys.Outline(i)
+            bb = outline.BBox()
+            done = False
+            # an island already holding a GND via or a GND through-hole is connected
+            for t in board.GetTracks():
+                if t.GetClass() == "PCB_VIA" and t.GetNetCode() == gnd.GetNetCode() and outline.PointInside(t.GetPosition()):
+                    done = True; break
+            y = bb.GetY() + mm(0.4)
+            while not done and y < bb.GetBottom():
+                x = bb.GetX() + mm(0.4)
+                while x < bb.GetRight():
+                    pos = pcbnew.VECTOR2I(int(x), int(y))
+                    if outline.PointInside(pos):
+                        v = pcbnew.PCB_VIA(board)
+                        v.SetPosition(pos); v.SetWidth(mm(0.5)); v.SetDrill(mm(0.25)); v.SetNet(gnd)
+                        if clear(board, v, margin=0.2) and inside_gnd_planes(board, pos):
+                            board.Add(v); added += 1; done = True; break
+                    x += mm(step)
+                y += mm(step)
+    return added
+
+
+def inside_gnd_planes(board, pos):
+    for z in board.Zones():
+        if z.GetNetname() == "GND" and z.GetLayer() in (pcbnew.In1_Cu, pcbnew.In2_Cu) and z.Outline().Contains(pos):
+            return True
+    return False
 
 
 def clear(board, v, margin=0.25):
