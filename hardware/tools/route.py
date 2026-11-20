@@ -13,7 +13,7 @@ Hand-routed (deterministic, because the geometry matters):
   * thermal vias in the BQ51050B and ESP32 module ground pads.
 Autorouter constraints (written into the DSN only):
   * keep-out on every layer across the electrode band (only the hand lanes live there)
-  * In1.Cu / In2.Cu are not used for routing (they stay solid GND / SHIELD planes); vias are fine
+  * In1.Cu is not used for routing (solid GND / SHIELD plane); In2.Cu is a third routing layer, GND pour refilled
 """
 import os
 import re
@@ -30,6 +30,8 @@ OX, OY = 100.0, 50.0
 TRACK = 0.2
 BAND = (36.0, 101.5)          # electrode band (board y): autorouter keep-out on B.Cu / vias
 FRONT_BAND = (30.5, 101.5)    # front copper keep-out starts at the shield strips / REF pad
+# flash tab geometry (must match gen_pcb.py FTAB / FSLOTS)
+W_B, FTAB_X0, FTAB_Y, FSLOTS = 38.0, 39.5, (9.5, 21.5), [(11.5, 14.0), (17.0, 19.5)]
 LANE_TOP = 29.8               # lanes end here; the autorouter takes over above
 
 
@@ -117,7 +119,8 @@ def constrain_dsn():
     """Autorouter-only constraints: inner layers not routable, keep-out over the electrode band."""
     s = open(DSN).read()
     s = re.sub(r"\(layer In1\.Cu\s*\(type signal\)", "(layer In1.Cu (type power)", s)
-    s = re.sub(r"\(layer In2\.Cu\s*\(type signal\)", "(layer In2.Cu (type power)", s)
+    # In2 stays a signal layer: the third routing layer in the crowded electronics band. Its GND pour is
+    # refilled around the traces afterwards; In1 remains the solid GND reference under everything.
     # DSN coordinates are in um with y up (KiCad exports y negated)
     x0, x1 = (OX - 1) * 1000, (OX + 39) * 1000
     y0, y1 = -(OY + BAND[1]) * 1000, -(OY + BAND[0]) * 1000
@@ -125,6 +128,11 @@ def constrain_dsn():
     ko = f"\n    (keepout \"\" (rect F.Cu {x0:.0f} {fy0:.0f} {x1:.0f} {fy1:.0f}))"
     ko += f"\n    (keepout \"\" (rect B.Cu {x0:.0f} {y0:.0f} {x1:.0f} {y1:.0f}))"
     ko += f"\n    (via_keepout \"\" (rect signal {x0:.0f} {y0:.0f} {x1:.0f} {y1:.0f}))"
+    # flash tab: copper crosses only the middle bridge; 0.5 mm edge clearance round the slots and outer bridges
+    for ya, yb in [(FTAB_Y[0] - 0.5, FSLOTS[0][1] + 0.5), (FSLOTS[1][0] - 0.5, FTAB_Y[1] + 0.5)]:
+        for lay in ("F.Cu", "In1.Cu", "In2.Cu", "B.Cu"):
+            ko += (f"\n    (keepout \"\" (rect {lay} {(OX + W_B - 0.5) * 1000:.0f} {-(OY + yb) * 1000:.0f} "
+                   f"{(OX + FTAB_X0 + 0.5) * 1000:.0f} {-(OY + ya) * 1000:.0f}))")
     i = s.index("    (boundary")                 # after the layer definitions
     s = s[:i] + ko.lstrip("\n") + "\n" + s[i:]
     # hand-routed wires and vias are fixed: the autorouter must not move or rip them up
@@ -226,7 +234,7 @@ def island_vias(board, gnd, step=0.4):
                     pos = pcbnew.VECTOR2I(int(x), int(y))
                     if outline.PointInside(pos):
                         v = pcbnew.PCB_VIA(board)
-                        v.SetPosition(pos); v.SetWidth(mm(0.5)); v.SetDrill(mm(0.25)); v.SetNet(gnd)
+                        v.SetPosition(pos); v.SetWidth(mm(0.6)); v.SetDrill(mm(0.3)); v.SetNet(gnd)
                         if clear(board, v, margin=0.2) and inside_gnd_planes(board, pos):
                             board.Add(v); added += 1; done = True; break
                     x += mm(step)
