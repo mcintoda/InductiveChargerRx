@@ -19,3 +19,5 @@ BSS138,C78284,confirmed-exists,Changjiang BSS138 SOT-23; class not confirmed
 196R 1%,C966839,confirmed,UNI-ROYAL CQ02WGF1960TCE 0402 1%; JLC extended
 Green,C12624,verify,KT-0603G green 0603 LED
 500mAh,,hand,403040 Li-ion with PCM - hand-soldered
+FDC1004DGSR,C2865994,confirmed,TI FDC1004DGSR VSSOP-10 (LCSC); option - see docs/sensing-options.md
+0R,C17168,verify,0402 0 ohm jumper basic (widely used number); FDC1004 links R22-R26

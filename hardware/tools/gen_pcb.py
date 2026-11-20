@@ -189,6 +189,8 @@ place("J1", 36.4, 27.0)
 # battery thermistor on the back, under the top of the cell (thermal pad / foam presses it on)
 place("TH1", 19.0, 52.5)
 pack([f"TP{i}" for i in range(1, 9)], 7.4, 23.9, 26.3, 29.4, gap=0.2)
+# FDC1004 option: on the back just below the electronics band, right of the hand-routed lanes
+pack(["U5", "C24", "C25", "R22", "R23", "R24", "R25", "R26"], 23.6, 30.2, 37.4, 35.8, gap=0.3)
 # thermal tab
 place("U3", 19.0, 107.0, 90)
 place("C20", 19.0, 110.3)

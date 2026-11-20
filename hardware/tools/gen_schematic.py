@@ -47,7 +47,7 @@ C470N = ("470nF", "25V X7R", C0603)
 C3N3 = ("3.3nF", "50V C0G", C0603)
 C1U = ("1uF", "25V X5R", C0402)
 C10U = ("10uF", "25V X5R", C0805)
-R1K, R10K, R1M, R196 = "1k 1%", "10k 1%", "1M 1%", "196R 1%"
+R1K, R10K, R1M, R196, R0 = "1k 1%", "10k 1%", "1M 1%", "196R 1%", "0R"
 
 # ---------------------------------------------------------------------------
 # symbol library helpers
@@ -58,7 +58,9 @@ _libcache = {}
 def load_symbol(lib_id):
     lib, name = lib_id.split(":")
     if lib not in _libcache:
-        _libcache[lib] = parse(open(os.path.join(SYMDIR, lib + ".kicad_sym")).read())
+        path = os.path.join(HW, "kicad", "BathMonitor.kicad_sym") if lib == "BathMonitor" else \
+            os.path.join(SYMDIR, lib + ".kicad_sym")
+        _libcache[lib] = parse(open(path).read())
     syms = {s[1]: s for s in find(_libcache[lib], "symbol")}
     s = syms[name]
     ext = find(s, "extends")
@@ -352,14 +354,48 @@ GND(*pin("D1", "1"))
 used = set(U1) | {"36"}
 NC("U1", *[n for n in pins_of(load_symbol("MCU_Espressif:ESP32-S3-MINI-1")) if n not in used])
 
+# ===========================================================================
+# H. FDC1004 option: differential / ratiometric capacitance-to-digital converter
+#    CIN1 = PAD1 (reference liquid), CIN2 = PAD5, CIN3 = PAD6 (alarm region), CIN4 = REF (reference
+#    environment); SHLD1 drives the same shield. 0R links select it per board (see docs/sensing-options.md).
+# ===========================================================================
+FX, FY = 279.4, 220.98
+P("U5", "BathMonitor:FDC1004DGS", "FDC1004DGSR", "Package_SO:VSSOP-10_3x3mm_P0.5mm", FX, FY, 0,
+  {"1": "FDC_SHLD", "2": "FDC_CIN1", "3": "FDC_CIN2", "4": "FDC_CIN3", "5": "FDC_CIN4", "6": None,
+   "7": "GND", "8": "SENSE_3V3", "9": "SCL", "10": "SDA"},
+  text=((-3.0, -18.0, "right"), (3.0, 18.5, "left")), MPN="FDC1004DGSR",
+  Note="I2C 0x50, shares the TMP117 bus and switched rail; 0 uA when the rail is off")
+FXL = FX - 10.16
+for pnum, col, row, ref, net in [("1", 2.54, -27.94, "R26", "SHIELD"), ("2", 5.08, -20.32, "R22", "PAD1"),
+                                 ("3", 7.62, -12.7, "R23", "PAD5"), ("4", 5.08, 12.7, "R24", "PAD6"),
+                                 ("5", 2.54, 20.32, "R25", "PAD_REF")]:
+    px, py = pin("U5", pnum)
+    R(ref, R0, FXL - 15.24, FY + row, 90, net, {"1": "FDC_SHLD", "2": "FDC_CIN1", "3": "FDC_CIN2",
+                                                "4": "FDC_CIN3", "5": "FDC_CIN4"}[pnum],
+      Note="0R link: populate to connect this electrode to the FDC1004")
+    W((px, py), (FXL - col, py), (FXL - col, FY + row), pin(ref, "2"))
+    W(pin(ref, "1"), (FXL - 21.59, FY + row)); LBL(net, FXL - 21.59, FY + row, 180)
+NC("U5", "6")
+for num, net in [("10", "SDA"), ("9", "SCL")]:
+    x, y = pin("U5", num); W((x, y), (x + G, y)); LBL(net, x + G, y, 0)
+W(pin("U5", "8"), (FX, FY - 22.86), (FX + 25.4, FY - 22.86)); LBL("SENSE_3V3", FX + 25.4, FY - 22.86, 0)
+for ref, val, dx in [("C24", C100N, 7.62), ("C25", C1U, 17.78)]:
+    C(ref, val, FX + dx, FY - 19.05, 0, "SENSE_3V3", "GND"); GND(*pin(ref, "2"))
+GND(*pin("U5", "7"))
+# the same electrode / shield nets, labelled on the ladder side
+for i, net, ang in [(1, "PAD1", 90), (5, "PAD5", 90), (6, "PAD6", 90), (7, "PAD_REF", 270)]:
+    LBL(net, 246.38, 116.84 + 7.62 * (i - 1), ang)
+LBL("SHIELD", 289.56, SH_Y, 90)
+
 TEXTS += [
+    ("FDC1004 option (0R links select it)", 228.6, 186.0),
     ("Qi receiver + Li-ion charger", 20.32, 40.64),
     ("Qi-present wake detector", 137.16, 127.0),
     ("3.3 V LDO", 175.26, 45.72),
     ("Battery sense", 228.6, 43.18),
     ("TMP117 water temperature", 167.64, 172.72),
     ("ESP32-S3-MINI-1", 304.8, 66.04),
-    ("Level ladder electrodes (behind front wall)", 228.6, 172.72),
+    ("Level ladder electrodes (behind front wall)", 228.6, 175.26),
 ]
 
 
@@ -459,7 +495,7 @@ def main():
         items.append([Sym("junction"), [Sym("at"), *j], [Sym("diameter"), 0], [Sym("color"), 0, 0, 0, 0], [Sym("uuid"), uid("j", j)]])
     for name, x, y, a in LABELS:
         items.append([Sym("label"), name, [Sym("at"), x, y, a], [Sym("fields_autoplaced")],
-                      eff(justify="right bottom" if a == 180 else "left bottom"), [Sym("uuid"), uid("l", name, x, y)]])
+                      eff(justify="right bottom" if a in (180, 270) else "left bottom"), [Sym("uuid"), uid("l", name, x, y)]])
     for x, y in NCS:
         items.append([Sym("no_connect"), [Sym("at"), x, y], [Sym("uuid"), uid("nc", x, y)]])
     for t, x, y in TEXTS:

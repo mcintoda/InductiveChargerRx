@@ -28,7 +28,8 @@ DSN = os.path.join(RDIR, "bath_monitor.dsn")
 SES = os.path.join(RDIR, "bath_monitor.ses")
 OX, OY = 100.0, 50.0
 TRACK = 0.2
-BAND = (32.0, 101.5)          # electrode band (board y): autorouter keep-out
+BAND = (36.0, 101.5)          # electrode band (board y): autorouter keep-out on B.Cu / vias
+FRONT_BAND = (30.5, 101.5)    # front copper keep-out starts at the shield strips / REF pad
 LANE_TOP = 29.8               # lanes end here; the autorouter takes over above
 
 
@@ -120,8 +121,9 @@ def constrain_dsn():
     # DSN coordinates are in um with y up (KiCad exports y negated)
     x0, x1 = (OX - 1) * 1000, (OX + 39) * 1000
     y0, y1 = -(OY + BAND[1]) * 1000, -(OY + BAND[0]) * 1000
-    ko = "".join(f"\n    (keepout \"\" (rect {layer} {x0:.0f} {y0:.0f} {x1:.0f} {y1:.0f}))"
-                 for layer in ("F.Cu", "B.Cu"))
+    fy0, fy1 = -(OY + FRONT_BAND[1]) * 1000, -(OY + FRONT_BAND[0]) * 1000
+    ko = f"\n    (keepout \"\" (rect F.Cu {x0:.0f} {fy0:.0f} {x1:.0f} {fy1:.0f}))"
+    ko += f"\n    (keepout \"\" (rect B.Cu {x0:.0f} {y0:.0f} {x1:.0f} {y1:.0f}))"
     ko += f"\n    (via_keepout \"\" (rect signal {x0:.0f} {y0:.0f} {x1:.0f} {y1:.0f}))"
     i = s.index("    (boundary")                 # after the layer definitions
     s = s[:i] + ko.lstrip("\n") + "\n" + s[i:]
