@@ -63,7 +63,7 @@ the **back** (single-sided SMT at JLC). Height bands, from the top (dry) to the 
 
 **Checks run on the placement**: no courtyard overlaps, every part inside the outline, KiCad DRC shows
 no clearance / keep-out / footprint errors. Only unrouted nets, silkscreen cosmetics,
-and thermal-spoke warnings remain, and those are cleared during routing. The QFN's built-in 0.2 mm
+and thermal-spoke warnings remained at that stage; the board is now fully routed (see [pcb-routing.md](pcb-routing.md)). The QFN's built-in 0.2 mm
 thermal vias were dropped in favour of 0.3 mm vias (JLC standard) to be added during routing.
 
 ### Layer usage

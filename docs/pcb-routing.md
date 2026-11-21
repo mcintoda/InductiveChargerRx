@@ -34,25 +34,39 @@ Freerouting (open source) reads the DSN and writes the SES. Any of these works:
 Then run `route.py finish`. Pass criteria: DRC with **0 unconnected items, 0 clearance errors**. Silkscreen
 warnings are cosmetic.
 
-## Status (2026-11-20, after the autorouter)
+## Status (2026-11-21): fully routed
 
-Freerouting 1.9 (run under `xvfb-run`; it needs a display) followed by `route.py again` for a second pass
-routes everything except the items below. The board in `hardware/kicad/bath_monitor.kicad_pcb` holds that
-routing. There are no copper-to-edge errors, no footprint errors and no shorts. What is left is about
-half an hour of work in KiCad's interactive router (open the board, press **X** on each ratsnest line, then
-**B** to refill the zones and **Inspect > Design Rules Checker**):
+![Copper layers F.Cu / In2 / B.Cu](img/pcb-routed-layers.png)
 
-| Open connection | Where | Hint |
-|---|---|---|
-| TERM: U2 pin 10 to R3 | Qi charger column | Short B.Cu hop down the left of U2 |
-| CLAMP1: U2 pin 5 to C7 | Qi charger column | In2 under C7/C9 |
-| TAB_VBUS: J2 A9 to B4/U6; +3V3 U6 to C27 and across the middle bridge | flash tab | Room is plentiful on the tab; use B.Cu |
-| FDC_CIN1: R22 to U5 pin 2; PAD5 / PAD6 In2 stubs to R23 / R24 | FDC block | Via beside each 0R link to the In2 stub |
-| GND: U5 pin 7 and a few B.Cu pour islands | electronics band | One GND via per island to In1 |
+`hardware/kicad/bath_monitor.kicad_pcb` is routed: **0 unconnected, 0 clearance / hole / edge errors, no
+dangling copper**. The pad connectivity matches the schematic netlist (54 nets; the TMP117 exposed pad is
+tied to GND, which the symbol has no pin for). The only DRC items left are cosmetic warnings: silkscreen
+overlaps and silk clipped by mask or edge (back silk only carries designators), plus `lib_footprint_issues`
+because the footprints are embedded rather than read from a library.
 
-Also fix 7 clearance nits where a GND fan-out via sits 0.01–0.15 mm too close to a neighbouring pad
-(C7, C9, C3, C4, R11, U2 pin 19, C27): nudge each via 0.2 mm away. Then rerun `python3 hardware/tools/jlc_outputs.py`.
-The silkscreen warnings (overlaps / over copper) are cosmetic: the back silk only carries reference designators.
+How it got there:
+
+1. Freerouting 1.9 (`route.py prep` / `finish` / `again`, run under `xvfb-run`) does the bulk.
+2. `tools/fixroute.py` is a small grid A* router (F.Cu / In2 / B.Cu, DRC-driven). It reroutes what is left,
+   does transactional rip-up (kept only if the DRC score improves), adds GND island vias, and falls back to
+   0.15 mm tracks and 0.5/0.25 mm vias in fine-pitch spots. Run it after any edit:
+   `python3 hardware/tools/fixroute.py`.
+3. A few spots were laid out by hand (locked tracks):
+   - **FDC block.** R23 (PAD5) and R24 (PAD6) drop straight down on B.Cu to a via inside their own
+     electrodes E5 / E6, so no long detours are needed. U5 pin 7 GND reaches In1 through a small GND
+     tongue cut into the shield plane above the REF electrode. No vias are allowed over E8 (REF) except
+     REF's own.
+   - **U2 right-side fan-out.** Pins 4–6 (VBAT, CLAMP1, COMM1) fan out to staggered vias. VBAT then joins
+     its In2 run.
+   - **R5 / R28 GND.** Each has its own GND via. The RECT and TAB_CC2 links were moved off them.
+   - **TMP117.** GND vias in the exposed pad and beside it tie the split B.Cu pour through F.Cu.
+   - **Right F.Cu shield strip.** Two vias tie it to the In1 shield plane.
+
+Four vias are 0.5 / 0.25 mm (GND ×3 and CLAMP1). Everything else is 0.6 / 0.3 mm. The minimum track is
+0.15 mm; the default is 0.2 mm.
+
+Then `python3 hardware/tools/jlc_outputs.py` writes `hardware/fab/` (gerbers zip, `bom_jlc.csv`,
+`cpl_jlc.csv`). The folder is git-ignored, so regenerate it before ordering.
 
 ## Order settings at JLCPCB
 | Option | Value |
@@ -60,7 +74,7 @@ The silkscreen warnings (overlaps / over copper) are cosmetic: the back silk onl
 | Layers / thickness | 4 / 1.0 mm, stackup JLC04101H-7628 |
 | Solder mask / silkscreen | **White** / black (the electrodes show through the translucent case) |
 | Surface finish | ENIG |
-| Min via | 0.3 / 0.6 mm (standard, no extra cost) |
+| Min via | 0.25 / 0.5 mm on four vias (rest 0.3 / 0.6). Check the order page; if JLC surcharges sub-0.3 mm holes, the four can be hand-nudged to 0.3 mm |
 | Assembly | **Bottom side**, standard PCBA, files `bom_jlc.csv` + `cpl_jlc.csv` |
 | Not assembled | Electrodes (copper), test pads, battery and Qi coil (hand-soldered) |
 
