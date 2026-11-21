@@ -453,6 +453,41 @@ def fix_islands(board, g):
     return added
 
 
+def fix_pad_islands(board, g, in1):
+    """GND SMD pads whose outer-layer pour fragment has no via: short track + via into the In1 plane."""
+    gnd = board.FindNet("GND"); gc = gnd.GetNetCode()
+    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+    holes = [t.GetPosition() for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and t.GetNetCode() == gc]
+    holes += [p.GetPosition() for fp in board.GetFootprints() for p in fp.Pads() if p.GetNetCode() == gc and p.HasHole()]
+    added = 0
+    for fp in board.GetFootprints():
+        for p in fp.Pads():
+            if p.GetNetCode() != gc or p.HasHole():
+                continue
+            lay = pcbnew.B_Cu if p.IsOnLayer(pcbnew.B_Cu) else pcbnew.F_Cu
+            frag = None
+            for z in board.Zones():
+                if z.GetIsRuleArea() or z.GetNetCode() != gc or not z.IsOnLayer(lay):
+                    continue
+                polys = z.GetFilledPolysList(lay)
+                for o in range(polys.OutlineCount()):
+                    one = pcbnew.SHAPE_POLY_SET(); one.AddOutline(polys.Outline(o))
+                    if one.Contains(p.GetPosition()):
+                        frag = one
+            if frag is None or any(frag.Contains(h) for h in holes):
+                continue
+            obst = build_obstacles(board, g, gc, TRACK_W / 2 + CLR + MARGIN)
+            vmap = via_map(board, g, gc)
+            path = astar(g, obst, vmap, item_cells(g, p, [lay]), {}, in1)
+            if path is None:
+                print("  no via escape for", fp.GetReference(), p.GetNumber())
+                continue
+            commit_path(board, g, gc, path); added += 1
+            holes = [t.GetPosition() for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and t.GetNetCode() == gc]
+            pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+    return added
+
+
 def in1_mask(board, g):
     gnd = board.FindNet("GND").GetNetCode()
     im = g.blank(0); d = ImageDraw.Draw(im)
@@ -518,6 +553,7 @@ def main():
     print("removed vias with clearance errors:", remove_bad_vias(board, drc(board)))
     print("GND island vias:", fix_islands(board, g))
     in1 = in1_mask(board, g)
+    print("GND pad island escapes:", fix_pad_islands(board, g, in1))
     best = plain_rounds(board, g, in1)
     print("after plain routing:", best, "unconnected")
     # transactional rip-up: keep a rip-up only if the total number of open connections goes down
@@ -542,8 +578,12 @@ def main():
             print("no rip-up improves further")
             break
     print("GND island vias:", fix_islands(board, g))
-    for _ in range(6):                                  # trim dangling stubs
+    for _ in range(6):                                  # trim dangling stubs, only if nothing opens up
+        before = score(drc(board)); board.Save(tmp)
         if not remove_bad_tracks(board, drc(board), kinds=("[track_dangling]",)):
+            break
+        if score(drc(board)) > before:
+            board = pcbnew.LoadBoard(tmp)
             break
     rep = drc(board)
     board.Save(PCB)
