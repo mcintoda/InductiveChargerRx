@@ -478,11 +478,15 @@ def fix_pad_islands(board, g, in1):
                 continue
             obst = build_obstacles(board, g, gc, TRACK_W / 2 + CLR + MARGIN)
             vmap = via_map(board, g, gc)
-            path = astar(g, obst, vmap, item_cells(g, p, [lay]), {}, in1)
-            if path is None:
+            src = item_cells(g, p, [lay])
+            path = astar(g, obst, vmap, src, {}, in1)
+            if path is not None:
+                commit_path(board, g, gc, path); added += 1
+            elif fallback(board, g, gc, src, {}, in1):
+                added += 1
+            else:
                 print("  no via escape for", fp.GetReference(), p.GetNumber())
                 continue
-            commit_path(board, g, gc, path); added += 1
             holes = [t.GetPosition() for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and t.GetNetCode() == gc]
             pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     return added
@@ -497,9 +501,24 @@ def in1_mask(board, g):
     return np.array(im, dtype=bool)
 
 
+def fallback(board, g, net, src, dst, dst_via):
+    """Retry with a 0.15 mm track, then also 0.5/0.25 mm vias. Commits and returns segment count, or 0."""
+    global TRACK_W, VIA_D, VIA_DRILL
+    for tw, vd, vdr in ((0.15, 0.6, 0.3), (0.15, 0.5, 0.25)):
+        TRACK_W, VIA_D, VIA_DRILL = tw, vd, vdr
+        try:
+            obst = build_obstacles(board, g, net, TRACK_W / 2 + CLR + MARGIN)
+            vmap = via_map(board, g, net)
+            path = astar(g, obst, vmap, src, dst, dst_via)
+            if path is not None:
+                return commit_path(board, g, net, path)
+        finally:
+            TRACK_W, VIA_D, VIA_DRILL = 0.2, 0.6, 0.3
+    return 0
+
+
 def route_pair(board, g, pair, in1, rip=0.0, side="ab"):
     """Route one DRC unconnected pair. Returns (net name, segments or None)."""
-    global TRACK_W
     (xa, ya, da, la), (xb, yb, db, lb) = pair
     ia = None if da.startswith("Zone") else find_item(board, float(xa), float(ya), da, la)
     ib = None if db.startswith("Zone") else find_item(board, float(xb), float(yb), db, lb)
@@ -517,16 +536,9 @@ def route_pair(board, g, pair, in1, rip=0.0, side="ab"):
     dst = item_cells(g, other, LAYERS) if other is not None else {}
     dst_via = in1 if name == "GND" else None
     path = astar(g, obst, vmap, src, dst, dst_via)
-    if path is None:                                   # fine-pitch fallback: 0.15 mm track
-        TRACK_W = 0.15
-        try:
-            obst = build_obstacles(board, g, net, TRACK_W / 2 + CLR + MARGIN)
-            path = astar(g, obst, vmap, src, dst, dst_via)
-            if path is None:
-                return name, None
-            return name, commit_path(board, g, net, path)
-        finally:
-            TRACK_W = 0.2
+    if path is None:                                   # fine-pitch fallbacks: 0.15 mm track, then 0.5/0.25 via
+        path = fallback(board, g, net, src, dst, dst_via)
+        return name, (path if path else None)
     return name, commit_path(board, g, net, path)
 
 
