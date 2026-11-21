@@ -27,7 +27,7 @@ PCB = os.path.join(HW, "kicad", "bath_monitor.kicad_pcb")
 RPT = os.path.join(HW, "kicad", "route", "drc.rpt")
 OX, OY = 100.0, 50.0
 RES = 0.05                         # mm per cell
-TRACK_W, CLR, VIA_D, VIA_DRILL, EDGE_CLR, HOLE_CLR = 0.2, 0.2, 0.6, 0.3, 0.5, 0.25
+TRACK_W, CLR, VIA_D, VIA_DRILL, EDGE_CLR, HOLE_CLR = 0.2, 0.15, 0.6, 0.3, 0.5, 0.25   # clearance: .kicad_pro Default
 MARGIN = 0.02                      # rasterisation slack
 LAYERS = [pcbnew.F_Cu, pcbnew.In2_Cu, pcbnew.B_Cu]
 VIA_COST = 25.0
@@ -453,8 +453,17 @@ def route_pair(board, g, pair, in1, rip=0.0):
     dst = item_cells(g, other, LAYERS) if other is not None else {}
     dst_via = in1 if name == "GND" else None
     path = astar(g, obst, vmap, src, dst, dst_via)
-    if path is None:
-        return name, None
+    if path is None:                                   # fine-pitch fallback: 0.15 mm track
+        global TRACK_W
+        TRACK_W = 0.15
+        try:
+            obst = build_obstacles(board, g, net, TRACK_W / 2 + CLR + MARGIN)
+            path = astar(g, obst, vmap, src, dst, dst_via)
+            if path is None:
+                return name, None
+            return name, commit_path(board, g, net, path)
+        finally:
+            TRACK_W = 0.2
     return name, commit_path(board, g, net, path)
 
 

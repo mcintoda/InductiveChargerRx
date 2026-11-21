@@ -102,8 +102,7 @@ def prep():
     # TH1 GND pad joins the GND lane through a short stub downwards then across (stays clear of the NTC stub)
     track(board, gnd.GetNet(), (gx, gy), (gx, gy + 1.2)); track(board, gnd.GetNet(), (gx, gy + 1.2), (tmp_lanes["GND"], gy + 1.2))
 
-    # --- driven shield: R17 (touch) and R26 (FDC) reach the E7 tap on In2, just below the electronics band ---
-    # (In2 is empty there; the hatched In1 shield sits between this trace and the electrodes)
+    # --- driven shield: R17 (touch) and R26 (FDC) each drop a via into the In1 shield plane (E7 is on it too)
     sh = net("SHIELD")
     r17 = bxy(pads(fps["R17"])["1"].GetPosition()); r26 = bxy(pads(fps["R26"])["1"].GetPosition())
     e7 = bxy(pads(fps["E7"])["1"].GetPosition())
@@ -111,8 +110,6 @@ def prep():
     track(board, sh, r17, (r17[0], 30.0)); track(board, sh, (r17[0], 30.0), (22.9, 30.0))
     track(board, sh, (22.9, 30.0), (22.9, SH_Y)); via(board, sh, (22.9, SH_Y))
     track(board, sh, r26, (r26[0], 33.2)); track(board, sh, (r26[0], 33.2), (34.6, 33.2)); via(board, sh, (34.6, 33.2))
-    track(board, sh, (34.6, 33.2), (34.6, SH_Y), pcbnew.In2_Cu)
-    track(board, sh, (34.6, SH_Y), (e7[0], SH_Y), pcbnew.In2_Cu); track(board, sh, (e7[0], SH_Y), e7, pcbnew.In2_Cu)
 
     # --- flash tab ground: In1 strap across the middle bridge joins the tab pour to the main GND plane ---
     track(board, net("GND"), (W_B - 1.4, 15.5), (FTAB_X0 + 1.2, 15.5), pcbnew.In1_Cu, w=0.5)
