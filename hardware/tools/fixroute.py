@@ -436,6 +436,7 @@ def in1_mask(board, g):
 
 def route_pair(board, g, pair, in1, rip=0.0):
     """Route one DRC unconnected pair. Returns (net name, segments or None)."""
+    global TRACK_W
     (xa, ya, da, la), (xb, yb, db, lb) = pair
     ia = None if da.startswith("Zone") else find_item(board, float(xa), float(ya), da, la)
     ib = None if db.startswith("Zone") else find_item(board, float(xb), float(yb), db, lb)
@@ -454,7 +455,6 @@ def route_pair(board, g, pair, in1, rip=0.0):
     dst_via = in1 if name == "GND" else None
     path = astar(g, obst, vmap, src, dst, dst_via)
     if path is None:                                   # fine-pitch fallback: 0.15 mm track
-        global TRACK_W
         TRACK_W = 0.15
         try:
             obst = build_obstacles(board, g, net, TRACK_W / 2 + CLR + MARGIN)
