@@ -316,6 +316,8 @@ ITEM = re.compile(r"@\((-?[\d.]+) mm, (-?[\d.]+) mm\): (.*) on ([\w.]+)")
 
 def find_item(board, x, y, desc, layer):
     pos = pcbnew.VECTOR2I(mm(x), mm(y))
+    netm = re.search(r"\[(.*?)\]", desc)
+    netname = netm.group(1) if netm else None
     m = re.match(r"(?:PTH )?[Pp]ad (\S+) \[(.*?)\] of (\S+)", desc)
     if m:
         fp = board.FindFootprintByReference(m.group(3))
@@ -327,6 +329,8 @@ def find_item(board, x, y, desc, layer):
         best, bd = None, 1e18
         for t in board.GetTracks():
             if desc.startswith("Via") != (t.GetClass() == "PCB_VIA"):
+                continue
+            if netname and t.GetNetname() != netname:
                 continue
             if t.GetClass() != "PCB_VIA" and board.GetLayerName(t.GetLayer()) != layer:
                 continue
@@ -421,66 +425,89 @@ def fix_islands(board, g):
     return added
 
 
-def main(rounds=10):
+def in1_mask(board, g):
+    gnd = board.FindNet("GND").GetNetCode()
+    im = g.blank(0); d = ImageDraw.Draw(im)
+    for z in board.Zones():
+        if not z.GetIsRuleArea() and z.GetNetCode() == gnd and z.IsOnLayer(pcbnew.In1_Cu):
+            draw_polyset(g, d, z.GetFilledPolysList(pcbnew.In1_Cu), 1)
+    return np.array(im, dtype=bool)
+
+
+def route_pair(board, g, pair, in1, rip=0.0):
+    """Route one DRC unconnected pair. Returns (net name, segments or None)."""
+    (xa, ya, da, la), (xb, yb, db, lb) = pair
+    ia = None if da.startswith("Zone") else find_item(board, float(xa), float(ya), da, la)
+    ib = None if db.startswith("Zone") else find_item(board, float(xb), float(yb), db, lb)
+    src_item = ia or ib
+    if src_item is None:
+        return None, None
+    other = ib if src_item is ia else ia
+    net = src_item.GetNetCode()
+    name = board.GetNetInfo().GetNetItem(net).GetNetname()
+    if rip and other is not None:
+        rip_up(board, net, src_item, other, pad=rip)
+    obst = build_obstacles(board, g, net, TRACK_W / 2 + CLR + MARGIN)
+    vmap = via_map(board, g, net)
+    src = item_cells(g, src_item, LAYERS)
+    dst = item_cells(g, other, LAYERS) if other is not None else {}
+    dst_via = in1 if name == "GND" else None
+    path = astar(g, obst, vmap, src, dst, dst_via)
+    if path is None:
+        return name, None
+    return name, commit_path(board, g, net, path)
+
+
+def plain_rounds(board, g, in1, rounds=3):
+    for _ in range(rounds):
+        pairs = unconnected(drc(board))
+        if not pairs:
+            return 0
+        progress = False
+        for pr in pairs:
+            name, n = route_pair(board, g, pr, in1)
+            progress |= bool(n)
+        if not progress:
+            break
+    return len(unconnected(drc(board)))
+
+
+def main():
+    tmp = os.path.join(HW, "kicad", "route", "fix_tmp.kicad_pcb")
     board = pcbnew.LoadBoard(PCB)
     g = Grid(board)
-    rep = drc(board)
-    print("removed vias with clearance errors:", remove_bad_vias(board, rep))
+    print("removed vias with clearance errors:", remove_bad_vias(board, drc(board)))
     print("GND island vias:", fix_islands(board, g))
-    gnd = board.FindNet("GND").GetNetCode()
-    in1 = None
-    for r in range(rounds):
-        rep = drc(board)
-        pairs = unconnected(rep)
-        print(f"round {r + 1}: {len(pairs)} unconnected")
-        if not pairs:
+    in1 = in1_mask(board, g)
+    best = plain_rounds(board, g, in1)
+    print("after plain routing:", best, "unconnected")
+    # transactional rip-up: keep a rip-up only if the total number of open connections goes down
+    for attempt in range(12):
+        if best == 0:
             break
-        done = set()
-        for (a, b) in pairs:
-            xa, ya, da, la = a; xb, yb, db, lb = b
-            ia = None if da.startswith("Zone") else find_item(board, float(xa), float(ya), da, la)
-            ib = None if db.startswith("Zone") else find_item(board, float(xb), float(yb), db, lb)
-            src_item = ia or ib
-            if src_item is None:
-                continue
-            net = src_item.GetNetCode()
-            key = (id(ia), id(ib))
-            if key in done:
-                continue
-            done.add(key)
-            obst = build_obstacles(board, g, net, TRACK_W / 2 + CLR + MARGIN)
-            vmap = via_map(board, g, net)
-            src = item_cells(g, src_item, LAYERS)
-            other = ib if src_item is ia else ia
-            dst = item_cells(g, other, LAYERS) if other is not None else {}
-            dst_via = None
-            if net == gnd:
-                # GND: a via into the In1 plane anywhere under the In1 GND pour also completes it
-                if in1 is None:
-                    im = g.blank(0); d = ImageDraw.Draw(im)
-                    for z in board.Zones():
-                        if not z.GetIsRuleArea() and z.GetNetCode() == gnd and z.IsOnLayer(pcbnew.In1_Cu):
-                            draw_polyset(g, d, z.GetFilledPolysList(pcbnew.In1_Cu), 1)
-                    in1 = np.array(im, dtype=bool)
-                dst_via = in1
-            path = astar(g, obst, vmap, src, dst, dst_via)
-            name = board.GetNetInfo().GetNetItem(net).GetNetname()
-            if path is None and other is not None:
-                # rip up: autorouted (unlocked) copper of other nets in a window round both ends
-                n_rip = rip_up(board, net, src_item, other, pad=1.5 + 0.5 * r)
-                obst = build_obstacles(board, g, net, TRACK_W / 2 + CLR + MARGIN)
-                vmap = via_map(board, g, net)
-                path = astar(g, obst, vmap, src, dst, dst_via)
-                print(f"  {name}: ripped {n_rip} items")
-            if path is None:
-                print(f"  {name}: no path ({da} -> {db})")
-                continue
-            n = commit_path(board, g, net, path)
-            print(f"  {name}: {n} segments")
+        board.Save(tmp)
+        pairs = unconnected(drc(board))
+        improved = False
+        for pr in pairs:
+            for rip in (0.8, 1.6):
+                name, n = route_pair(board, g, pr, in1, rip=rip)
+                count = plain_rounds(board, g, in1) if n else 10 ** 6
+                if count < best:
+                    print(f"  rip-up for {name} (window {rip} mm): {best} -> {count} unconnected")
+                    best = count; board.Save(tmp); improved = True
+                    break
+                board = pcbnew.LoadBoard(tmp)            # undo
+            if improved:
+                break
+        if not improved:
+            print("no rip-up improves further")
+            break
     print("GND island vias:", fix_islands(board, g))
     rep = drc(board)
     board.Save(PCB)
-    print(rep[rep.index("** Found"):][:400] if "** Found" in rep else rep[-400:])
+    if os.path.exists(tmp):
+        os.remove(tmp)
+    print(rep[rep.index("** Found"):][:200] if "** Found" in rep else rep[-200:])
 
 
 if __name__ == "__main__":

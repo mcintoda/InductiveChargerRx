@@ -7,3 +7,4 @@ kicad/route/freerouting.json
 kicad/route/fr2.log
 kicad/route/second_pass
 logs/
+kicad/route/fix_tmp.kicad_pcb
