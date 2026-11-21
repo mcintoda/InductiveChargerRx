@@ -28,7 +28,7 @@ RPT = os.path.join(HW, "kicad", "route", "drc.rpt")
 OX, OY = 100.0, 50.0
 RES = 0.05                         # mm per cell
 TRACK_W, CLR, VIA_D, VIA_DRILL, EDGE_CLR, HOLE_CLR = 0.2, 0.15, 0.6, 0.3, 0.5, 0.25   # clearance: .kicad_pro Default
-MARGIN = 0.02                      # rasterisation slack
+MARGIN = 0.035                     # rasterisation slack
 LAYERS = [pcbnew.F_Cu, pcbnew.In2_Cu, pcbnew.B_Cu]
 VIA_COST = 25.0
 # autorouter-only keep-outs, board frame (x0, y0, x1, y1) per layer (see route.py constrain_dsn)
@@ -375,8 +375,35 @@ def remove_bad_vias(board, report):
     return len(doomed)
 
 
+def remove_bad_tracks(board, report, kinds=("[clearance]",)):
+    """Unlocked tracks with a clearance error, or with a dangling end."""
+    doomed = set()
+    for kind in kinds:
+        for blk in report.split(kind)[1:]:
+            for x, y, desc, lay in ITEM.findall(blk.split("\n[")[0])[:2]:
+                if desc.startswith("Track"):
+                    t = find_item(board, float(x), float(y), desc, lay)
+                    if t is not None and not t.IsLocked():
+                        doomed.add(t.m_Uuid.AsString())
+    n = 0
+    for t in list(board.GetTracks()):
+        if t.m_Uuid.AsString() in doomed:
+            board.Delete(t); n += 1
+    return n
+
+
+def score(report):
+    return len(unconnected(report)) + 10 * report.count("[clearance]:") + 10 * report.count("[hole_clearance]:")
+
+
 def rip_up(board, net, a, b, pad):
-    bb = a.GetBoundingBox(); bb.Merge(b.GetBoundingBox()); bb.Inflate(mm(pad))
+    if b is None:
+        bb = a.GetBoundingBox()
+    elif a is None:
+        bb = b.GetBoundingBox()
+    else:
+        bb = a.GetBoundingBox(); bb.Merge(b.GetBoundingBox())
+    bb.Inflate(mm(pad))
     doomed = [t for t in board.GetTracks() if not t.IsLocked() and t.GetNetCode() != net
               and bb.Intersects(t.GetBoundingBox())]
     for t in doomed:
@@ -435,7 +462,7 @@ def in1_mask(board, g):
     return np.array(im, dtype=bool)
 
 
-def route_pair(board, g, pair, in1, rip=0.0):
+def route_pair(board, g, pair, in1, rip=0.0, side="ab"):
     """Route one DRC unconnected pair. Returns (net name, segments or None)."""
     global TRACK_W
     (xa, ya, da, la), (xb, yb, db, lb) = pair
@@ -448,7 +475,7 @@ def route_pair(board, g, pair, in1, rip=0.0):
     net = src_item.GetNetCode()
     name = board.GetNetInfo().GetNetItem(net).GetNetname()
     if rip and other is not None:
-        rip_up(board, net, src_item, other, pad=rip)
+        rip_up(board, net, src_item if "a" in side else None, other if "b" in side else None, pad=rip)
     obst = build_obstacles(board, g, net, TRACK_W / 2 + CLR + MARGIN)
     vmap = via_map(board, g, net)
     src = item_cells(g, src_item, LAYERS)
@@ -470,16 +497,18 @@ def route_pair(board, g, pair, in1, rip=0.0):
 
 def plain_rounds(board, g, in1, rounds=3):
     for _ in range(rounds):
+        rep = drc(board)
+        remove_bad_tracks(board, rep)
         pairs = unconnected(drc(board))
         if not pairs:
-            return 0
+            return score(drc(board))
         progress = False
         for pr in pairs:
             name, n = route_pair(board, g, pr, in1)
             progress |= bool(n)
         if not progress:
             break
-    return len(unconnected(drc(board)))
+    return score(drc(board))
 
 
 def main():
@@ -492,18 +521,18 @@ def main():
     best = plain_rounds(board, g, in1)
     print("after plain routing:", best, "unconnected")
     # transactional rip-up: keep a rip-up only if the total number of open connections goes down
-    for attempt in range(12):
+    for attempt in range(25):
         if best == 0:
             break
         board.Save(tmp)
         pairs = unconnected(drc(board))
         improved = False
         for pr in pairs:
-            for rip in (0.8, 1.6):
-                name, n = route_pair(board, g, pr, in1, rip=rip)
+            for side, rip in (("a", 0.6), ("b", 0.6), ("a", 1.2), ("b", 1.2), ("ab", 0.8), ("ab", 1.6)):
+                name, n = route_pair(board, g, pr, in1, rip=rip, side=side)
                 count = plain_rounds(board, g, in1) if n else 10 ** 6
                 if count < best:
-                    print(f"  rip-up for {name} (window {rip} mm): {best} -> {count} unconnected")
+                    print(f"  rip-up for {name} ({side} window {rip} mm): {best} -> {count} unconnected")
                     best = count; board.Save(tmp); improved = True
                     break
                 board = pcbnew.LoadBoard(tmp)            # undo
@@ -513,6 +542,9 @@ def main():
             print("no rip-up improves further")
             break
     print("GND island vias:", fix_islands(board, g))
+    for _ in range(6):                                  # trim dangling stubs
+        if not remove_bad_tracks(board, drc(board), kinds=("[track_dangling]",)):
+            break
     rep = drc(board)
     board.Save(PCB)
     if os.path.exists(tmp):
