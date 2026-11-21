@@ -104,7 +104,7 @@ def on_layer(item, layer):
     return item.IsOnLayer(layer)
 
 
-def build_obstacles(board, g, net, grow):
+def build_obstacles(board, g, net, grow, keepouts=True):
     """Per layer: 1 = centre-line of new copper (track if grow = track rule, via if via rule) not allowed."""
     gnd = board.FindNet("GND").GetNetCode()
     maps = {}
@@ -145,7 +145,7 @@ def build_obstacles(board, g, net, grow):
                 fp_ = pcbnew.SHAPE_POLY_SET(z.GetFilledPolysList(lay))
                 fp_.Inflate(mm(grow), 16)
                 draw_polyset(g, d, fp_, 1)
-        for (x0, y0, x1, y1) in KEEPOUTS.get(lay, []):
+        for (x0, y0, x1, y1) in (KEEPOUTS.get(lay, []) if keepouts else []):
             a = g.ij(OX + x0, OY + y0); b = g.ij(OX + x1, OY + y1)
             d.rectangle([a[0], a[1], b[0], b[1]], fill=1)
         maps[lay] = np.array(im, dtype=bool) | ~inside
@@ -153,7 +153,8 @@ def build_obstacles(board, g, net, grow):
 
 
 def via_map(board, g, net):
-    m = build_obstacles(board, g, net, VIA_D / 2 + CLR + MARGIN)
+    # track keep-outs do not apply to vias (they only need clearance to real copper + VIA_KEEPOUTS)
+    m = build_obstacles(board, g, net, VIA_D / 2 + CLR + MARGIN, keepouts=False)
     # In1 copper that is not a pour (the GND strap) also blocks vias of other nets
     blocked = m[pcbnew.F_Cu] | m[pcbnew.In2_Cu] | m[pcbnew.B_Cu] | m[pcbnew.In1_Cu]
     im = Image.fromarray(blocked)
