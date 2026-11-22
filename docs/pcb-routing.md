@@ -79,5 +79,5 @@ Then `python3 hardware/tools/jlc_outputs.py` writes `hardware/fab/` (gerbers zip
 | Not assembled | Electrodes (copper), test pads, battery and Qi coil (hand-soldered) |
 
 Check the rotations in JLC's placement preview. KiCad and JLC sometimes disagree by 90/180° per footprint. Fix them in
-`ROT_FIX` in `jlc_outputs.py`. Parts marked *verify* in `hardware/lcsc_parts.csv` are well-known JLC Basic numbers
+`ROT_FIX` in `jlc_outputs.py`. All LCSC numbers in `hardware/lcsc_parts.csv` were checked against lcsc.com on 2026-11-22. Earlier, parts marked *verify* were well-known JLC Basic numbers
 that weren't confirmed by search in this session: check them on the order page.
