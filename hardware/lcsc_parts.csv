@@ -24,4 +24,4 @@ USB-C,C165948,confirmed,Korean Hroparts TYPE-C-31-M-12 16P USB 2.0 right-angle S
 LIS2DW12TR,C189624,confirmed,ST LIS2DW12TR LGA-12 2x2; JLC extended (JLC stock checked 2026-11-22)
 AW2013DNR,C252440,confirmed,AWINIC AW2013DNR DFN-10 2x2 I2C RGB LED driver; JLC extended
 RGB,C965840,confirmed,XINGLIGHT XL-1615RGBC-RF common-anode RGB LED 1.6x1.5
-Piezo 20mm,,hand,"20 mm piezo disc with leads (e.g. Murata 7BB-20-6L0), bonded inside the plug - hand-wired to BZ1"
+Piezo 20mm,,hand,"20 mm piezo bender with leads: PUI Audio AB2063B-2-LW50 (Digi-Key; Murata 7BB-20-6L0 is obsolete), bonded inside the plug - hand-wired to BZ1"

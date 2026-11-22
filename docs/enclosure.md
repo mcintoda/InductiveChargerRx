@@ -121,7 +121,7 @@ Sources: [JLC3DP capabilities](https://jlc3dp.com/capabilities/3d-printing-servi
 4. To open: remove the 4 screws and lever the plug out at the top notch.
 
 ### 2.5b Piezo sounder
-A 20 mm piezo disc with leads (e.g. Murata 7BB-20-6L0) is bonded with cyanoacrylate to the plug's inner face, centred
+A 20 mm piezo bender with leads (PUI Audio AB2063B-2-LW50; the Murata 7BB-20-6L0 is obsolete) is bonded with cyanoacrylate to the plug's inner face, centred
 at PCB (19, 23.5): between the two module clamp posts and the battery, so the plug panel becomes the sounding board.
 Its two leads go to the BZ1 pads (PCB 25.3, 27.9). The fit check models it (0.45 mm incl. adhesive): 0 interference.
 Bond it brass side down and keep the bond line thin; a soft (silicone) bond damps the sound.

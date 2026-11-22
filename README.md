@@ -21,6 +21,7 @@ overflows, and reports the water temperature.
 - [`docs/bring-up.md`](docs/bring-up.md): bench test plan for the first boards
 - [`firmware/`](firmware/): ESP-IDF firmware (ESP32-S3) with host unit tests
 - [`docs/enclosure.md`](docs/enclosure.md): watertight enclosure (O-ring, no epoxy) with CAD in [`hardware/mech/`](hardware/mech/)
+- **Hand-fitted parts to buy:** [`docs/order-digikey.md`](docs/order-digikey.md) (Digi-Key list + CSV for BOM Manager)
 - **Schematic without KiCad:** [`docs/schematic.pdf`](docs/schematic.pdf) (zoomable, searchable) or [`docs/img/schematic.svg`](docs/img/schematic.svg) / [`.png`](docs/img/schematic.png) (shows in the browser)
 - [`hardware/kicad/`](hardware/kicad/): KiCad 7 project (schematic rev C, routed 4-layer PCB)
 - [`hardware/bom_jlc.csv`](hardware/bom_jlc.csv): JLCPCB assembly BOM (generated; LCSC numbers still to be filled)
