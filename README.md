@@ -21,13 +21,14 @@ overflows, and reports the water temperature.
 - [`docs/bring-up.md`](docs/bring-up.md): bench test plan for the first boards
 - [`firmware/`](firmware/): ESP-IDF firmware (ESP32-S3) with host unit tests
 - [`docs/enclosure.md`](docs/enclosure.md): watertight enclosure (O-ring, no epoxy) with CAD in [`hardware/mech/`](hardware/mech/)
-- [`hardware/kicad/`](hardware/kicad/): KiCad 7 project (schematic rev A, placement-study PCB)
+- **Schematic without KiCad:** [`docs/schematic.pdf`](docs/schematic.pdf) (zoomable, searchable) or [`docs/img/schematic.svg`](docs/img/schematic.svg) / [`.png`](docs/img/schematic.png) (shows in the browser)
+- [`hardware/kicad/`](hardware/kicad/): KiCad 7 project (schematic rev C, routed 4-layer PCB)
 - [`hardware/bom_jlc.csv`](hardware/bom_jlc.csv): JLCPCB assembly BOM (generated; LCSC numbers still to be filled)
 - [`hardware/tools/gen_schematic.py`](hardware/tools/gen_schematic.py): regenerates the schematic and BOM
 - [`hardware/tools/gen_pcb.py`](hardware/tools/gen_pcb.py) / [`electrode_sim.py`](hardware/tools/electrode_sim.py): placement-study PCB and electrode simulation
 - [`hardware/tools/verify_netlist.py`](hardware/tools/verify_netlist.py): checks that the drawn wiring matches the intended netlist
 
 ```
-python3 hardware/tools/gen_schematic.py    # needs KiCad 7+ symbol libraries
+python3 hardware/tools/gen_schematic.py    # needs KiCad 7+ symbol libraries; also refreshes docs/schematic.pdf/.svg/.png
 python3 hardware/tools/verify_netlist.py   # needs kicad-cli
 ```
