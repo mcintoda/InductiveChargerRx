@@ -6126,320 +6126,6 @@
         )
       )
     )
-    (symbol "Transistor_FET:AO3401A"
-      (pin_names hide)
-      (in_bom yes)
-      (on_board yes)
-      (property "Reference" "Q"
-        (at 5.08 1.905 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-          )
-          (justify left)
-        )
-      )
-      (property "Value" "AO3401A"
-        (at 5.08 0 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-          )
-          (justify left)
-        )
-      )
-      (property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-        (at 5.08 -1.905 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-            italic
-          )
-          (justify left)
-          hide
-        )
-      )
-      (property "Datasheet" "http://www.aosmd.com/pdfs/datasheet/AO3401A.pdf"
-        (at 5.08 -3.81 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-          )
-          (justify left)
-          hide
-        )
-      )
-      (property "ki_keywords" "P-Channel MOSFET"
-        (at 0 0 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-          )
-          hide
-        )
-      )
-      (property "ki_description" "-4.0A Id, -30V Vds, P-Channel MOSFET, SOT-23"
-        (at 0 0 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-          )
-          hide
-        )
-      )
-      (property "ki_fp_filters" "SOT?23*"
-        (at 0 0 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-          )
-          hide
-        )
-      )
-      (symbol "AO3401A_0_1"
-        (polyline
-          (pts
-            (xy 0.254 0)
-            (xy -2.54 0)
-          )
-          (stroke
-            (width 0)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (polyline
-          (pts
-            (xy 0.254 1.905)
-            (xy 0.254 -1.905)
-          )
-          (stroke
-            (width 0.254)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (polyline
-          (pts
-            (xy 0.762 -1.27)
-            (xy 0.762 -2.286)
-          )
-          (stroke
-            (width 0.254)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (polyline
-          (pts
-            (xy 0.762 0.508)
-            (xy 0.762 -0.508)
-          )
-          (stroke
-            (width 0.254)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (polyline
-          (pts
-            (xy 0.762 2.286)
-            (xy 0.762 1.27)
-          )
-          (stroke
-            (width 0.254)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (polyline
-          (pts
-            (xy 2.54 2.54)
-            (xy 2.54 1.778)
-          )
-          (stroke
-            (width 0)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (polyline
-          (pts
-            (xy 2.54 -2.54)
-            (xy 2.54 0)
-            (xy 0.762 0)
-          )
-          (stroke
-            (width 0)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (polyline
-          (pts
-            (xy 0.762 1.778)
-            (xy 3.302 1.778)
-            (xy 3.302 -1.778)
-            (xy 0.762 -1.778)
-          )
-          (stroke
-            (width 0)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (polyline
-          (pts
-            (xy 2.286 0)
-            (xy 1.27 0.381)
-            (xy 1.27 -0.381)
-            (xy 2.286 0)
-          )
-          (stroke
-            (width 0)
-            (type default)
-          )
-          (fill
-            (type outline)
-          )
-        )
-        (polyline
-          (pts
-            (xy 2.794 -0.508)
-            (xy 2.921 -0.381)
-            (xy 3.683 -0.381)
-            (xy 3.81 -0.254)
-          )
-          (stroke
-            (width 0)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (polyline
-          (pts
-            (xy 3.302 -0.381)
-            (xy 2.921 0.254)
-            (xy 3.683 0.254)
-            (xy 3.302 -0.381)
-          )
-          (stroke
-            (width 0)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (circle
-          (center 1.651 0)
-          (radius 2.794)
-          (stroke
-            (width 0.254)
-            (type default)
-          )
-          (fill
-            (type none)
-          )
-        )
-        (circle
-          (center 2.54 -1.778)
-          (radius 0.254)
-          (stroke
-            (width 0)
-            (type default)
-          )
-          (fill
-            (type outline)
-          )
-        )
-        (circle
-          (center 2.54 1.778)
-          (radius 0.254)
-          (stroke
-            (width 0)
-            (type default)
-          )
-          (fill
-            (type outline)
-          )
-        )
-      )
-      (symbol "AO3401A_1_1"
-        (pin input line
-          (at -5.08 0 0)
-          (length 2.54)
-          (name "G"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-          (number "1"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-        )
-        (pin passive line
-          (at 2.54 -5.08 90)
-          (length 2.54)
-          (name "S"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-          (number "2"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-        )
-        (pin passive line
-          (at 2.54 5.08 270)
-          (length 2.54)
-          (name "D"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-          (number "3"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-        )
-      )
-    )
   )
   (symbol
     (lib_id "Battery_Management:BQ51050BRHL")
@@ -16308,7 +15994,7 @@
         hide
       )
     )
-    (property "Note" "Common-anode RGB status LED, glows through the translucent cup"
+    (property "Note" "Common-anode RGB status LED on the switched rail (firmware: <= 5 mA per colour)"
       (at 160.02 228.6 0)
       (effects
         (font
@@ -16339,363 +16025,6 @@
     )
   )
   (symbol
-    (lib_id "Transistor_FET:AO3401A")
-    (at 160.02 205.74 0)
-    (unit 1)
-    (in_bom yes)
-    (on_board yes)
-    (dnp no)
-    (uuid "3dcfa994-2e90-55f3-98fa-6a37b6c90a13")
-    (property "Reference" "Q2"
-      (at 163.83 202.74 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        (justify left)
-      )
-    )
-    (property "Value" "AO3401A"
-      (at 163.83 208.74 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        (justify left)
-      )
-    )
-    (property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-      (at 160.02 205.74 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 160.02 205.74 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Note" "LED anode supply from VBAT, on only while SENSE_3V3 is up"
-      (at 160.02 205.74 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "f49eb16d-786c-5825-ba7b-83df343e2d45")
-    )
-    (pin "2"
-      (uuid "a6af594a-a398-5341-828c-181e679d829a")
-    )
-    (pin "3"
-      (uuid "ae277484-939f-5504-b868-a988b601f818")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "Q2")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
-    (lib_id "power:+BATT")
-    (at 162.56 213.36 180)
-    (unit 1)
-    (in_bom no)
-    (on_board no)
-    (dnp no)
-    (uuid "782fb68a-72b4-5898-9801-f833cececcf9")
-    (property "Reference" "#PWR066"
-      (at 162.56 213.36 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Value" "VBAT"
-      (at 162.56 216.96 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-      )
-    )
-    (property "Footprint" ""
-      (at 162.56 213.36 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 162.56 213.36 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "3e050361-7458-5944-80f4-f67cd9f44473")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR066")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
-    (lib_id "Device:R")
-    (at 180.34 203.2 0)
-    (unit 1)
-    (in_bom yes)
-    (on_board yes)
-    (dnp no)
-    (uuid "5f65235b-5ee6-5b0b-aaed-c8d4a637366e")
-    (property "Reference" "R10"
-      (at 182.88 201.93 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        (justify left)
-      )
-    )
-    (property "Value" "100k 1%"
-      (at 182.88 204.47 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        (justify left)
-      )
-    )
-    (property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-      (at 180.34 203.2 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 180.34 203.2 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "e1e2da9c-8f63-54a8-b1a1-01d45a20bdc2")
-    )
-    (pin "2"
-      (uuid "0d1e9035-fd02-5d09-a778-1a89c441437f")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "R10")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
-    (lib_id "power:+BATT")
-    (at 180.34 196.85 0)
-    (unit 1)
-    (in_bom no)
-    (on_board no)
-    (dnp no)
-    (uuid "413377b1-1d61-56cd-bb0e-0e82ab1d08fa")
-    (property "Reference" "#PWR067"
-      (at 180.34 196.85 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Value" "VBAT"
-      (at 180.34 193.25 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-      )
-    )
-    (property "Footprint" ""
-      (at 180.34 196.85 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 180.34 196.85 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "8f7ee3ca-c46f-5e92-b363-9a66a68ee42e")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR067")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
-    (lib_id "Transistor_FET:BSS138")
-    (at 180.34 220.98 0)
-    (unit 1)
-    (in_bom yes)
-    (on_board yes)
-    (dnp no)
-    (uuid "66edf7fc-de3a-5305-9275-c0ae0cd54c7b")
-    (property "Reference" "Q3"
-      (at 184.15 217.98 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        (justify left)
-      )
-    )
-    (property "Value" "BSS138"
-      (at 184.15 223.98 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        (justify left)
-      )
-    )
-    (property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-      (at 180.34 220.98 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 180.34 220.98 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "e533f313-b475-5a50-b814-072b98b87c8d")
-    )
-    (pin "2"
-      (uuid "17153b81-fc36-5a57-9031-33a52c82cd35")
-    )
-    (pin "3"
-      (uuid "aafc609e-279a-5b6b-8379-70b289d75743")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "Q3")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
-    (lib_id "power:GND")
-    (at 182.88 228.6 0)
-    (unit 1)
-    (in_bom no)
-    (on_board no)
-    (dnp no)
-    (uuid "de057762-d62a-5a1c-96ad-2cc5bbd8e9db")
-    (property "Reference" "#PWR068"
-      (at 182.88 228.6 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Value" "GND"
-      (at 182.88 232.2 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-      )
-    )
-    (property "Footprint" ""
-      (at 182.88 228.6 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 182.88 228.6 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "4f9abbe0-9d4b-54b0-a2c0-d26065893fe9")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR068")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
     (lib_id "Connector_Generic:Conn_01x02")
     (at 210.82 228.6 0)
     (unit 1)
@@ -16719,7 +16048,7 @@
         )
       )
     )
-    (property "Footprint" "Connector_Wire:SolderWire-0.1sqmm_1x02_P3.6mm_D0.4mm_OD1mm"
+    (property "Footprint" "BathMonitor:SolderWirePad_1x02_SMD_1x1.6mm_P2mm"
       (at 210.82 228.6 0)
       (effects
         (font
@@ -19506,94 +18835,6 @@
   )
   (wire
     (pts
-      (xy 154.94 205.74)
-      (xy 152.4 205.74)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "690b41ac-396a-5bce-a667-a588389137cd")
-  )
-  (wire
-    (pts
-      (xy 162.56 210.82)
-      (xy 162.56 213.36)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "d30e63b3-81be-5880-b5b6-c66831b5976b")
-  )
-  (wire
-    (pts
-      (xy 162.56 200.66)
-      (xy 162.56 198.12)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "c4a83885-fc5e-5e46-a8a8-c949e9c52e98")
-  )
-  (wire
-    (pts
-      (xy 180.34 199.39)
-      (xy 180.34 196.85)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "35e7735b-a56d-5af3-a71b-bc6d5d5b9f27")
-  )
-  (wire
-    (pts
-      (xy 180.34 207.01)
-      (xy 180.34 209.55)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "27d7cf99-bafc-51ab-9108-dc3b7aae9f11")
-  )
-  (wire
-    (pts
-      (xy 175.26 220.98)
-      (xy 172.72 220.98)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "558afc5f-e897-5886-9248-3e3fe4fa4ee0")
-  )
-  (wire
-    (pts
-      (xy 182.88 226.06)
-      (xy 182.88 228.6)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "fb405706-c2a5-5f3a-9dc9-66a1d4191e96")
-  )
-  (wire
-    (pts
-      (xy 182.88 215.9)
-      (xy 182.88 213.36)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "a28ed1fa-afd6-5a9e-9717-1ee719460702")
-  )
-  (wire
-    (pts
       (xy 205.74 228.6)
       (xy 200.66 228.6)
     )
@@ -19601,7 +18842,7 @@
       (width 0)
       (type default)
     )
-    (uuid "7233d843-b7f3-5bc6-bf66-7febe6892778")
+    (uuid "1e520f7b-4314-5b91-bd23-5ba2054e8d44")
   )
   (wire
     (pts
@@ -19612,7 +18853,7 @@
       (width 0)
       (type default)
     )
-    (uuid "69356055-3ea5-542c-9ee1-6b466fe044a7")
+    (uuid "737dc979-5212-56cb-bc76-96924767479e")
   )
   (wire
     (pts
@@ -19623,7 +18864,7 @@
       (width 0)
       (type default)
     )
-    (uuid "4e811f66-9ccc-56f6-b086-d9c6fa75e428")
+    (uuid "cb2674e6-74bb-571d-8302-74c71f2ea38f")
   )
   (wire
     (pts
@@ -19634,7 +18875,7 @@
       (width 0)
       (type default)
     )
-    (uuid "a77d5b15-16a5-5ca4-ac4a-4f408fe0e66d")
+    (uuid "24c5760a-84cf-505f-9fd9-1df278bda5dd")
   )
   (wire
     (pts
@@ -19645,7 +18886,7 @@
       (width 0)
       (type default)
     )
-    (uuid "064fd8ff-90a0-524c-b296-cc095cec42c4")
+    (uuid "42858cd7-52cf-58a1-b5a6-4d3e6137ebe6")
   )
   (wire
     (pts
@@ -19656,7 +18897,7 @@
       (width 0)
       (type default)
     )
-    (uuid "646dc9d3-322b-5099-8bb3-aa3ac3d3f9bf")
+    (uuid "aa4812c9-efcc-593c-931c-892442140d80")
   )
   (junction
     (at 33.02 60.96)
@@ -20488,7 +19729,7 @@
     )
     (uuid "65a7cdb1-3d0e-506d-8619-f74fcc3e037a")
   )
-  (label "LED_A"
+  (label "SENSE_3V3"
     (at 167.64 228.6 0)
     (fields_autoplaced)
     (effects
@@ -20497,7 +19738,7 @@
       )
       (justify left bottom)
     )
-    (uuid "329299d7-9cf6-5720-bea9-5304219aa0a8")
+    (uuid "2b3728fb-10ee-5ddb-8f89-865d13a88441")
   )
   (label "LED_R"
     (at 152.4 223.52 180)
@@ -20531,61 +19772,6 @@
       (justify right bottom)
     )
     (uuid "a1e639fa-6c85-57c3-8337-aa783ce2a0ed")
-  )
-  (label "LED_EN_N"
-    (at 152.4 205.74 180)
-    (fields_autoplaced)
-    (effects
-      (font
-        (size 1.27 1.27)
-      )
-      (justify right bottom)
-    )
-    (uuid "61395cfd-b294-5441-8548-d6267f9f3d83")
-  )
-  (label "LED_A"
-    (at 162.56 198.12 90)
-    (fields_autoplaced)
-    (effects
-      (font
-        (size 1.27 1.27)
-      )
-      (justify left bottom)
-    )
-    (uuid "aed83a63-bb1f-584d-ab52-0152ee3cb9e8")
-  )
-  (label "LED_EN_N"
-    (at 180.34 209.55 270)
-    (fields_autoplaced)
-    (effects
-      (font
-        (size 1.27 1.27)
-      )
-      (justify right bottom)
-    )
-    (uuid "730207b5-b8f1-57ca-b557-404a0be26af5")
-  )
-  (label "SENSE_3V3"
-    (at 172.72 220.98 180)
-    (fields_autoplaced)
-    (effects
-      (font
-        (size 1.27 1.27)
-      )
-      (justify right bottom)
-    )
-    (uuid "8696f16b-824d-54a2-8220-918c62c18afe")
-  )
-  (label "LED_EN_N"
-    (at 182.88 213.36 90)
-    (fields_autoplaced)
-    (effects
-      (font
-        (size 1.27 1.27)
-      )
-      (justify left bottom)
-    )
-    (uuid "ab786563-5edd-517d-a64b-222c5ea17ca3")
   )
   (label "PIEZO_A"
     (at 200.66 228.6 180)

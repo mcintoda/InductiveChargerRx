@@ -24,6 +24,7 @@ typedef struct {
     bool prev_wet;
     float ref_snap, ref_snap_t;  // above 60 mm the dry REF pad tells whether water is still rising
     bool ref_rising;
+    bool acked;                // double-tap on the case: no more repeats (or local beeps) this bath
 } policy_t;
 
 typedef struct {
@@ -59,3 +60,5 @@ typedef struct {
 void policy_init(policy_t *p, float alarm_mm, float temp_limit_c, bool notify_filling);
 // returns true and fills `out` when a notification should be sent now (one per call)
 bool policy_step(policy_t *p, const policy_in_t *in, policy_out_t *out);
+// the user acknowledged the alarm on the device (double tap): stop the repeats for this bath
+void policy_ack(policy_t *p);

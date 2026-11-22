@@ -16,8 +16,6 @@ esp_err_t power_init(void)
     gpio_config_t in = {.pin_bit_mask = (1ULL << PIN_QI_DET_N) | (1ULL << PIN_CHG_N), .mode = GPIO_MODE_INPUT,
                         .pull_up_en = GPIO_PULLUP_ENABLE};
     ESP_RETURN_ON_ERROR(gpio_config(&in), TAG, "gpio in");
-    gpio_config_t out = {.pin_bit_mask = 1ULL << PIN_LED, .mode = GPIO_MODE_OUTPUT};
-    ESP_RETURN_ON_ERROR(gpio_config(&out), TAG, "gpio out");
 
     adc_oneshot_unit_init_cfg_t ucfg = {.unit_id = ADC_UNIT_1};
     ESP_RETURN_ON_ERROR(adc_oneshot_new_unit(&ucfg, &s_adc), TAG, "adc");
@@ -55,4 +53,3 @@ int power_battery_pct(int mv)
 
 bool power_on_charger(void) { return gpio_get_level(PIN_QI_DET_N) == 0; }
 bool power_charging(void) { return gpio_get_level(PIN_CHG_N) == 0; }
-void power_led(bool on) { gpio_set_level(PIN_LED, on); }

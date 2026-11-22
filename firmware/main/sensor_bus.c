@@ -39,3 +39,32 @@ void sensor_bus_release(void)
     gpio_pullup_dis(PIN_SDA);
     gpio_pullup_dis(PIN_SCL);
 }
+
+esp_err_t sensor_xfer(uint8_t addr, const uint8_t *tx, size_t ntx, uint8_t *rx, size_t nrx)
+{
+    i2c_master_bus_handle_t bus;
+    esp_err_t err = sensor_bus_acquire(&bus);
+    if (err != ESP_OK) return err;
+    i2c_master_dev_handle_t dev = NULL;
+    i2c_device_config_t cfg = {.dev_addr_length = I2C_ADDR_BIT_LEN_7, .device_address = addr, .scl_speed_hz = 100000};
+    err = i2c_master_bus_add_device(bus, &cfg, &dev);
+    if (err == ESP_OK) {
+        if (rx && ntx) err = i2c_master_transmit_receive(dev, tx, ntx, rx, nrx, 50);
+        else if (rx) err = i2c_master_receive(dev, rx, nrx, 50);
+        else err = i2c_master_transmit(dev, tx, ntx, 50);
+    }
+    if (dev) i2c_master_bus_rm_device(dev);
+    sensor_bus_release();
+    return err;
+}
+
+esp_err_t sensor_reg_write(uint8_t addr, uint8_t reg, uint8_t val)
+{
+    uint8_t b[2] = {reg, val};
+    return sensor_xfer(addr, b, 2, NULL, 0);
+}
+
+esp_err_t sensor_reg_read(uint8_t addr, uint8_t reg, uint8_t *buf, size_t n)
+{
+    return sensor_xfer(addr, &reg, 1, buf, n);
+}

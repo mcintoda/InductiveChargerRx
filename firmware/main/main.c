@@ -6,15 +6,23 @@
 //   BATH     deep sleep until PAD1 gets wet (touch wake); then track the fill every 2 s,
 //            notify via ntfy, sleep again once the level is steady or the bath is drained
 //
+// On the device itself (rev C): RGB status LED, piezo sounder for local alarms (works without Wi-Fi),
+// double-tap on the case = acknowledge the alarm, LIS2DW12 wakes on motion (tap / pick up -> battery colour)
+// and flags a tilted / fallen device during a bath, SHTC3 inside the case warns of a leaking seal.
+//
 // Level sensing (settings page, docs/sensing-options.md):
 //   fdc      FDC1004 on PAD1 / PAD5 / PAD6 / REF (alarm region 40..60 mm only) (default)
 //   touch    ESP32-S3 touch, ratiometric live reference (automatic fallback when no FDC1004 answers)
 //   compare  both run; every sample is logged as a CMP line on the USB console; alarms from touch
 #include <math.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
 
+#include "accel.h"
 #include "board.h"
+#include "buzzer.h"
+#include "caseair.h"
 #include "driver/usb_serial_jtag.h"
 #include "esp_log.h"
 #include "fdc1004.h"
@@ -33,6 +41,9 @@
 #include "sensor_bus.h"
 #include "sense_touch.h"
 #include "settings.h"
+#include "shtc3.h"
+#include "status.h"
+#include "tilt.h"
 #include "tmp117.h"
 
 static const char *TAG = "brim";
@@ -45,6 +56,9 @@ static RTC_DATA_ATTR double s_placed_at[3];   // last three charger placements (
 static RTC_DATA_ATTR fdc_cal_t s_fdc;
 static RTC_DATA_ATTR fdc_state_t s_fdc_st;      // CAPDAC per channel
 static RTC_DATA_ATTR bool s_fdc_probed, s_fdc_fitted;
+static RTC_DATA_ATTR bool s_acc_probed, s_acc_fitted;
+static RTC_DATA_ATTR caseair_t s_air;
+static RTC_DATA_ATTR tilt_t s_tilt;
 static bool s_rail_held;                       // sensor rail kept on while awake (FDC fitted)
 
 static settings_t s_set;
@@ -56,13 +70,6 @@ static double now_s(void)
     return tv.tv_sec + tv.tv_usec / 1e6;
 }
 
-static void blink(int n, int ms)
-{
-    for (int i = 0; i < n; i++) {
-        power_led(true); vTaskDelay(pdMS_TO_TICKS(ms));
-        power_led(false); vTaskDelay(pdMS_TO_TICKS(ms));
-    }
-}
 
 // PAD1 cannot wake the chip when the FDC1004 links are fitted: with the rail off its ESD diodes clamp the pad
 static int wake_pad(void) { return s_fdc_fitted ? 2 : 1; }
@@ -78,7 +85,9 @@ static void hold_rail(bool on)
 static bool fdc_sample(float pf[FDC_CH])
 {
     sense_pause();                                    // the touch FSM must not drive the pads meanwhile
+    status_quiet(true);                               // and the LED current must not move the shared rail
     esp_err_t err = fdc_read_all(&s_fdc_st, pf);
+    status_quiet(false);
     sense_resume();
     if (err != ESP_OK) ESP_LOGW(TAG, "FDC1004 read failed: %s", esp_err_to_name(err));
     return err == ESP_OK;
@@ -108,20 +117,61 @@ static void sleep_now(bool pad1_wet, uint64_t timer_s)
         while (usb_serial_jtag_is_connected()) vTaskDelay(pdMS_TO_TICKS(1000));
     }
     net_wifi_stop();
-    power_led(false);
+    status_led(LED_OFF);
     hold_rail(false);
     if (!pad1_wet) sense_arm_wake(wake_pad(), lvl_wake_threshold(&s_cal, wake_pad()));   // wake when the bath arrives
-    if (!power_on_charger()) esp_sleep_enable_ext1_wakeup(1ULL << PIN_QI_DET_N, ESP_EXT1_WAKEUP_ANY_LOW);
+    // ext1, any low: put on a Qi pad (QI_DET_N) or moved / tapped (LIS2DW12 INT1, active low)
+    uint64_t ext1 = 0;
+    if (!power_on_charger()) ext1 |= 1ULL << PIN_QI_DET_N;
+    if (s_acc_fitted && accel_arm_wake() == ESP_OK) ext1 |= 1ULL << PIN_ACC_INT;
+    if (ext1) esp_sleep_enable_ext1_wakeup(ext1, ESP_EXT1_WAKEUP_ANY_LOW);
     if (timer_s) esp_sleep_enable_timer_wakeup(timer_s * 1000000ULL);
     ESP_LOGI(TAG, "deep sleep (pad1 %s, timer %llus)", pad1_wet ? "wet" : "dry", timer_s);
     esp_deep_sleep_start();
 }
 
+static bool send(const policy_out_t *o)
+{
+    if (!net_wifi_connect(&s_set, 10000)) { ESP_LOGW(TAG, "no Wi-Fi: '%s' not sent", o->title); return false; }
+    for (int i = 0; i < 3; i++) {
+        if (net_ntfy(&s_set, o->title, o->msg, o->priority, o->tags) == ESP_OK) return true;
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+    return false;
+}
+
+// phone notification plus the local signal on the device: the sounder covers "bath full" even when the
+// phone is in another room or the Wi-Fi is down
 static void notify(const policy_out_t *o)
 {
-    if (!net_wifi_connect(&s_set, 10000)) { ESP_LOGW(TAG, "no Wi-Fi: '%s' not sent", o->title); return; }
-    for (int i = 0; i < 3 && net_ntfy(&s_set, o->title, o->msg, o->priority, o->tags) != ESP_OK; i++)
-        vTaskDelay(pdMS_TO_TICKS(2000));
+    bool urgent = o->ev == EV_ALARM || o->ev == EV_SUBMERGED;
+    if (urgent && !s_policy.acked) { status_led(LED_ALARM); buzzer_alarm(); }
+    bool sent = send(o);
+    if (!sent && (o->ev == EV_NEARLY_FULL || o->ev == EV_TOO_HOT)) buzzer_alarm();
+}
+
+static void notify_text(const char *title, const char *msg, int prio, const char *tags)
+{
+    policy_out_t o = {.ev = EV_NONE, .priority = prio};
+    snprintf(o.title, sizeof(o.title), "%s", title);
+    snprintf(o.msg, sizeof(o.msg), "%s", msg);
+    snprintf(o.tags, sizeof(o.tags), "%s", tags);
+    if (settings_provisioned(&s_set)) send(&o);
+}
+
+// humidity inside the sealed case: a rising absolute humidity means the seal lets water in
+static void check_case_air(void)
+{
+    float t, rh;
+    if (shtc3_read(&t, &rh) != ESP_OK) return;
+    ESP_LOGI(TAG, "case air %.1f C %.0f %%RH (%.1f g/m3)", t, rh, caseair_abs_humidity(t, rh));
+    if (caseair_update(&s_air, t, rh, (float)(now_s() - 1.7e9))) {
+        char m[160];
+        snprintf(m, sizeof(m), "Humidity inside brim is %.0f %% - the seal may be letting water in. "
+                 "Open it, dry it and check the O-ring before the next bath.", rh);
+        status_flash(255, 80, 0, 3, 200);
+        notify_text("Moisture inside brim", m, 4, "droplet,warning");
+    }
 }
 
 // ---------------- charger ----------------
@@ -137,7 +187,7 @@ static void charger_mode(void)
 {
     if (factory_reset_gesture()) {
         ESP_LOGW(TAG, "factory reset");
-        blink(10, 80);
+        status_flash(255, 0, 0, 10, 80);
         settings_erase();
         memset(s_placed_at, 0, sizeof(s_placed_at));
         esp_restart();
@@ -152,7 +202,7 @@ static void charger_mode(void)
         int mv = power_battery_mv();
         st.battery_pct = mv > 0 ? power_battery_pct(mv) : -1;
         st.charging = power_charging();
-        power_led(st.charging);                       // LED on while charging
+        status_led(st.charging ? LED_CHARGING : LED_CHARGED);
         if (net_ota_done()) { vTaskDelay(pdMS_TO_TICKS(1500)); esp_restart(); }
         if (net_web_saved()) { vTaskDelay(pdMS_TO_TICKS(1500)); esp_restart(); }
         vTaskDelay(pdMS_TO_TICKS(1000));
@@ -182,8 +232,12 @@ static void bath_mode(void)
         alarm_pad = 5;
         s_policy.alarm_mm = lvl_pad_top_mm(alarm_pad);
     }
-    if (!s_policy.active) fdc_bath_start(&s_fdc);        // a new bath: forget the last reference-liquid value
+    if (!s_policy.active) {                           // a new bath
+        fdc_bath_start(&s_fdc);                       // forget the last reference-liquid value
+        s_tilt.ref_valid = false;                     // learn "upright" again from this mounting
+    }
     hold_rail(true);
+    if (s_acc_fitted) accel_awake();
 
     rate_t rate;
     rate_init(&rate, 60);
@@ -244,6 +298,26 @@ static void bath_mode(void)
         in.eta_s = rate_eta_s(&rate, r.level_mm, s_policy.alarm_mm - 1.0f);
         policy_out_t out;
         if (policy_step(&s_policy, &in, &out)) notify(&out);
+        // the device itself: double tap = "I know", tilt / fall check, LED
+        if (s_acc_fitted) {
+            uint8_t ev = accel_events();
+            if ((ev & ACC_EV_DOUBLE_TAP) && s_policy.active) {
+                policy_ack(&s_policy);
+                status_flash(0, 255, 0, 2, 150);
+                buzzer_chirp();
+                ESP_LOGI(TAG, "alarm acknowledged on the device");
+            }
+            float g[3];
+            if (r.wet && accel_gravity(g) == ESP_OK && tilt_update(&s_tilt, g, (float)(t - 1.7e9)))
+                notify_text("brim is tilted", "brim is no longer upright - it may have slipped out of its bracket. "
+                            "Level readings are unreliable until it is back in place.", 4, "warning,bathtub");
+        }
+        led_state_t led = LED_MONITOR;
+        if (s_policy.alarm_active) led = s_policy.acked ? LED_OK : LED_ALARM;
+        else if (!isnan(temp) && temp > s_policy.temp_limit_c) led = LED_HOT;
+        else if (tilt_is_tilted(&s_tilt)) led = LED_ATTENTION;
+        else if (s_policy.nearly_sent) led = LED_NEARLY;
+        status_led(led);
         ESP_LOGI(TAG, "level %.1f mm (top pad %d) rate %.2f mm/min temp %.2f C batt %d %%", r.level_mm, r.top_full,
                  in.rate_ok ? in.rate_mm_min : NAN, temp, batt);
 
@@ -288,11 +362,24 @@ void app_main(void)
         s_fdc_probed = true;
         ESP_LOGI(TAG, "FDC1004 %s, wake pad %d", s_fdc_fitted ? "fitted" : "not fitted", wake_pad());
     }
+    if (!s_acc_probed) {
+        s_acc_fitted = accel_present();
+        s_acc_probed = true;
+        ESP_LOGI(TAG, "LIS2DW12 %s", s_acc_fitted ? "fitted" : "not answering");
+    }
     if (!s_cal.valid) calibrate_dry(1);                   // first power-up: assume dry
     if (!settings_provisioned(&s_set)) {
-        blink(3, 300);
+        status_led(LED_SETUP);
         if (net_provision(&s_set, 15 * 60 * 1000)) esp_restart();
         sleep_now(false, 0);
+    }
+    check_case_air();
+    // moved or tapped while asleep: show the battery, then straight back to sleep unless a bath is running
+    if (cause == ESP_SLEEP_WAKEUP_EXT1 && s_acc_fitted && (esp_sleep_get_ext1_wakeup_status() & (1ULL << PIN_ACC_INT))) {
+        accel_events();
+        int mv = power_battery_mv();
+        status_battery(mv > 0 ? power_battery_pct(mv) : 0);
+        if (!power_on_charger() && !s_policy.active) sleep_now(false, 6 * 3600);
     }
     if (power_on_charger()) charger_mode();
     bath_mode();

@@ -8,6 +8,8 @@
 #include "../main/level.h"
 #include "../main/policy.h"
 #include "../main/rate.h"
+#include "../main/caseair.h"
+#include "../main/tilt.h"
 
 static int fails, checks;
 #define CHECK(cond, ...) do { checks++; if (!(cond)) { fails++; printf("FAIL %s:%d: ", __FILE__, __LINE__); printf(__VA_ARGS__); printf("\n"); } } while (0)
@@ -206,13 +208,73 @@ static void test_policy(void)
     CHECK(!policy_step(&p, &in, &o), "low battery repeated");
 }
 
+
+static void test_caseair(void)
+{
+    caseair_t c = {0};
+    // sealed case: 50 % RH at 22 C, warmed to 40 C by the bath. RH falls, absolute humidity stays: no alert
+    float ah = caseair_abs_humidity(22, 50);
+    CHECK(fabsf(ah - 9.7f) < 0.3f, "absolute humidity at 22 C / 50 %% = %.2f g/m3 (expected ~9.7)", ah);
+    int alerts = 0;
+    for (int i = 0; i < 200; i++) {
+        float t = 22 + 18 * (i % 40) / 40.0f;                  // temperature cycling with each bath
+        float es22 = 6.112f * expf(17.62f * 22 / (243.12f + 22)), es = 6.112f * expf(17.62f * t / (243.12f + t));
+        float rh = 50 * es22 / es * (273.15f + t) / (273.15f + 22);   // same vapour content
+        alerts += caseair_update(&c, t, rh, i * 600.0f);
+    }
+    CHECK(alerts == 0, "sealed case flagged %d times", alerts);
+    // a leak: water inside, RH goes to 95 % at 35 C -> one alert after CASEAIR_CONFIRM readings, none again soon
+    int first = -1; alerts = 0;
+    for (int i = 0; i < 20; i++) {
+        if (caseair_update(&c, 35, 95, 200 * 600.0f + i * 600.0f)) { alerts++; if (first < 0) first = i; }
+    }
+    CHECK(alerts == 1 && first == CASEAIR_CONFIRM - 1, "leak: %d alerts, first at reading %d", alerts, first);
+    printf("  case air: sealed case quiet over 200 readings, leak flagged after %d readings\n", first + 1);
+}
+
+static void test_tilt(void)
+{
+    tilt_t t = {0};
+    float up[3] = {0.02f, -0.99f, 0.05f}, side[3] = {0.98f, -0.15f, 0.05f}, moving[3] = {0.5f, -1.6f, 0.2f};
+    tilt_learn(&t, up);
+    CHECK(t.ref_valid, "reference not learned");
+    CHECK(!tilt_update(&t, up, 0), "upright flagged");
+    CHECK(!tilt_update(&t, moving, 1), "flagged while moving");
+    CHECK(!tilt_update(&t, side, 2), "flagged before the confirm time");
+    CHECK(tilt_update(&t, side, 2 + TILT_CONFIRM_S), "tilted 80 deg not flagged");
+    CHECK(!tilt_update(&t, side, 60), "flagged twice");
+    CHECK(!tilt_update(&t, up, 61) && !tilt_is_tilted(&t), "not re-armed when upright again");
+    float a = tilt_angle_deg(up, side);
+    printf("  tilt: %.0f deg between upright and on its side\n", a);
+}
+
+static void test_policy_ack(void)
+{
+    policy_t p; int na, nn, nh; float ta;
+    policy_init(&p, lvl_pad_top_mm(6), 42, false);
+    run_bath(&p, 6, 3.0f, 1000, 38.0f, &na, &nn, &nh, &ta);
+    int unacked = na;
+    policy_init(&p, lvl_pad_top_mm(6), 42, false);
+    p.acked = false;
+    // acknowledge right after the first alarm: only that one is sent
+    policy_in_t in = {.temp_c = 38, .battery_pct = 80, .wet = true, .rate_ok = true, .rate_mm_min = 3, .eta_s = -1};
+    policy_out_t o; int n = 0;
+    for (int s = 0; s < 1200; s += 2) {
+        in.now_s = s; in.level_mm = fminf(60, s * 3 / 60.0f); in.at_alarm = in.level_mm >= lvl_pad_top_mm(6);
+        if (policy_step(&p, &in, &o) && o.ev == EV_ALARM) { n++; policy_ack(&p); }
+    }
+    CHECK(n == 1 && unacked > 1, "acked: %d alarms (unacked %d)", n, unacked);
+}
+
 int main(void)
 {
     printf("level\n"); test_level();
     printf("return path\n"); test_return_path();
     printf("fdc1004\n"); test_fdc();
     printf("rate\n"); test_rate();
-    printf("policy\n"); test_policy();
+    printf("policy\n"); test_policy(); test_policy_ack();
+    printf("case air\n"); test_caseair();
+    printf("tilt\n"); test_tilt();
     printf("%d/%d checks passed\n", checks - fails, checks);
     return fails ? 1 : 0;
 }

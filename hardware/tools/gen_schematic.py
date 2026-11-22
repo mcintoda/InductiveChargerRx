@@ -442,9 +442,10 @@ TEXTS += [
 # ===========================================================================
 # J. Motion, enclosure humidity, piezo sounder and the I2C RGB status LED.
 #    LIS2DW12 stays powered from +3V3 (~1 uA) so motion can wake the ESP32; SHTC3 and AW2013 live on the
-#    switched SENSE_3V3 rail with the other I2C parts. The LED anodes run from VBAT through Q2, which Q3 only
-#    turns on while SENSE_3V3 is up: with the AW2013 unpowered, its sink pins would otherwise back-feed the rail
-#    through the LED.
+#    switched SENSE_3V3 rail with the other I2C parts, and so does the LED anode: the AW2013 sinks and the LED
+#    switch off together (an always-on anode would back-feed the unpowered AW2013 through its pin ESD diodes).
+#    The rail is a GPIO, so the firmware limits the LED to 5 mA per colour and holds it steady while the FDC1004
+#    converts.
 # ===========================================================================
 def stub(ref, num, net, n=1):
     """Short wire out of a pin, ending in a label or power symbol."""
@@ -492,22 +493,12 @@ NC("U9", "4", "6", "7", "8")
 C("C31", C1U, 137.16, KY - 15.24, 0, "SENSE_3V3", "GND"); stub("C31", "1", "SENSE_3V3"); stub("C31", "2", "GND")
 
 P("D1", "Device:LED_ARGB", "RGB", "BathMonitor:LED_RGB_1615_XINGLIGHT", 160.02, KY, 0,
-  {"1": "LED_A", "2": "LED_R", "3": "LED_G", "4": "LED_B"}, text=((0, -10.5, None), (0, 10.5, None)),
-  MPN="XL-1615RGBC-RF", Note="Common-anode RGB status LED, glows through the translucent cup")
-for num, net in [("1", "LED_A"), ("2", "LED_R"), ("3", "LED_G"), ("4", "LED_B")]:
+  {"1": "SENSE_3V3", "2": "LED_R", "3": "LED_G", "4": "LED_B"}, text=((0, -10.5, None), (0, 10.5, None)),
+  MPN="XL-1615RGBC-RF", Note="Common-anode RGB status LED on the switched rail (firmware: <= 5 mA per colour)")
+for num, net in [("1", "SENSE_3V3"), ("2", "LED_R"), ("3", "LED_G"), ("4", "LED_B")]:
     stub("D1", num, net)
-P("Q2", "Transistor_FET:AO3401A", "AO3401A", "Package_TO_SOT_SMD:SOT-23", 160.02, KY - 22.86, 0,
-  {"1": "LED_EN_N", "2": "VBAT", "3": "LED_A"}, text=((3.81, -3.0, "left"), (3.81, 3.0, "left")),
-  Note="LED anode supply from VBAT, on only while SENSE_3V3 is up")
-for num, net in [("1", "LED_EN_N"), ("2", "VBAT"), ("3", "LED_A")]:
-    stub("Q2", num, net)
-R("R10", "100k 1%", 180.34, KY - 25.4, 0, "VBAT", "LED_EN_N"); stub("R10", "1", "VBAT"); stub("R10", "2", "LED_EN_N")
-P("Q3", "Transistor_FET:BSS138", "BSS138", "Package_TO_SOT_SMD:SOT-23", 180.34, KY - 7.62, 0,
-  {"1": "SENSE_3V3", "2": "GND", "3": "LED_EN_N"}, text=((3.81, -3.0, "left"), (3.81, 3.0, "left")))
-for num, net in [("1", "SENSE_3V3"), ("2", "GND"), ("3", "LED_EN_N")]:
-    stub("Q3", num, net)
 
-P("BZ1", "Connector_Generic:Conn_01x02", "Piezo 20mm", "Connector_Wire:SolderWire-0.1sqmm_1x02_P3.6mm_D0.4mm_OD1mm",
+P("BZ1", "Connector_Generic:Conn_01x02", "Piezo 20mm", "BathMonitor:SolderWirePad_1x02_SMD_1x1.6mm_P2mm",
   210.82, KY, 0, {"1": "PIEZO_A", "2": "PIEZO_B"}, text=((0, -5.5, None), (0, 7.0, None)),
   Note="20 mm piezo disc bonded inside the plug, wired to these pads; driven differentially by GPIO16/17")
 for num, net in [("1", "PIEZO_A"), ("2", "PIEZO_B")]:

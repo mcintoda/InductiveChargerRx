@@ -86,7 +86,7 @@ bool policy_step(policy_t *p, const policy_in_t *in, policy_out_t *out)
             snprintf(m, sizeof(m), "Bath at the target level - turn off the tap. Water %s.", t);
             return emit(out, EV_ALARM, 5, "BATH FULL", "rotating_light,bathtub", m);
         }
-        if (rising && in->now_s - p->alarm_last_s >= POLICY_REPEAT_S &&
+        if (rising && !p->acked && in->now_s - p->alarm_last_s >= POLICY_REPEAT_S &&
             in->now_s - p->alarm_first_s <= POLICY_REPEAT_MAX_S) {
             p->alarm_last_s = in->now_s;
             snprintf(m, sizeof(m), "Still filling, %.0f mm above the target. Turn off the tap.",
@@ -107,3 +107,5 @@ bool policy_step(policy_t *p, const policy_in_t *in, policy_out_t *out)
     }
     return false;
 }
+
+void policy_ack(policy_t *p) { p->acked = true; }
