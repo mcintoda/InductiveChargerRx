@@ -48,7 +48,8 @@ DEPTH = T_FRONT + STACK + T_BACK                  # overall thickness 10.45
 FOAM_SWOLLEN = FOAM_NOM - BATT_T * BATT_SWELL
 assert FOAM_SWOLLEN >= FOAM_FREE * 0.5, "foam would bottom out on a swollen cell"
 OUT_W, OUT_L, OUT_R = CAV_W + 2 * T_SIDE, CAV_L + 2 * T_SIDE, CAV_R + T_SIDE
-EDGE_FILLET = 2.5                                 # soft front edge (sensing wall stays flat inside it)
+EDGE_FILLET = 3.0                                 # soft, phone-like front edge (sensing wall stays flat inside it;
+                                                  # thinnest wall at the front corner ~1.0 mm)
 FRONT_ROUND = EDGE_FILLET
 
 # plug / radial gland (ISO 3601-style starting values for CS 1.5 mm, static radial)

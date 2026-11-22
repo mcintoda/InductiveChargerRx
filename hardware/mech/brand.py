@@ -297,7 +297,7 @@ def side_features(E):
 
 GRIP_Y = (24.0, 50.0)          # device Y band (above the bracket, below the cup top round)
 GRIP_PITCH, GRIP_W, GRIP_D = 2.0, 0.8, 0.35
-GRIP_Z = (2.8, 5.8)            # front part of the side wall only: clear of the screw heads (Z 6.4-10.3)
+GRIP_Z_END = 6.1               # grooves run from just behind the front round to here: clear of the screw heads (Z 6.45-10.25)
                                # and visibly different from the full-depth waterline groove
 
 
@@ -308,8 +308,9 @@ def grip_features(E):
     for side in (-1, 1):
         for i in range(n):
             y = GRIP_Y[0] + i * GRIP_PITCH
-            feats.append(cq.Workplane("XY").workplane(offset=GRIP_Z[0]).center(side * (E.OUT_W / 2), y)
-                         .rect(2 * GRIP_D, GRIP_W).extrude(GRIP_Z[1] - GRIP_Z[0]))
+            z0 = E.FRONT_ROUND + 0.3
+            feats.append(cq.Workplane("XY").workplane(offset=z0).center(side * (E.OUT_W / 2), y)
+                         .rect(2 * GRIP_D, GRIP_W).extrude(GRIP_Z_END - z0))
     return feats
 
 

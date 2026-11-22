@@ -42,7 +42,7 @@ Sources: [Hammond 1555 datasheet](https://www.mouser.com/datasheet/2/177/1555-12
 |---|---|
 | **Cup** | One piece: 1.2 mm flat front wall (the sensing face), 2.2 mm side walls, open back. A 0.8 mm thermal window sits behind the TMP117 tab. The bore entry has a 0.6 mm lead-in chamfer so it doesn't cut the O-ring |
 | **Plug** | 1.5 mm flat back wall (Qi face) with a 2.2 mm skirt carrying the O-ring groove. Two posts press the PCB onto the front wall in the electronics band, and a pry notch at the top edge allows opening |
-| **Bracket** | Stays stuck to the tub with 2 suction cups. The device slides in from the top and rests on two corner stops. 72 mm tall: its top sits ~3 mm below the side waterline grooves, so they stay visible when docked. Side lips (2.5 mm) overlap only the front edge round, so the electrodes, the alarm arrows (~1.2 mm clear) and the thermal window stay fully exposed. Lift the device out to charge, pinching the grip grooves |
+| **Bracket** | Stays stuck to the tub with 2 suction cups. The device slides in from the top and rests on two corner stops. 72 mm tall: its top sits ~3 mm below the side waterline grooves, so they stay visible when docked. Side lips (2.5 mm) overlap only the 3 mm front edge round, so the electrodes, the alarm arrows (~1.2 mm clear) and the thermal window stay fully exposed. Lift the device out to charge, pinching the grip grooves, and lay it **face up on any flat Qi pad, like a phone** (back down, the "Qi" ring over the pad centre) |
 
 ### 2.1 How it seals
 

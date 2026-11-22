@@ -167,7 +167,7 @@ With 320 mAh, that's about **4 months between charges** at one bath per day. Eve
 
 1. Maximum internal voltage is 4.2 V and the enclosure is sealed with no conductive path to the water, so there's no shock hazard.
 2. The Li-ion cell has three protection layers: the cell's PCM (overcharge, overdischarge, short circuit), the BQ51050B charge control with NTC temperature cut-off, and the firmware undervoltage cut-off. Charge current is limited to 0.45 C (143 mA into 320 mAh). The enclosure leaves room for +10 % cell swelling, taken up by the foam.
-3. Charging only happens **out of the bath** on a standard Qi pad. The user guide must state that the pad (a mains device) stays outside the wet zone.
+3. Charging only happens **out of the bath** on a standard Qi pad: lay it flat, back down, like a phone. Vertical phone stands put their coil 60–90 mm up, above brim's coil (~47 mm from the bottom edge), so use a flat pad. The user guide must state that the pad (a mains device) stays outside the wet zone.
 4. The device never heats the water, and the electronics dissipate < 10 mW while sensing.
 5. The level alarm fails safe. If a sensor reading is invalid, the battery is critical, or Wi-Fi fails during an active fill, the device keeps retrying and records the event. The low-battery warning is sent while there's still ≥20 % charge.
 
@@ -291,6 +291,7 @@ With 320 mAh, that's about **4 months between charges** at one bath per day. Eve
 | 2026-11-19 | Battery back to 500 mAh (403040, 4 mm thick). Charge at 262 mA (1k + 196R), below the BQ51050B's characterised range but endorsed by TI on E2E; bench-verify termination. NTC moved onto the PCB (TH1), J1 down to 2 wires. Enclosure 43.8 × 119.8 × 10.1 mm. Suction cups sourced (enclosure.md) |
 | 2026-11-22 | Battery changed to a protected 320 mAh LiPo, 25.5 × 36 × 4.3 mm (Amazon). R1 1k → 2k (C4109): charge 143 mA (0.45 C), termination ~60 mA. Foam is now the swelling buffer: 1.6 mm PORON installed at 1.25 mm, a +10 % swollen cell takes it to 0.82 mm (49 %). Enclosure 43.8 × 119.8 × 10.45 mm. Runtime estimate ~4 months |
 | 2026-11-22 | Bracket 80 → 72 mm and lips 3 → 2.5 mm so the side waterline grooves and the front alarm arrows are visible when docked. Finger-grip grooves on the sides of the dry top band. Non-JLC parts from Amazon, Digi-Key and McMaster only (O-ring now NBR) |
+| 2026-11-22 | Kept the compact size (not iPhone-sized: would look like a dropped phone, double the tub footprint, add only empty volume). Phone-like feel instead: front edge round 2.5 → 3 mm, "charges flat like a phone" in the docs |
 | 2026-11-19 | Branding: working name "brim", drop-to-the-brim mark, foam/tide/deep/aqua palette, Inter type. Debossed logo + wordmark on the dry front band, alarm-level chevrons, Qi target over the coil on the back (docs/branding.md) |
 | 2026-11-19 | Brand rev B: ripple (pebble-in-water) mark, muted palette (mist / slate / ink / sea glass), unpainted deboss. Case: 2.5 mm front round, graduated level scale with pad numbers, alarm chevron, waterline groove on the sides, Qi coil outline on the back |
 | 2026-11-19 | Markings simplified: level horizontal scale on the left margin only (ticks + pad numbers in one column), alarm chevron on the right; Qi outline is one plain ring (no dashes or alignment ticks) |
