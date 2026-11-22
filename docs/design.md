@@ -61,7 +61,7 @@ alert to an iPhone over Wi-Fi before the tub overflows.
           TS ◄─NTC│ OUT            │  Touch T14  ──► shield driver│
          ┌───────▼────────┐        │  I²C ◄────────► TMP117       │
          │ Li-ion 1S      │        │  GPIO ──► sensor power       │
-         │ 500 mAh + PCM  │        │  ADC  ◄── VBAT/2             │
+         │ 320 mAh + PCM  │        │  ADC  ◄── VBAT/2             │
          └───────┬────────┘        │  GPIO ──► status LED         │
                  │ VBAT            │  Wi-Fi ⇢ router ⇢ ntfy.sh     │
          ┌───────▼────────┐  3V3   │          ⇢ iPhone            │
@@ -93,7 +93,7 @@ Full study, simulation and figures: **[placement-and-electrodes.md](placement-an
 
 ### 3.4 Wireless charging: BQ51050B
 - A single chip combining a Qi (WPC 1.2) receiver and a 4.20 V Li-ion charger, with no separate charger IC needed. It charges on any phone Qi pad.
-- Charge current is set by R_ILIM = 1k + 196R = 1196 Ω to **262 mA (0.5 C for the 500 mAh cell)**. The datasheet only characterises K_ILIM = 314 AΩ for 500–1500 mA. TI engineers on E2E say lower settings work with reduced accuracy, as long as fast charge stays above 100 mA and termination above 30 mA ([TI E2E: low charge current accuracy](https://e2e.ti.com/support/power-management-group/power-management/f/power-management-forum/576502/bq51050b-low-charge-current-accuracy)). R_TERM = 10k gives about 109 mA termination (41.7 %). **Verify on the bench** that charging terminates (the 10 h safety timer is the backstop). If it misbehaves, TI's suggested fallback is BQ51003 + BQ25100 (one more IC).
+- Charge current is set by R_ILIM = 2k + 196R = 2196 Ω to **143 mA (0.45 C for the 320 mAh cell)**. The datasheet only characterises K_ILIM = 314 AΩ for 500–1500 mA. TI engineers on E2E say lower settings work with reduced accuracy, as long as fast charge stays above 100 mA and termination above 30 mA ([TI E2E: low charge current accuracy](https://e2e.ti.com/support/power-management-group/power-management/f/power-management-forum/576502/bq51050b-low-charge-current-accuracy)). R_TERM = 10k gives about 60 mA termination (41.7 %). **Verify on the bench** that charging terminates (the 10 h safety timer is the backstop). If it misbehaves, TI's suggested fallback is BQ51003 + BQ25100 (one more IC).
 - The battery NTC is **on the PCB** (TH1, Murata NCP15XH103F03RC: 10 kΩ, B = 3380, the type the BQ51050B's internal 20 kΩ bias is designed for), on the back side, pressed against the cell. It connects straight to TS/CTRL, so any protected 2-wire cell works. Charging stops when the cell is too cold or hot (0 / 60 °C) and is reduced between 45 and 60 °C, with no extra resistors.
 - The `CHG` output goes to an MCU GPIO. **Qi-present wake:** `RECT` swings from about 5 V up to its clamp level, which is too wide for a plain divider into a 3.3 V pin. So `RECT` drives a BSS138 through a 1M/1M divider, and the BSS138 pulls `QI_DET_N` (1 MΩ pull-up) low on an RTC GPIO. Placing the device on the pad wakes the MCU, and the detector draws 0 µA off the pad.
 - **Rx coil**: an ~11 µH Qi receiver coil with a ferrite backing, ≤32 mm diameter (Würth WE-WPCC receiver family or equivalent stocked at LCSC). It sits against the **back wall**. Coil-to-pad distance must stay ≤5 mm including the wall.
@@ -106,7 +106,7 @@ Full study, simulation and figures: **[placement-and-electrodes.md](placement-an
 ### 3.5 Power
 | Item | Choice |
 |------|--------|
-| Cell | 1S Li-ion pouch, **500 mAh, 403040 (4.0 × 30 × 40 mm)**, **with integrated protection module (PCM)**, 2 wires (temperature from the PCB NTC) |
+| Cell | 1S Li-ion pouch, **320 mAh (300 min), 25.5 × 36 × 4.3 mm**, **with integrated protection module (PCM)**, 2 wires (temperature from the PCB NTC) |
 | Regulator | **XC6220B331MR** LDO (1 A, Iq ≈ 8 µA), with RT9080-33 (600 mA, 2 µA) as a drop-in alternative footprint. It must cover the ESP32 Wi-Fi TX peaks of ~350 mA |
 | Battery monitor | 1 M / 1 M divider + 100 nF into ADC1 (≈2 µA) |
 | Sensor rail | TMP117 and its I²C pull-ups are powered from a GPIO, switched on only during measurement |
@@ -123,7 +123,7 @@ Why not a buck converter: from a 3.6–4.2 V battery to 3.3 V, an LDO is 80–90
 | Wi-Fi bursts (~5 events × ~3 s × ~120 mA) | — | — | ~0.5 |
 | **Total (one bath per day)** | | | **~2.3** |
 
-With 500 mAh, that's about **6 months between charges** at one bath per day. Even at 3× worse in practice, it's still 2 months.
+With 320 mAh, that's about **4 months between charges** at one bath per day. Even at 3× worse in practice, it's still about 6 weeks.
 
 ---
 
@@ -144,7 +144,7 @@ With 500 mAh, that's about **6 months between charges** at one bath per day. Eve
   ├──────────────┤  │
   │ ◉ TMP117 window ~15 mm          
   └──────────────┘  ▼
-   43.8 × 119.8 × 10.1 mm
+   43.8 × 119.8 × 10.45 mm
 ```
 
 - **Mounting: a two-part design.** A small *bracket* with two silicone suction cups stays stuck to the tub wall, and the *sensor* slides into it (a snap rail with no metal and no magnets, since magnets disturb Qi).
@@ -152,7 +152,7 @@ With 500 mAh, that's about **6 months between charges** at one bath per day. Eve
   - The sensor's back stays flat, so the coil sits within ~2 mm of the Qi pad.
 - **Antenna at the top**, ≥20 mm above the top pad, so it stays above water. Water strongly absorbs 2.4 GHz, so mount the bracket with the top of the device above the overflow rim. The owner's tub is **acrylic**, which is RF-transparent and smooth, so it's ideal for suction cups. If the RSSI is still weak (distant router), switch to the ESP32-S3-MINI-1**U** with a short internal antenna routed to the top cap.
 - **Sealing** (full design: **[enclosure.md](enclosure.md)**): a one-piece cup plus a plug with a **radial EPDM O-ring (90 × 1.5)**, held by 4 × M2 A4 screws outboard of the seal. No epoxy, and it can be opened.
-  - Outside size 43.8 × 119.8 × 10.1 mm. CAD (STEP/STL) is in `hardware/mech/out/`, generated by `hardware/mech/enclosure.py`. Interference with the PCB, battery and coil checked: 0.
+  - Outside size 43.8 × 119.8 × 10.45 mm. CAD (STEP/STL) is in `hardware/mech/out/`, generated by `hardware/mech/enclosure.py`. Interference with the PCB, battery and coil checked: 0.
   - Prototype: JLC3DP SLA resin, or MJF PP. Production: injection-molded PP with the same geometry.
   - Target IP68 at 0.5 m for 1 h, plus a vacuum bubble test and a 15–45 °C cycling test.
   - No off-the-shelf IP68 box is thin enough. The Hammond 1555C2GY works only as a bulky stop-gap (see enclosure.md).
@@ -166,7 +166,7 @@ With 500 mAh, that's about **6 months between charges** at one bath per day. Eve
 ## 5. Electrical safety and user safety
 
 1. Maximum internal voltage is 4.2 V and the enclosure is sealed with no conductive path to the water, so there's no shock hazard.
-2. The Li-ion cell has three protection layers: the cell's PCM (overcharge, overdischarge, short circuit), the BQ51050B charge control with NTC temperature cut-off, and the firmware undervoltage cut-off. Charge current is limited to 0.5 C (262 mA into 500 mAh).
+2. The Li-ion cell has three protection layers: the cell's PCM (overcharge, overdischarge, short circuit), the BQ51050B charge control with NTC temperature cut-off, and the firmware undervoltage cut-off. Charge current is limited to 0.45 C (143 mA into 320 mAh). The enclosure leaves room for +10 % cell swelling, taken up by the foam.
 3. Charging only happens **out of the bath** on a standard Qi pad. The user guide must state that the pad (a mains device) stays outside the wet zone.
 4. The device never heats the water, and the electronics dissipate < 10 mW while sensing.
 5. The level alarm fails safe. If a sensor reading is invalid, the battery is critical, or Wi-Fi fails during an active fill, the device keeps retrying and records the event. The low-battery warning is sent while there's still ≥20 % charge.
@@ -289,6 +289,7 @@ With 500 mAh, that's about **6 months between charges** at one bath per day. Eve
 | 2026-11-19 | BQ51050B datasheet checked: charge current must be ≥ 500 mA, so the cell grows to 1000 mAh (0.5 C). R_ILIM = 3 × 196R (534 mA), R_TERM = 10k (222 mA), NTC 10k B3380 direct. Added a 2nd 10 µF on RECT and 100 nF on BAT per the reference design |
 | 2026-11-19 | Enclosure: custom cup + radial O-ring plug + 4 × M2 screws (no epoxy). No suitable off-the-shelf IP68 box. PCB top corners R5.5 |
 | 2026-11-19 | Battery back to 500 mAh (403040, 4 mm thick). Charge at 262 mA (1k + 196R), below the BQ51050B's characterised range but endorsed by TI on E2E; bench-verify termination. NTC moved onto the PCB (TH1), J1 down to 2 wires. Enclosure 43.8 × 119.8 × 10.1 mm. Suction cups sourced (enclosure.md) |
+| 2026-11-22 | Battery changed to a protected 320 mAh LiPo, 25.5 × 36 × 4.3 mm (Amazon). R1 1k → 2k (C4109): charge 143 mA (0.45 C), termination ~60 mA. Foam is now the swelling buffer: 1.6 mm PORON installed at 1.25 mm, a +10 % swollen cell takes it to 0.82 mm (49 %). Enclosure 43.8 × 119.8 × 10.45 mm. Runtime estimate ~4 months |
 | 2026-11-19 | Branding: working name "brim", drop-to-the-brim mark, foam/tide/deep/aqua palette, Inter type. Debossed logo + wordmark on the dry front band, alarm-level chevrons, Qi target over the coil on the back (docs/branding.md) |
 | 2026-11-19 | Brand rev B: ripple (pebble-in-water) mark, muted palette (mist / slate / ink / sea glass), unpainted deboss. Case: 2.5 mm front round, graduated level scale with pad numbers, alarm chevron, waterline groove on the sides, Qi coil outline on the back |
 | 2026-11-19 | Markings simplified: level horizontal scale on the left margin only (ticks + pad numbers in one column), alarm chevron on the right; Qi outline is one plain ring (no dashes or alignment ticks) |

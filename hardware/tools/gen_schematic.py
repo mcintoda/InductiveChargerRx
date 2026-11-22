@@ -48,6 +48,7 @@ C3N3 = ("3.3nF", "50V C0G", C0603)
 C1U = ("1uF", "25V X5R", C0402)
 C10U = ("10uF", "25V X5R", C0805)
 R1K, R10K, R1M, R196, R0 = "1k 1%", "10k 1%", "1M 1%", "196R 1%", "0R"
+R2K = "2k 1%"
 
 # ---------------------------------------------------------------------------
 # symbol library helpers
@@ -249,8 +250,8 @@ W(pin("C1", "1"), pin("L1", "1")); W(pin("L1", "2"), (25.4, UY + 10.16), (XB, UY
 BAT_Y = pin("U2", "4")[1]
 W(pin("U2", "7"), (XR + G, pin("U2", "7")[1])); LBL("CHG_N", XR + G, pin("U2", "7")[1], 0)
 W(pin("U2", "11"), (XR + G, pin("U2", "11")[1])); GND(XR + G, pin("U2", "11")[1], 90)     # EN2 -> GND
-R("R1", R1K, 157.48, pin("U2", "12")[1], 90, "ILIM", "FOD", text="hh",
-  Note="R_ILIM = R1 + R2 = 1.196k -> I_BULK = 314 AOhm / 1196R = 262 mA (0.5C for 500 mAh). Below the 500 mA "
+R("R1", R2K, 157.48, pin("U2", "12")[1], 90, "ILIM", "FOD", text="hh",
+  Note="R_ILIM = R1 + R2 = 2.196k -> I_BULK = 314 AOhm / 2196R = 143 mA (0.45C for the 320 mAh cell). Below the 500 mA "
        "characterised range: TI E2E says OK with reduced accuracy (keep >100 mA fast charge, >30 mA termination)")
 W(pin("U2", "12"), pin("R1", "1")); W(pin("R1", "2"), (165.1, pin("R1", "2")[1]), (165.1, pin("U2", "14")[1]))
 W(pin("U2", "14"), (165.1, pin("U2", "14")[1]))

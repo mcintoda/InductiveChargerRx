@@ -7,7 +7,7 @@ rows to Digi-Key's BOM Manager, which matches on the manufacturer part number).
 
 | # | Qty | Part | MPN | Supplier | Supplier # | ~US$ | Where / notes |
 |---|---|---|---|---|---|---|---|
-| 1 | 3 | Li-ion polymer cell 3.7 V 500 mAh, 403040 (4.0 x 30 x 40 mm), with protection PCM, 2 wires | achard 403040-500mAh | Amazon | [B0CHBGZ778](https://www.amazon.com/Polymer-Rechargeable-Battery-Bracelet-403040-500mah/dp/B0CHBGZ778) | 6 | Behind the electrodes, wires to J1 (red = pin 1). Check <= 4.2 mm thick and a PCM under the tape. Alternatives: Amazon B09FLYNRPG (JST, check polarity), B0CHYS7XFV (41 mm long) |
+| 1 | 3 | LiPo cell 3.7 V 320 mAh (300 mAh min), 25.5 x 36 x 4.3 mm, protection PCM (overcharge, overdischarge, overcurrent, short), 2 wires, ~6 g | 320 mAh 253643-size LiPo (your Amazon listing) | Amazon | the listing you found | ~6 | Behind the electrodes, wires to J1 (red = pin 1). Cut off the plug and solder: J1 is pads, not a connector, so plug model and size don't matter, only polarity. Check on arrival: <= 4.4 mm thick, PCM under the tape |
 | 2 | 4 | Qi receiver coil 30 x 29.6 x 0.9 mm, 8.23 uH | TDK WR303050-12F5-ID | Digi-Key | [link](https://www.digikey.com/en/products/detail/tdk-corporation/WR303050-12F5-ID/6124579) | 4.5 | Behind the battery, leads to L1. Also Mouser 810-WR303050-12F5-ID |
 | 3 | 5 | Piezo bender 20 mm, 6.3 kHz, wire leads | PUI Audio AB2063B-2-LW50 | Digi-Key | [link](https://www.digikey.com/en/products/detail/pui-audio-inc/AB2063B-2-LW50/22535104) | 0.66 | Bonded (cyanoacrylate) inside the plug at PCB (19, 23.5), leads to BZ1 |
 | 4 | 1 | Thermal gap pad 40 x 40 x 0.5 mm, 16.6 W/m-K | t-Global Technology TG-A1660-40-40-0.5 | Digi-Key | [1168-TG-A1660-40-40-0.5-ND](https://www.digikey.com/en/products/detail/t-global-technology/TG-A1660-40-40-0-5/11617038) | 8 | Cut 10 x 7 mm pieces: TMP117 tab to the thermal window |
@@ -21,7 +21,7 @@ rows to Digi-Key's BOM Manager, which matches on the manufacturer part number).
 Approximate total for the list: **about US$118** plus shipping. Prices are search snapshots: check them in the cart.
 
 ## Before ordering
-- **Battery:** marketplace 403040 cells vary. On arrival check thickness (≤ 4.2 mm), that a protection board sits under the tape, and polarity (red to J1 pin 1). The case is sized for 4.0 × 30 × 40 mm.
+- **Battery:** marketplace cells vary. On arrival check thickness (≤ 4.4 mm), that a protection board sits under the tape, and polarity (red to J1 pin 1). Cut the connector off and solder the wires to J1, so the listing's connector model, size and polarity warnings don't apply, as long as red goes to pin 1. The case is sized for 25.5 × 36 × 4.3 mm, with room for +10 % swelling (see enclosure.md).
 - **Screws:** McMaster 95893A165 (M2 x 6 mm, 18-8, Torx, thread-forming for plastic, pack of 50). They fit the case's existing M2 holes.
 - **O-ring:** FKM in the exact 90 × 1.5 mm size. EPDM would be ideal but was not found in that size.
 

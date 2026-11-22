@@ -309,7 +309,7 @@ def back_features(E):
     feats.append(back(text_solid("Qi", 3.2, DEBOSS), 0, yc + 1.2, z))
     feats.append(back(text_solid("charge this side", 2.4, DEBOSS, FONT_SMALL), 0, yc - 3.2, z))
     _, y_rate = E.pcb_to_dev(19.0, 106.0)
-    feats.append(back(text_solid("Li-ion 3.7 V 500 mAh   IP68   rev B", 2.2, DEBOSS, FONT_SMALL), 0, y_rate, z))
+    feats.append(back(text_solid("Li-ion 3.7 V 320 mAh   IP68   rev C", 2.2, DEBOSS, FONT_SMALL), 0, y_rate, z))
     return feats
 
 

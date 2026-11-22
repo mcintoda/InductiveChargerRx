@@ -36,7 +36,7 @@ Sources: [Hammond 1555 datasheet](https://www.mouser.com/datasheet/2/177/1555-12
 
 ![Parts](img/enclosure_parts.png)
 
-**Outside size: 43.8 × 119.8 × 10.1 mm** (internal cavity 39.4 × 115.4 × 7.4 mm). The cavity has 2.6 mm of extra length above the PCB so the ESP32 module clears the plug skirt. Three printed parts:
+**Outside size: 43.8 × 119.8 × 10.45 mm** (internal cavity 39.4 × 115.4 × 7.75 mm). The cavity has 2.6 mm of extra length above the PCB so the ESP32 module clears the plug skirt. Three printed parts:
 
 | Part | What it does |
 |---|---|
@@ -52,12 +52,18 @@ Sources: [Hammond 1555 datasheet](https://www.mouser.com/datasheet/2/177/1555-12
   between the groove bottom and the cup's bore. Squeeze is set by the geometry, not by screw torque,
   so there is no flange, no gasket to crush evenly, and no glue.
 - **Retention:** 4 × M2 × 4 mm A4-stainless self-tapping screws (for plastics) go through the side walls into the plug,
-  on the **outside of the O-ring** (axis at Z 8.0 mm, groove at Z 4.3–6.6). Water can enter a
+  on the **outside of the O-ring** (axis at Z 8.35 mm, groove at Z 4.65–6.95). Water can enter a
   screw hole but stops at the O-ring. The screws only stop the plug backing out, for example when warm water
   heats the trapped air: +30 °C gives about 10 kPa, which is about 50 N on the plug.
-- **Internal clamping:** PCB 1.0, battery 4.0 (403040), coil 1.2 and 1.6 mm PORON foam (compressed to 1.2) fill
-  the 7.4 mm cavity exactly. Closing the plug presses the electrodes flat on the front wall, which matters
+- **Internal clamping:** PCB 1.0, battery 4.3 (320 mAh, 25.5 × 36), coil 1.2 and 1.6 mm PORON foam (compressed to 1.25) fill
+  the 7.75 mm cavity exactly. Closing the plug presses the electrodes flat on the front wall, which matters
   because each 0.1 mm of air gap costs about 20 % of the signal.
+- **Battery swelling:** pouch cells grow up to ~10 % in thickness over their life. The foam is the buffer:
+  installed at 1.25 mm (22 % compression), a swollen cell (+0.43 mm) takes it to 0.82 mm (49 %), still inside
+  PORON's 50 % working range, so the cell is never squeezed against a hard wall and the plug isn't pushed out.
+  The cell also has ≥ 1 mm free in X/Y on every side. `enclosure.py` asserts the foam can't bottom out, and
+  `fit_and_render.py` prints the swollen-cell compression. A cell visibly thicker than ~4.8 mm should be
+  replaced.
 
 | Gland parameter (static radial, CS 1.5 mm) | Value |
 |---|---|
@@ -79,7 +85,7 @@ These follow standard static-radial guidance (roughly 18–25 % squeeze, ≤ 85 
 ![Sections](img/enclosure_section.png)
 
 `hardware/mech/fit_and_render.py` places the PCB (with the 5.5 mm top-corner radius now in the
-placement-study board), the ESP32 module, a 1.35 mm envelope for all other back-side parts, the 403040 cell, the Qi coil and the foam at their real positions,
+placement-study board), the ESP32 module, a 1.35 mm envelope for all other back-side parts, the 25.5 × 36 × 4.3 mm cell, the Qi coil and the foam at their real positions,
 and intersects them with the cup and plug. **Interference is 0.000 mm³ for every pair.** The PCB front face
 sits exactly on the front-wall inner face.
 

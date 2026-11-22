@@ -13,6 +13,7 @@ BSS138,C78284,confirmed-exists,Changjiang BSS138 SOT-23; class not confirmed
 10uF 25V X5R,C15850,confirmed,Samsung CL21A106KAYNNNE; 0805 basic (widely used number)
 470nF 25V X7R,C1623,confirmed,Samsung CL10B474KA8NNNC 0603; JLC basic
 3.3nF 50V C0G,C3877267,confirmed,Murata GCM1885C1H332FA16D 0603 C0G 1%
+2k 1%,C4109,confirmed,UNI-ROYAL 0402WGF2001TCE; 0402 basic
 1k 1%,C11702,confirmed,UNI-ROYAL 0402WGF1001TCE; 0402 basic
 10k 1%,C25744,confirmed,UNI-ROYAL 0402WGF1002TCE; 0402 basic
 1M 1%,C26083,confirmed,UNI-ROYAL 0402WGF1004TCE; 0402 basic

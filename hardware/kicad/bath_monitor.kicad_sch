@@ -7134,7 +7134,7 @@
         )
       )
     )
-    (property "Value" "1k 1%"
+    (property "Value" "2k 1%"
       (at 157.48 81.28 90)
       (effects
         (font
@@ -7160,7 +7160,7 @@
         hide
       )
     )
-    (property "Note" "R_ILIM = R1 + R2 = 1.196k -> I_BULK = 314 AOhm / 1196R = 262 mA (0.5C for 500 mAh). Below the 500 mA characterised range: TI E2E says OK with reduced accuracy (keep >100 mA fast charge, >30 mA termination)"
+    (property "Note" "R_ILIM = R1 + R2 = 2.196k -> I_BULK = 314 AOhm / 2196R = 143 mA (0.45C for the 320 mAh cell). Below the 500 mA characterised range: TI E2E says OK with reduced accuracy (keep >100 mA fast charge, >30 mA termination)"
       (at 157.48 83.82 0)
       (effects
         (font

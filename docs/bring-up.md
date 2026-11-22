@@ -38,7 +38,7 @@ a spray bottle, salt, a vacuum jar or hand vacuum pump.
 |---|---|---|
 | Coil inductance with the plug's back wall on a Qi transmitter (Ls′) and in free air (Ls) | Ls′ ≈ 8.2 µH | C_s = 1 / ((2π·100 kHz)² · Ls′): today 3 × 100 nF + 10 nF. C_d = 1 / ((2π·1 MHz)² · Ls − 1/C_s): today 3.3 nF |
 | Charges on 3 different Qi pads (LED on, CHG_N low) | Starts within 5 s on each | Re-tune C_s, C_d. Check that the coil is centred under the Qi ring |
-| Charge current (ammeter in series with the battery) | 230–290 mA (set 262 mA) | R1 (ILIM). Below the characterised range: TI E2E says accuracy is reduced |
+| Charge current (ammeter in series with the battery) | 120–170 mA (set 143 mA); terminates near 60 mA | R1 (ILIM, 2k). Below the characterised range: TI E2E says accuracy is reduced |
 | **Charge termination** at 4.2 V | Current tapers, CHG_N goes high, transmitter stops. Never ends on the 10 h timer | R3 (TERM, 10k → ~109 mA). If it fails to terminate: 4.7k (≈ 52 mA) or wire TERM to the firmware |
 | Coil and battery temperature while charging (sealed enclosure, 25 °C room) | < 45 °C | Lower the charge current (raise R1) |
 | Foreign-object detection | No false FOD trips on any pad | R_FOD (R2, 196R) per TI's FOD calibration procedure |
@@ -67,7 +67,7 @@ a spray bottle, salt, a vacuum jar or hand vacuum pump.
 |---|---|
 | Deep sleep, dry | ≤ 60 µA |
 | Charge used by a 25 min simulated bath (PPK2) | ≤ 5 mAh |
-| Projected life on 500 mAh at one bath per day | ≥ 3 months |
+| Projected life on 320 mAh at one bath per day | ≥ 2 months |
 
 ## 7. Enclosure (print one cup + plug first)
 | Check | Pass | Tunable |

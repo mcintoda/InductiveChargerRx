@@ -25,12 +25,12 @@ All passives were collapsed onto a few standard values. That gives fewer JLC fee
 
 How each merge was done:
 - **Qi series resonant capacitor C_s** = 100n + 100n + **22n** = 222 nF, reusing the decoupling and COMM-cap values. That replaces the dedicated 33 nF part. Resonance with an 11 µH coil is 102 kHz, within the coil's own tolerance, and is bench-tuned anyway.
-- **Charge-current setting**: R_ILIM = R1 + R_FOD = 1k + 196R = 1196 Ω, giving I_BULK = 314 AΩ / 1196 Ω = **262 mA** (0.5C for the 500 mAh cell). That's below the datasheet's characterised 500–1500 mA range, which TI says on E2E is acceptable with reduced accuracy ([TI E2E: low charge current accuracy](https://e2e.ti.com/support/power-management-group/power-management/f/power-management-forum/576502/bq51050b-low-charge-current-accuracy)). TI recommends starting R_FOD at about 200 Ω, which matches 196R.
+- **Charge-current setting**: R_ILIM = R1 + R_FOD = 2k + 196R = 2196 Ω, giving I_BULK = 314 AΩ / 2196 Ω = **143 mA** (0.45C for the 320 mAh cell). That's below the datasheet's characterised 500–1500 mA range, which TI says on E2E is acceptable with reduced accuracy ([TI E2E: low charge current accuracy](https://e2e.ti.com/support/power-management-group/power-management/f/power-management-forum/576502/bq51050b-low-charge-current-accuracy)). TI recommends starting R_FOD at about 200 Ω, which matches 196R.
 - **Qi-present detector**: the 100k/100k divider became 1M/1M. The BSS138 gate still sees RECT/2 (2.5 V at 5 V RECT, 7.5 V worst case), and the off-pad current is still 0.
 - **Touch series resistors**: 510R → 1k, shared with the LED resistor. With about 1 pF of pad capacitance the RC is 1 ns, which doesn't matter at the touch peripheral's ~1 MHz rate, and the larger value improves ESD/RF filtering.
 - **Decoupling and bulk**: all 1 µF caps are one 25 V part, all 10 µF caps are one 25 V 0805 part (also good enough for RECT), and all 100 nF caps are one 50 V 0603 part (also good enough for the resonant tank).
-- **R3 (TERM)** = 10k: R_TERM = 240 Ω/% × %I_BULK, so charging stops at 41.7 % of 262 mA = about 109 mA. That's above TI's 30 mA guidance and ends at roughly 90 % full, which is easier on cycle life. Bench-verify that termination works.
-- **TH1**: a PCB-mounted 10k B3380 NTC (Murata NCP15XH103F03RC) pressed against the cell. It adds one BOM line, but means any 2-wire protected 403040 cell can be used.
+- **R3 (TERM)** = 10k: R_TERM = 240 Ω/% × %I_BULK, so charging stops at 41.7 % of 143 mA = about 60 mA. That's above TI's 30 mA guidance and ends at roughly 90 % full, which is easier on cycle life. Bench-verify that termination works.
+- **TH1**: a PCB-mounted 10k B3380 NTC (Murata NCP15XH103F03RC) pressed against the cell. It adds one BOM line, but means any 2-wire protected cell can be used.
 - **Added**: a dry reference electrode (E8) on IO7 with its own 1k. It adds a part but **no new BOM line**.
 
 ---
@@ -57,9 +57,9 @@ the **back** (single-sided SMT at JLC). Height bands, from the top (dry) to the 
 - **Power / housekeeping column** (front-view right): LDO + caps, EN RC, Qi-present detector, battery divider, I²C pull-ups, LED.
 - **Touch resistors**: a row directly under the module's GPIO edge, so every electrode trace leaves the electronics zone after one 1k resistor.
 - **Pogo test pads**: 3V3, GND, EN, IO0, USB D+/D−, VBAT, RECT, used for programming before the battery is fitted.
-- **Battery** (403040, 500 mAh, 4.0 × 30 × 40 mm) sits behind the electrode band, with TH1 under its top edge. **Qi coil** (Ø30 mm) sits behind the battery against the back wall. Its ferrite faces the battery and shields it.
+- **Battery** (320 mAh, 25.5 × 36 × 4.3 mm, spanning PCB y 50–86) sits behind the electrode band, with TH1 under its top edge. **Qi coil** (Ø30 mm) sits behind the battery against the back wall. Its ferrite faces the battery and shields it.
 
-**Stack in the electrode band** (front to back): wall 1.2 | PCB 1.0 | battery 4.0 | coil + ferrite 1.2 | foam 1.2 | back wall 1.5, giving **10.1 mm**. Because the electronics band has no battery behind it, the module (2.4 mm) fits within the same envelope. The enclosure ([enclosure.md](enclosure.md)) is **43.8 × 119.8 × 10.1 mm**, with a 7.4 mm cavity: PCB 1.0 + battery 4.0 + coil 1.2 + foam 1.2.
+**Stack in the electrode band** (front to back): wall 1.2 | PCB 1.0 | battery 4.3 | coil + ferrite 1.2 | foam 1.25 (swelling buffer) | back wall 1.5, giving **10.45 mm**. Because the electronics band has no battery behind it, the module (2.4 mm) fits within the same envelope. The enclosure ([enclosure.md](enclosure.md)) is **43.8 × 119.8 × 10.45 mm**, with a 7.75 mm cavity: PCB 1.0 + battery 4.3 + coil 1.2 + foam 1.25.
 
 **Checks run on the placement**: no courtyard overlaps, every part inside the outline, KiCad DRC shows
 no clearance / keep-out / footprint errors. Only unrouted nets, silkscreen cosmetics,

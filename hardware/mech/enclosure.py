@@ -8,7 +8,7 @@ Sealing concept
     screw torque, so there is no flange and nothing to glue.
   * Four M2 A4-stainless self-tapping screws through the side walls into the plug hold it in.
     They sit OUTBOARD of the O-ring: water can reach the screw holes but stops at the O-ring.
-  * The internal stack (PCB, battery, Qi coil, 0.6 mm foam) is clamped by the plug, pressing
+  * The internal stack (PCB, battery, Qi coil, 1.6 mm PORON foam) is clamped by the plug, pressing
     the electrodes flat onto the front wall (no air gap).
   * The BRACKET stays on the tub (2 suction cups); the device slides in from the top and is
     lifted out for charging.  Its side lips only overlap the outer 3 mm of the front face.
@@ -39,9 +39,14 @@ PCB_W, PCB_L, PCB_T = 38.0, 112.0, 1.0           # incl. thermal tab; top corner
 CLR_SIDE, CLR_TOP, CLR_BOT = 0.7, 2.6, 0.8         # PCB-to-cavity clearance; top keeps the module clear of the plug skirt
 CAV_W, CAV_L, CAV_R = PCB_W + 2 * CLR_SIDE, PCB_L + CLR_TOP + CLR_BOT, 6.0
 T_FRONT, T_SIDE, T_BACK = 1.2, 2.2, 1.5           # wall thicknesses
-BATT_T = 4.0                                      # Li-ion 403040, 500 mAh (4.0 x 30 x 40)
-STACK = PCB_T + BATT_T + 1.2 + 1.2                # PCB + battery + coil + foam (1.6 mm PORON -> 1.2) = 7.4
-DEPTH = T_FRONT + STACK + T_BACK                  # overall thickness 11.5
+BATT_W, BATT_L, BATT_T = 25.5, 36.0, 4.3         # protected LiPo 320 mAh (25.5 x 36 x 4.3)
+BATT_SWELL = 0.10                                 # allow normal pouch swelling: +10 % thickness over life
+FOAM_FREE, FOAM_NOM = 1.6, 1.25                   # PORON: 1.6 free, 1.25 installed (22 % compression)
+STACK = PCB_T + BATT_T + 1.2 + FOAM_NOM           # PCB + battery + coil gap + foam = 7.75
+DEPTH = T_FRONT + STACK + T_BACK                  # overall thickness 10.45
+# a swollen cell (+0.43 mm) is taken up by the foam (1.25 -> 0.82 mm, 49 %), never by the walls
+FOAM_SWOLLEN = FOAM_NOM - BATT_T * BATT_SWELL
+assert FOAM_SWOLLEN >= FOAM_FREE * 0.5, "foam would bottom out on a swollen cell"
 OUT_W, OUT_L, OUT_R = CAV_W + 2 * T_SIDE, CAV_L + 2 * T_SIDE, CAV_R + T_SIDE
 EDGE_FILLET = 2.5                                 # soft front edge (sensing wall stays flat inside it)
 FRONT_ROUND = EDGE_FILLET

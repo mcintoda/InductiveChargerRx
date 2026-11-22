@@ -4,8 +4,8 @@
 Internal parts are modelled as simple solids at their real positions:
   PCB 38 x 112 x 1.0 (top corners R5.5) pressed on the front wall,
   ESP32-S3-MINI-1 module 15.4 x 20.65 x 2.4 (KiCad outline) on the back of the PCB,
-  Li-ion 403040 (30 x 40 x 4) behind the electrode band, Qi coil TDK WR303050 (30 x 29.6 x 0.94) behind the battery,
-  1.2 mm (compressed) foam between coil and plug, and a 1.35 mm-tall envelope for all other
+  protected LiPo 320 mAh (25.5 x 36 x 4.3) behind the electrode band, Qi coil TDK WR303050 (30 x 29.6 x 0.94) behind the battery,
+  1.25 mm (compressed) foam (swelling buffer) between coil and plug, and a 1.35 mm-tall envelope for all other
   back-side components (0805 is the tallest passive) across the electronics band.
 
     python3 hardware/mech/fit_and_render.py
@@ -53,10 +53,10 @@ def box(cx, cy, w, l, z0, h):
 
 def parts():
     mx, my = E.pcb_to_dev(19.0, 20.65 / 2)          # body top on the PCB edge
-    bx, by = E.pcb_to_dev(19.0, 70.0)
-    batt = box(bx, by, 30.0, 40.0, Z_BACK_PCB, E.BATT_T)
+    bx, by = E.pcb_to_dev(19.0, 68.0)               # cell spans PCB y 50..86 (covers TH1 at y 52.5)
+    batt = box(bx, by, E.BATT_W, E.BATT_L, Z_BACK_PCB, E.BATT_T)
     coil = box(bx, by, 30.0, 29.6, Z_BACK_PCB + E.BATT_T, 0.94)          # TDK WR303050-12F5-ID
-    foam = cq.Workplane("XY").workplane(offset=Z_BACK_PCB + E.BATT_T + 1.2).center(bx, by).circle(15.0).extrude(1.15)
+    foam = cq.Workplane("XY").workplane(offset=Z_BACK_PCB + E.BATT_T + 1.2).center(bx, by).circle(15.0).extrude(E.FOAM_NOM - 0.05)
     # passives envelope: electronics band (PCB y 4.6..29.5), full width, minus the module footprint
     ex, ey = E.pcb_to_dev(19.0, (4.6 + 29.5) / 2)
     comps = box(ex, ey, E.PCB_W - 0.2, 29.5 - 4.6, Z_BACK_PCB, 1.35).cut(box(mx, my, 15.7, 20.85, Z_BACK_PCB - 0.1, 2))
@@ -103,10 +103,13 @@ def main():
             print(f"  {name:8s} vs {shell_name:5s}: {v:.3f}")
     # clamping: gap between the stack and the plug back wall / posts
     print("PCB pressed on front wall: PCB front face Z =", Z_PCB, "(front wall inner face Z =", E.T_FRONT, ")")
-    print(f"Stack back face Z = {Z_BACK_PCB + E.BATT_T + 1.2 + 1.15:.2f}, plug inner face Z = {E.DEPTH - E.T_BACK:.2f}")
+    print(f"Stack back face Z = {Z_BACK_PCB + E.BATT_T + 1.2 + E.FOAM_NOM - 0.05:.2f}, plug inner face Z = {E.DEPTH - E.T_BACK:.2f}")
+    sw = E.BATT_T * E.BATT_SWELL
+    print(f"Battery swelling: +{sw:.2f} mm (+{E.BATT_SWELL:.0%}) -> foam {E.FOAM_NOM:.2f} -> {E.FOAM_SWOLLEN:.2f} mm "
+          f"({1 - E.FOAM_SWOLLEN / E.FOAM_FREE:.0%} compression of {E.FOAM_FREE} mm free; limit 50 %)")
 
     # ---- cross-section through the battery/coil (Y = battery centre) ----
-    bx, by = E.pcb_to_dev(19.0, 70.0)
+    bx, by = E.pcb_to_dev(19.0, 68.0)
     _, ywin = E.pcb_to_dev(19.0, 107.0)
     fig, axes = plt.subplots(2, 1, figsize=(9, 6.2))
     colors = {"cup": "#9bb7d4", "plug": "#3b6fb6", "pcb": "#2e7d32", "module": "#666", "battery": "#d4a017",

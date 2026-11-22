@@ -53,7 +53,7 @@ which keeps it understated. The mockup shows it that way.
 | Front, both margins | Small **alarm arrows** at the default alarm level (top of pad 6), outside the electrodes | Where the alarm triggers by default |
 | Both long sides | **Waterline groove** (0.8 × 0.3 mm) at the default alarm level, wrapping the side walls | Styling line plus a visible alarm level when looking at the device edge-on in the bracket |
 | Back (Qi face) | **Coil outline**: one plain 30 mm ring exactly over the Ø30 coil, with "Qi" and "charge this side" inside | Shows where the coil is. A round Qi coil works at any rotation, so there are no orientation marks |
-| Back | Bathtub mark, wordmark, "bath level monitor", rating line "Li-ion 3.7 V 500 mAh · IP68 · rev B" | Identity and rating |
+| Back | Bathtub mark, wordmark, "bath level monitor", rating line "Li-ion 3.7 V 320 mAh · IP68 · rev C" | Identity and rating |
 | Front, electrode band | **No relief** | A flat, even 1.2 mm wall. Relief would thin the wall unevenly and trap water films (see the electrode study) |
 
 Details that keep the markings from hurting function:
