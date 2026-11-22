@@ -179,7 +179,13 @@ static void charger_mode(void)
 
     net_status_t st = {.battery_pct = -1, .temp_c = NAN};
     bool online = net_wifi_connect(&s_set, 15000);
-    if (online) net_web_start(&s_set, &st);
+    if (online) {
+        net_web_start(&s_set, &st);
+        char url[40], msg[96];
+        snprintf(url, sizeof(url), "http://%s/", net_ip());
+        snprintf(msg, sizeof(msg), "Tap for settings (open for 10 min): %s", url);
+        net_ntfy_click(&s_set, "brim is charging", msg, 1, "battery", url);   // priority 1: silent
+    }
     double t0 = now_s();
     while (now_s() - t0 < 10 * 60 && power_on_charger()) {
         int mv = power_battery_mv();
@@ -351,7 +357,22 @@ void app_main(void)
         ESP_LOGI(TAG, "LIS2DW12 %s", s_acc_fitted ? "fitted" : "not answering");
     }
     if (!s_cal.valid) calibrate_dry(1);                   // first power-up: assume dry
-    if (!settings_provisioned(&s_set)) {
+    // first boot after setup (or new Wi-Fi details): prove they work before relying on them
+    if (s_set.ssid[0] && s_set.topic[0] && !s_set.wifi_ok) {
+        status_led(LED_SETUP);
+        if (net_wifi_connect(&s_set, 20000)) {
+            s_set.wifi_ok = true;
+            settings_save(&s_set);
+            net_ntfy(&s_set, "brim is connected",
+                     "Alerts will arrive here. Put brim in its bracket with the arrows at your full line.", 3, "bathtub");
+            net_wifi_stop();
+            status_flash(0, 255, 0, 2, 300);
+        } else {
+            net_wifi_stop();
+            ESP_LOGW(TAG, "can't join '%s': back to setup", s_set.ssid);
+        }
+    }
+    if (!settings_provisioned(&s_set) || !s_set.wifi_ok) {
         status_led(LED_SETUP);
         if (net_provision(&s_set, 15 * 60 * 1000)) esp_restart();
         sleep_now(false, 0);

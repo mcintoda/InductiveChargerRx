@@ -26,7 +26,6 @@ alert to an iPhone over Wi-Fi before the tub overflows.
 - **Display or physical buttons.** Phone notifications cover it, and buttons break the seal.
 - **USB port.** It's a water path. Firmware updates go over Wi-Fi (OTA). Factory programming uses test pads before sealing.
 - **Separate capacitance-to-digital IC (e.g. FDC1004).** The ESP32-S3's touch peripheral has a hardware *shield driver* designed for water rejection, and it can wake the chip from deep sleep. The FDC1004 would add about $3, an I²C device, and ~29 µA of standby current.
-- **Accelerometer, buzzer or RGB LED.** The owner decided against a local beeper (rev B).
 
 ---
 
@@ -204,10 +203,11 @@ With 320 mAh, that's about **4 months between charges** at one bath per day. Eve
 **Fill-rate estimate**: a linear fit of the interpolated level over the last 60 s gives the time to reach the alarm pad. A typical tub rises 1–3 cm/min, so the 60 mm ladder gives several minutes of warning.
 
 **Setup (no app, no pairing)**
-1. On first power-up, or after a reset, the device starts an access point called `BathMonitor-XXXX` with a captive portal.
-2. The iPhone joins it, and a page asks for the Wi-Fi network, the alarm pad and the temperature limit. It then shows the generated ntfy topic as a subscribe link.
-3. Afterwards, settings are at `http://bathmonitor.local` whenever the device is on the Qi pad.
-4. **Factory reset with no buttons:** put it on the pad and lift it off 3 times within 15 s.
+1. On first power-up, or after a reset, the device starts an open access point called `brim-setup-XXXX` with a captive portal (DNS answers everything with 192.168.4.1, so the phone pops the form up by itself; otherwise open http://192.168.4.1).
+2. The form asks for the Wi-Fi network, the alarm pad and the temperature limit, and shows the generated ntfy topic with a **Copy** button.
+3. After saving, brim joins the Wi-Fi and sends **"brim is connected"**. If it can't join, setup re-opens (cyan blink) with "couldn't join … check the password / 2.4 GHz".
+4. Afterwards, each time it is put on a Qi pad it sends a silent **"brim is charging"** notification; tapping it opens the settings page (open for 10 min), which also has **Send a test alert**.
+5. **Factory reset with no buttons:** put it on the pad and lift it off 3 times within 20 s.
 
 **Calibration**
 - A dry-air baseline is captured automatically on each charger placement.
@@ -251,7 +251,8 @@ With 320 mAh, that's about **4 months between charges** at one bath per day. Eve
 | Sensor power | 12 | Feeds TMP117 VDD and the I²C pull-ups |
 | Qi present (`QI_DET_N`) | 13 | Active-low from BSS138, RTC GPIO, ext0 wake |
 | CHG status | 40 | Open-drain from BQ51050B, pulled up internally (moved from GPIO15 to the right side of the module for a cleaner schematic) |
-| Status LED | 21 | Through a 1 kΩ resistor, visible through a thin wall spot |
+| Accelerometer interrupt (`ACC_INT`) | 21 | LIS2DW12 INT1, active low, ext1 wake (rev C; the status LED moved to the AW2013 on I²C) |
+| Piezo drive (`BUZ_A` / `BUZ_B`) | 16 / 17 | Antiphase LEDC through 1k each (rev C) |
 | USB D− / D+ | 19 / 20 | Test pads only |
 | EN / BOOT | EN / 0 | Test pads + RC on EN |
 
@@ -292,6 +293,7 @@ With 320 mAh, that's about **4 months between charges** at one bath per day. Eve
 | 2026-11-22 | Battery changed to a protected 320 mAh LiPo, 25.5 × 36 × 4.3 mm (Amazon). R1 1k → 2k (C4109): charge 143 mA (0.45 C), termination ~60 mA. Foam is now the swelling buffer: 1.6 mm PORON installed at 1.25 mm, a +10 % swollen cell takes it to 0.82 mm (49 %). Enclosure 43.8 × 119.8 × 10.45 mm. Runtime estimate ~4 months |
 | 2026-11-22 | Bracket 80 → 72 mm and lips 3 → 2.5 mm so the side waterline grooves and the front alarm arrows are visible when docked. Finger-grip grooves on the sides of the dry top band. Non-JLC parts from Amazon, Digi-Key and McMaster only (O-ring now NBR) |
 | 2026-11-22 | Kept the compact size (not iPhone-sized: would look like a dropped phone, double the tub footprint, add only empty volume). Phone-like feel instead: front edge round 2.5 → 3 mm, "charges flat like a phone" in the docs |
+| 2026-11-22 | User walkthrough fixes: captive portal (DNS + redirect), copy button for the ntfy topic, Wi-Fi verified after setup with a "brim is connected" alert (bad password re-opens setup), silent "brim is charging" alert linking to the settings page, test-alert button. Quick start guide (docs/quick-start.html) |
 | 2026-11-19 | Branding: working name "brim", drop-to-the-brim mark, foam/tide/deep/aqua palette, Inter type. Debossed logo + wordmark on the dry front band, alarm-level chevrons, Qi target over the coil on the back (docs/branding.md) |
 | 2026-11-19 | Brand rev B: ripple (pebble-in-water) mark, muted palette (mist / slate / ink / sea glass), unpainted deboss. Case: 2.5 mm front round, graduated level scale with pad numbers, alarm chevron, waterline groove on the sides, Qi coil outline on the back |
 | 2026-11-19 | Markings simplified: level horizontal scale on the left margin only (ticks + pad numbers in one column), alarm chevron on the right; Qi outline is one plain ring (no dashes or alignment ticks) |

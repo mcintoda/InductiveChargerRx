@@ -36,9 +36,11 @@ make -C test          # level estimation, film rejection, drift, fill rate, alar
 ```
 
 ## Use
-1. First power-up: join Wi-Fi **brim-setup-XXXX**, open http://192.168.4.1, enter Wi-Fi, pick the alarm pad.
-   The page shows the ntfy topic: subscribe to it in the free ntfy iOS app.
-2. While on the Qi charger, the same page is at the device's IP on your network for 10 minutes.
+1. First power-up: join Wi-Fi **brim-setup-XXXX**; the setup form pops up (captive portal; else http://192.168.4.1).
+   Enter Wi-Fi, pick the alarm pad, **Copy** the ntfy topic and subscribe to it in the free ntfy app, then Save.
+   brim joins the Wi-Fi and sends **"brim is connected"**. Wrong password: setup re-opens with an error (cyan blink).
+2. On the Qi charger it sends a silent **"brim is charging"** alert; tap it for the settings page (10 minutes),
+   which also has **Send a test alert** and the firmware upload.
 3. Factory reset: put it on the charger 3 times within 20 s.
 4. Level sensing (settings page): `FDC1004` (default; falls back to touch on boards without U5), `Touch` (ratiometric) or `Compare`.
    Compare logs `CMP,...` lines on the USB console for the bench protocol in `docs/sensing-options.md`.

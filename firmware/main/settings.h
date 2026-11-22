@@ -15,6 +15,7 @@ typedef struct {
     float temp_limit_c;    // default 42
     bool notify_filling;   // default off
     int sense_mode;        // SENSE_FDC (default), SENSE_TOUCH or SENSE_COMPARE (see docs/sensing-options.md)
+    bool wifi_ok;          // these Wi-Fi details have joined the network at least once (false: setup re-opens)
 } settings_t;
 
 esp_err_t settings_load(settings_t *s);   // fills defaults if nothing stored

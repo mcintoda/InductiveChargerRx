@@ -19,6 +19,8 @@
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
+#include "freertos/task.h"
+#include "lwip/sockets.h"
 
 static const char *TAG = "net";
 static EventGroupHandle_t s_ev;
@@ -29,10 +31,16 @@ static settings_t *s_settings;
 static const net_status_t *s_status;
 static bool s_saved, s_ota_done, s_wifi_started;
 static esp_netif_t *s_sta, *s_ap;
+static volatile bool s_dns_run;
+static char s_ip[16];
 
 static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
 {
-    if (base == IP_EVENT && id == IP_EVENT_STA_GOT_IP) xEventGroupSetBits(s_ev, EV_GOT_IP);
+    if (base == IP_EVENT && id == IP_EVENT_STA_GOT_IP) {
+        const ip_event_got_ip_t *e = data;
+        snprintf(s_ip, sizeof(s_ip), IPSTR, IP2STR(&e->ip_info.ip));
+        xEventGroupSetBits(s_ev, EV_GOT_IP);
+    }
 }
 
 esp_err_t net_init(void)
@@ -68,7 +76,15 @@ void net_wifi_stop(void)
     if (s_wifi_started) { esp_wifi_disconnect(); esp_wifi_stop(); s_wifi_started = false; }
 }
 
+const char *net_ip(void) { return s_ip; }
+
 esp_err_t net_ntfy(const settings_t *s, const char *title, const char *msg, int priority, const char *tags)
+{
+    return net_ntfy_click(s, title, msg, priority, tags, NULL);
+}
+
+esp_err_t net_ntfy_click(const settings_t *s, const char *title, const char *msg, int priority, const char *tags,
+                         const char *click)
 {
     char url[128], prio[4];
     snprintf(url, sizeof(url), "https://%s/%s", s->ntfy_host, s->topic);
@@ -79,6 +95,7 @@ esp_err_t net_ntfy(const settings_t *s, const char *title, const char *msg, int 
     esp_http_client_set_header(c, "Title", title);
     esp_http_client_set_header(c, "Priority", prio);
     if (tags && tags[0]) esp_http_client_set_header(c, "Tags", tags);
+    if (click && click[0]) esp_http_client_set_header(c, "Click", click);
     esp_http_client_set_post_field(c, msg, strlen(msg));
     esp_err_t err = esp_http_client_perform(c);
     int code = esp_http_client_get_status_code(c);
@@ -121,9 +138,13 @@ static const char *PAGE_HEAD =
 
 static esp_err_t page_root(httpd_req_t *req)
 {
-    char buf[3000];
+    static char buf[4096];   // static: the httpd task is single-threaded; keeps 4 kB off its stack
     const settings_t *s = s_settings;
     int n = snprintf(buf, sizeof(buf), "%s", PAGE_HEAD);
+    if (!s_status && s->ssid[0] && !s->wifi_ok)
+        n += snprintf(buf + n, sizeof(buf) - n,
+                      "<p style='background:#fde2e1;padding:10px;border-radius:6px'>brim couldn't join <b>%s</b>. "
+                      "Check the password, and that it is a 2.4 GHz network, then save again.</p>", s->ssid);
     if (s_status)
         n += snprintf(buf + n, sizeof(buf) - n, "<p>Battery %d %% %s &middot; water %s</p>", s_status->battery_pct,
                       s_status->charging ? "(charging)" : "", isnan(s_status->temp_c) ? "--" : "measured");
@@ -143,17 +164,22 @@ static esp_err_t page_root(httpd_req_t *req)
                   "<label>Level sensing<select name=sense><option value=0%s>Touch (ratiometric)</option>"
                   "<option value=1%s>FDC1004 (default)</option><option value=2%s>Compare: log both, alarm from touch</option>"
                   "</select></label>"
-                  "<p>Notifications go to topic <code>%s</code>. In the ntfy app tap + and subscribe to it.</p>"
+                  "<p><b>Alerts:</b> install the free <b>ntfy</b> app, tap <b>+</b> and subscribe to this topic:</p>"
+                  "<input id=t readonly value='%s' onclick='this.select()'>"
+                  "<button type=button onclick=\"t.select();document.execCommand('copy');this.textContent='Copied'\">"
+                  "Copy topic</button><br>"
                   "<button>Save</button></form>",
                   s->temp_limit_c, s->notify_filling ? " checked" : "", s->ntfy_host,
                   s->sense_mode == SENSE_TOUCH ? " selected" : "", s->sense_mode == SENSE_FDC ? " selected" : "",
                   s->sense_mode == SENSE_COMPARE ? " selected" : "", s->topic);
     if (s_status)
         n += snprintf(buf + n, sizeof(buf) - n,
+                      "<form method=post action=/test><button>Send a test alert</button></form>"
                       "<h3>Firmware update</h3><form method=post action=/update enctype=application/octet-stream "
                       "onsubmit=\"event.preventDefault();fetch('/update',{method:'POST',body:this.f.files[0]})"
                       ".then(r=>r.text()).then(t=>document.body.innerHTML+='<p>'+t+'</p>')\">"
                       "<input name=f type=file accept=.bin><button>Upload</button></form>");
+    if (n >= (int)sizeof(buf)) n = sizeof(buf) - 1;   // never send past the end if a field grows
     httpd_resp_set_type(req, "text/html");
     return httpd_resp_send(req, buf, n);
 }
@@ -164,8 +190,8 @@ static esp_err_t page_save(httpd_req_t *req)
     int len = httpd_req_recv(req, body, sizeof(body) - 1);
     if (len <= 0) return httpd_resp_send_500(req);
     settings_t *s = s_settings;
-    if (form_get(body, "ssid", v, sizeof(v))) strlcpy(s->ssid, v, sizeof(s->ssid));
-    if (form_get(body, "pass", v, sizeof(v)) && v[0]) strlcpy(s->pass, v, sizeof(s->pass));   // blank = keep
+    if (form_get(body, "ssid", v, sizeof(v)) && strcmp(v, s->ssid)) { strlcpy(s->ssid, v, sizeof(s->ssid)); s->wifi_ok = false; }
+    if (form_get(body, "pass", v, sizeof(v)) && v[0]) { strlcpy(s->pass, v, sizeof(s->pass)); s->wifi_ok = false; }   // blank = keep
     if (form_get(body, "host", v, sizeof(v)) && v[0]) strlcpy(s->ntfy_host, v, sizeof(s->ntfy_host));
     if (form_get(body, "pad", v, sizeof(v))) { int p = atoi(v); if (p >= 1 && p <= 6) s->alarm_pad = p; }
     if (form_get(body, "tlim", v, sizeof(v))) { float t = strtof(v, NULL); if (t >= 30 && t <= 50) s->temp_limit_c = t; }
@@ -175,11 +201,67 @@ static esp_err_t page_save(httpd_req_t *req)
     settings_save(s);
     s_saved = true;
     xEventGroupSetBits(s_ev, EV_SAVED);
-    char resp[1200];
-    int n = snprintf(resp, sizeof(resp), "%s<p>Saved. brim will now join <b>%s</b>.</p><p>Subscribe to <code>%s</code> "
-                     "in the ntfy app to get alerts.</p>", PAGE_HEAD, s->ssid, s->topic);
+    char resp[1500];
+    int n = snprintf(resp, sizeof(resp),
+                     "%s<p>Saved. brim will now join <b>%s</b>.</p><p>Within a minute you should get a "
+                     "<b>brim is connected</b> alert in ntfy (topic <code>%s</code>).</p><p>No alert and the light blinks "
+                     "cyan again? The Wi-Fi password was wrong: rejoin <b>brim-setup</b> and fix it.</p>",
+                     PAGE_HEAD, s->ssid, s->topic);
     httpd_resp_set_type(req, "text/html");
     return httpd_resp_send(req, resp, n);
+}
+
+static esp_err_t page_test(httpd_req_t *req)
+{
+    esp_err_t e = net_ntfy(s_settings, "brim test", "If you can read this, brim's alerts reach this phone.", 4, "bathtub");
+    char resp[1000];
+    int n = snprintf(resp, sizeof(resp), "%s<p>%s</p><p><a href=/>Back</a></p>", PAGE_HEAD,
+                     e == ESP_OK ? "Test alert sent. Check the ntfy app." : "Couldn't reach the ntfy server.");
+    httpd_resp_set_type(req, "text/html");
+    return httpd_resp_send(req, resp, n);
+}
+
+// captive portal: every unknown URL (e.g. the phone's captive.apple.com check) redirects to the setup form
+static esp_err_t page_redirect(httpd_req_t *req, httpd_err_code_t err)
+{
+    httpd_resp_set_status(req, "302 Found");
+    httpd_resp_set_hdr(req, "Location", "http://192.168.4.1/");
+    return httpd_resp_send(req, NULL, 0);
+}
+
+// minimal DNS server for setup mode: answers every A query with 192.168.4.1
+static void dns_task(void *arg)
+{
+    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    struct sockaddr_in a = {.sin_family = AF_INET, .sin_port = htons(53), .sin_addr.s_addr = htonl(INADDR_ANY)};
+    struct timeval tv = {.tv_sec = 1};
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    if (sock < 0 || bind(sock, (struct sockaddr *)&a, sizeof(a)) < 0) { if (sock >= 0) close(sock); vTaskDelete(NULL); return; }
+    uint8_t p[512];
+    while (s_dns_run) {
+        struct sockaddr_in from;
+        socklen_t fl = sizeof(from);
+        int n = recvfrom(sock, p, sizeof(p) - 16, 0, (struct sockaddr *)&from, &fl);
+        if (n < 12 || (p[2] & 0x80)) continue;                       // not a query
+        int q = 12;
+        while (q < n && p[q]) q += p[q] + 1;                          // skip QNAME
+        if (q + 5 > n) continue;
+        q += 5;                                                       // zero byte + QTYPE + QCLASS
+        bool is_a = p[q - 4] == 0 && p[q - 3] == 1;
+        p[2] = 0x84 | (p[2] & 0x01);                                  // response, authoritative, keep RD
+        p[3] = 0x00;
+        p[6] = 0; p[7] = is_a ? 1 : 0;                                // ANCOUNT
+        p[8] = p[9] = p[10] = p[11] = 0;
+        n = q;
+        if (is_a) {
+            const uint8_t ans[16] = {0xC0, 0x0C, 0, 1, 0, 1, 0, 0, 0, 60, 0, 4, 192, 168, 4, 1};
+            memcpy(p + n, ans, sizeof(ans));
+            n += sizeof(ans);
+        }
+        sendto(sock, p, n, 0, (struct sockaddr *)&from, fl);
+    }
+    close(sock);
+    vTaskDelete(NULL);
 }
 
 static esp_err_t page_update(httpd_req_t *req)
@@ -221,6 +303,10 @@ static esp_err_t start_httpd(void)
     if (s_status) {
         httpd_uri_t upd = {.uri = "/update", .method = HTTP_POST, .handler = page_update};
         httpd_register_uri_handler(s_httpd, &upd);
+        httpd_uri_t test = {.uri = "/test", .method = HTTP_POST, .handler = page_test};
+        httpd_register_uri_handler(s_httpd, &test);
+    } else {
+        httpd_register_err_handler(s_httpd, HTTPD_404_NOT_FOUND, page_redirect);
     }
     return ESP_OK;
 }
@@ -241,9 +327,12 @@ bool net_provision(settings_t *s, int timeout_ms)
     esp_wifi_start();
     s_wifi_started = true;
     start_httpd();
+    s_dns_run = true;
+    xTaskCreate(dns_task, "dns", 3072, NULL, 5, NULL);
     ESP_LOGI(TAG, "setup: join Wi-Fi '%s' and open http://192.168.4.1", ap.ap.ssid);
     EventBits_t b = xEventGroupWaitBits(s_ev, EV_SAVED, pdFALSE, pdTRUE, pdMS_TO_TICKS(timeout_ms));
     vTaskDelay(pdMS_TO_TICKS(1500));   // let the confirmation page go out
+    s_dns_run = false;
     httpd_stop(s_httpd);
     s_httpd = NULL;
     net_wifi_stop();

@@ -3,4 +3,4 @@ idf_component_register(
          "accel.c" "status.c" "buzzer.c" "tilt.c"
     INCLUDE_DIRS "."
     REQUIRES driver esp_adc esp_wifi esp_netif esp_event nvs_flash esp_http_client esp_http_server
-             esp-tls app_update esp_pm esp_timer esp_driver_usb_serial_jtag)
+             esp-tls app_update esp_pm esp_timer esp_driver_usb_serial_jtag lwip)

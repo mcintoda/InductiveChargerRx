@@ -16,6 +16,9 @@ esp_err_t net_init(void);
 bool net_wifi_connect(const settings_t *s, int timeout_ms);
 void net_wifi_stop(void);
 esp_err_t net_ntfy(const settings_t *s, const char *title, const char *msg, int priority, const char *tags);
+esp_err_t net_ntfy_click(const settings_t *s, const char *title, const char *msg, int priority, const char *tags,
+                         const char *click);   // click: URL opened when the notification is tapped
+const char *net_ip(void);                      // station IP after net_wifi_connect, "" before
 
 // First-time setup: access point "brim-setup-XXXX" with a form at http://192.168.4.1.
 // Returns after the user saved settings (caller restarts) or after `timeout_ms`.
