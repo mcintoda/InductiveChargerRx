@@ -29,6 +29,7 @@ Z_PCB = E.T_FRONT
 Z_BACK_PCB = Z_PCB + E.PCB_T
 
 
+SCREW_L = 6.0                                      # M2 x 6 mm flat head (overall length)
 STUB = 0.6                                         # worst-case break-off stub, see pcb()
 
 
@@ -64,8 +65,16 @@ def parts():
     zx, zy = E.pcb_to_dev(19.0, 23.5)
     z_in = E.DEPTH - E.T_BACK
     piezo = cq.Workplane("XY").workplane(offset=z_in - 0.46).center(zx, zy).circle(10.0).extrude(0.45)
+    # retention screws: M2 x 6 mm flat head thread-forming (head flush with the outside); the last ~1.5 mm
+    # reaches past the plug skirt into the cavity, so they are checked against the internal parts as well
+    screws = None
+    for sy in E.SCREW_Y:
+        for side in (-1, 1):
+            s = (cq.Workplane("YZ").workplane(offset=side * E.OUT_W / 2).center(sy, E.SCREW_Z)
+                 .circle(1.0).extrude(-side * SCREW_L))
+            screws = s if screws is None else screws.union(s)
     return {"pcb": pcb(), "module": box(mx, my, 15.5, 20.65, Z_BACK_PCB, 2.4), "parts": comps,
-            "battery": batt, "coil": coil, "foam": foam, "piezo": piezo}
+            "battery": batt, "coil": coil, "foam": foam, "piezo": piezo, "screws": screws}
 
 
 def vol(a, b):
@@ -85,7 +94,10 @@ def main():
     print("Interference check [mm3] (must be 0):")
     bad = False
     for name, p in inner.items():
-        for shell_name, shell in (("cup", cup), ("plug", plug)):
+        # screws cut their own thread into the plug: check them against the internal parts instead
+        against = ([(k, v) for k, v in inner.items() if k != "screws"] if name == "screws"
+                   else [("cup", cup), ("plug", plug)])
+        for shell_name, shell in against:
             v = vol(p, shell)
             bad |= v > 1e-3
             print(f"  {name:8s} vs {shell_name:5s}: {v:.3f}")

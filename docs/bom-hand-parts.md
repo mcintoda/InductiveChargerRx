@@ -14,7 +14,7 @@ rows to Digi-Key's BOM Manager, which matches on the manufacturer part number).
 | 5 | 1 | Silicone grease, 85 ml | MG Chemicals 8462-85ML | Digi-Key | [473-1232-ND](https://www.digikey.com/en/products/detail/mg-chemicals/8462-85ML/6035523) | 10 | Thin film on the O-ring |
 | 6 | 1 | Humidity indicator cards, 3-spot (can of 125) | SCS 3HIC125 | Digi-Key | [SCP667-ND](https://www.digikey.com/product-detail/en/scs/3HIC125/SCP667-ND/1621628) | 20 | Cut one spot, stick it inside the cup as the leak indicator |
 | 7 | 1 | O-ring 90 x 1.5 mm, FKM 80 Shore A (pack of 5) | Tameson S26DT-X5 | Tameson | [S26DT-X5](https://tameson.com/products/s26dt-x5-fkm-o-ring-90-x-1p5mm-od-93mm-80-shore-a-5-pieces) | 8 | Plug groove. EPDM 70 Sh A is ideal but not found in this size; NBR alternative: Tameson S26DS-X20 |
-| 8 | 1 | Screw, flat head, thread-forming for plastic, 18-8 stainless, M2.2 x 4 mm (pack; 4 per device) | McMaster-Carr 95893A165 | McMaster-Carr | [95893A165](https://www.mcmaster.com/product/95893A165/) | 10 | Side walls into the plug (4 per device). Confirm the M2.2 x 4 mm variant on the page. Needs enclosure.py SCREW_CLEAR 2.5 / SCREW_PILOT 1.8 |
+| 8 | 1 | Screw, flat head, thread-forming for plastic, 18-8 stainless, Torx drive, M2 x 6 mm (pack; 4 per device) | McMaster-Carr (Flat Head Thread-Forming Screws for Plastic, 18-8, Torx, M2 x 6 mm) | McMaster-Carr | [mcmaster.com](https://www.mcmaster.com/) | 10 | Side walls into the plug, 4 per device. Fits the existing M2 holes (2.3 mm clearance, 1.6 mm pilot). The tip reaches 1.5 mm past the plug skirt, 0.9 mm clear of the coil: checked in fit_and_render.py |
 | 9 | 1 | Microcellular urethane (PORON-type) foam sheet, 1/16 in, 12 x 12 in | Zoro Select ZUSA-MCP-101 | Zoro | [G1984851](https://www.zoro.com/zoro-select-foam-sheet-microcellular-12-in-w-12-in-l-116-in-thick-black-zusa-mcp-101/i/G1984851) | 17 | Cut 30 mm discs: between the coil and the plug |
 | 10 | 1 | Suction cups 40 mm, mushroom head (pack of 10) | Bambu Lab HA011 | Bambu Lab store / Amazon | [HA011](https://us.store.bambulab.com/products/suction-caps-with-mushroom-head) | 2 | Bracket keyholes, 2 per device (docs/enclosure.md 2.7) |
 
@@ -22,7 +22,7 @@ Approximate total for the list: **about US$114** plus shipping. Prices are searc
 
 ## Before ordering
 - **Battery:** marketplace 403040 cells vary. On arrival check thickness (≤ 4.2 mm), that a protection board sits under the tape, and polarity (red to J1 pin 1). The case is sized for 4.0 × 30 × 40 mm.
-- **Screws:** M2.2 needs the case's clearance hole at 2.5 mm and pilot at 1.8 mm (`SCREW_CLEAR` / `SCREW_PILOT` in `hardware/mech/enclosure.py`) before printing.
+- **Screws:** McMaster "Flat Head Thread-Forming Screws for Plastic, 18-8, Torx, M2 x 6 mm". They fit the case's existing M2 holes, so no change is needed.
 - **O-ring:** FKM in the exact 90 × 1.5 mm size. EPDM would be ideal but was not found in that size.
 
 Not in this list: the PCB and its SMD parts (JLC PCBA), the enclosure prints (`hardware/mech/out/`, JLC3DP), and a USB-C cable for the first flash.

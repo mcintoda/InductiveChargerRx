@@ -105,7 +105,7 @@ Sources: [JLC3DP capabilities](https://jlc3dp.com/capabilities/3d-printing-servi
 | Qty | Part |
 |---|---|
 | 1 | O-ring 90 × 1.5 mm, EPDM 70 Sh A (buy a few) |
-| 4 | Screw M2 × 4 mm, A4 (316) stainless, self-tapping for plastics (PT/plastite style), flat head |
+| 4 | Screw M2 × 6 mm, flat head, thread-forming for plastic, 18-8 stainless, Torx (McMaster-Carr). The tip reaches ~1.5 mm past the plug skirt, clear of the coil and foam (fit check) |
 | 1 | PORON foam 1.6 mm, Ø30 mm (behind the coil) |
 | 1 | Thermal gap pad 0.5 mm, 10 × 7 mm (TMP117 tab ↔ thermal window) |
 | 2 | Suction cup Ø40 mm with mushroom head, see section 2.7 (e.g. Bambu Lab HA011) |
