@@ -42,7 +42,7 @@ Sources: [Hammond 1555 datasheet](https://www.mouser.com/datasheet/2/177/1555-12
 |---|---|
 | **Cup** | One piece: 1.2 mm flat front wall (the sensing face), 2.2 mm side walls, open back. A 0.8 mm thermal window sits behind the TMP117 tab. The bore entry has a 0.6 mm lead-in chamfer so it doesn't cut the O-ring |
 | **Plug** | 1.5 mm flat back wall (Qi face) with a 2.2 mm skirt carrying the O-ring groove. Two posts press the PCB onto the front wall in the electronics band, and a pry notch at the top edge allows opening |
-| **Bracket** | Stays stuck to the tub with 2 suction cups. The device slides in from the top and rests on two corner stops. Side lips overlap only the outer 3 mm of the front face, so the electrodes and the thermal window stay fully exposed. Lift the device out to charge |
+| **Bracket** | Stays stuck to the tub with 2 suction cups. The device slides in from the top and rests on two corner stops. 72 mm tall: its top sits ~3 mm below the side waterline grooves, so they stay visible when docked. Side lips (2.5 mm) overlap only the front edge round, so the electrodes, the alarm arrows (~1.2 mm clear) and the thermal window stay fully exposed. Lift the device out to charge, pinching the grip grooves |
 
 ### 2.1 How it seals
 
@@ -55,6 +55,10 @@ Sources: [Hammond 1555 datasheet](https://www.mouser.com/datasheet/2/177/1555-12
   on the **outside of the O-ring** (axis at Z 8.35 mm, groove at Z 4.65–6.95). Water can enter a
   screw hole but stops at the O-ring. The screws only stop the plug backing out, for example when warm water
   heats the trapped air: +30 °C gives about 10 kPa, which is about 50 N on the plug.
+- **Grip:** 13 shallow grooves (0.8 mm wide, 0.35 mm deep, 2 mm pitch) on each long side of the dry top band
+  (above the bracket), only in the front half of the wall so they read differently from the full-depth
+  waterline groove and stay clear of the screw heads. None on the front (sensing wall: grooves would hold
+  water and change the wall over the electrodes) or the back (flat Qi face).
 - **Internal clamping:** PCB 1.0, battery 4.3 (320 mAh, 25.5 × 36), coil 1.2 and 1.6 mm PORON foam (compressed to 1.25) fill
   the 7.75 mm cavity exactly. Closing the plug presses the electrodes flat on the front wall, which matters
   because each 0.1 mm of air gap costs about 20 % of the signal.

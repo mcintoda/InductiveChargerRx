@@ -11,7 +11,7 @@ Sealing concept
   * The internal stack (PCB, battery, Qi coil, 1.6 mm PORON foam) is clamped by the plug, pressing
     the electrodes flat onto the front wall (no air gap).
   * The BRACKET stays on the tub (2 suction cups); the device slides in from the top and is
-    lifted out for charging.  Its side lips only overlap the outer 3 mm of the front face.
+    lifted out for charging.  Its side lips only overlap the outer 2.5 mm (the edge round) of the front face.
 
 Coordinates: X = width, Y = height (device standing on the tub wall, +Y up),
 Z = thickness, Z = 0 at the outer front face (water side), +Z towards the tub wall.
@@ -154,7 +154,9 @@ def make_plug():
 
 
 # ---------------- bracket (stays on the tub) ----------------
-BR_L, BR_T, BR_WALL, BR_LIP, BR_GAP = 80.0, 5.0, 2.0, 3.0, 0.3
+BR_L, BR_T, BR_WALL, BR_LIP, BR_GAP = 72.0, 5.0, 2.0, 2.5, 0.3
+# BR_L 72: the bracket top stops ~3 mm below the side waterline grooves, so they show when docked.
+# BR_LIP 2.5: the lips only overlap the front edge round, leaving ~1.2 mm clear of the alarm arrows.
 # Keyhole for a 40 mm mushroom-head suction cup (e.g. Bambu Lab HA011). Vendors don't publish the
 # head/neck sizes, so the keyhole takes heads up to 12 mm and necks up to 5.8 mm: measure yours and
 # adjust.  The head sits in a pocket on the device side of the plate; the neck runs in a slot through

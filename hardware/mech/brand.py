@@ -5,7 +5,8 @@ All features are shallow debosses or grooves: no paint, inserts or glue required
   front (cup) : bathtub mark + wordmark in the dry top band; small alarm arrows on both margins at
                 the default alarm level. No scale: through the translucent cup the electrodes show as
                 soft grey panels (copper under white solder mask). Nothing is cut over the electrodes.
-  sides (cup) : a WATERLINE groove around both long sides at the default alarm level.
+  sides (cup) : a WATERLINE groove around both long sides at the default alarm level, and
+                finger-grip grooves (front half of the wall only) in the dry top band.
   back (plug) : bathtub mark + wordmark, the Qi COIL OUTLINE (one 30 mm ring exactly over the coil),
                 "Qi" / "charge this side", rating line.
 The same 2-D geometry drives the CAD and the SVG logo, so they always match.
@@ -290,6 +291,25 @@ def side_features(E):
         g = (cq.Workplane("XY").workplane(offset=z0).center(side * (E.OUT_W / 2), y_alarm)
              .rect(2 * 0.30, 0.8).extrude(z1 - z0))
         feats.append(g)
+    feats += grip_features(E)
+    return feats
+
+
+GRIP_Y = (24.0, 50.0)          # device Y band (above the bracket, below the cup top round)
+GRIP_PITCH, GRIP_W, GRIP_D = 2.0, 0.8, 0.35
+GRIP_Z = (2.8, 5.8)            # front part of the side wall only: clear of the screw heads (Z 6.4-10.3)
+                               # and visibly different from the full-depth waterline groove
+
+
+def grip_features(E):
+    """Finger-grip grooves on both long sides of the dry top band, where you pinch to lift it out."""
+    feats = []
+    n = int((GRIP_Y[1] - GRIP_Y[0]) / GRIP_PITCH) + 1
+    for side in (-1, 1):
+        for i in range(n):
+            y = GRIP_Y[0] + i * GRIP_PITCH
+            feats.append(cq.Workplane("XY").workplane(offset=GRIP_Z[0]).center(side * (E.OUT_W / 2), y)
+                         .rect(2 * GRIP_D, GRIP_W).extrude(GRIP_Z[1] - GRIP_Z[0]))
     return feats
 
 
