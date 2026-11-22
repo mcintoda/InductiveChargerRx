@@ -114,6 +114,95 @@ def iso_tub_solid(w, depth, split=False):
     return (tub, water) if split else tub.union(water)
 
 
+# ---------------- the mark (rev C3): a rectangular bathtub in true isometric view ----------------
+# Built as 2-D polygons (shapely) by projecting a 3-D tub: plan L x W, rounded corners, a rim on top, water
+# just under the lip, two visible side walls split by a crease at the near corner, and a tap on the far end.
+TUB3D = dict(L=1.0, W=0.50, H=0.30, r=0.13, rim=0.075, lip=0.06, drop=0.03)
+ISO_GAP = 0.045                  # gap between parts, as a fraction of the mark width (>= 0.5 mm at 11 mm)
+
+
+def iso_polys():
+    """{'tub': polygons (rim + walls + feet), 'water': polygon}, normalised to width 1, centred on (0, 0), y up."""
+    from shapely import affinity
+    from shapely.geometry import LineString, MultiPoint, Polygon, box
+    from shapely.ops import unary_union
+    T = TUB3D
+    c, sn = math.cos(math.radians(30)), math.sin(math.radians(30))
+
+    def plan(inset):                                     # rounded-rectangle outline in plan, inset by `inset`
+        rr = max(T["r"] - inset, 0.01)
+        return box(T["r"], T["r"], T["L"] - T["r"], T["W"] - T["r"]).buffer(rr, quad_segs=12)
+
+    def proj(poly, z):
+        return Polygon([((x - y) * c, z - (x + y) * sn) for x, y in poly.exterior.coords])
+
+    def pt(x, y, z):
+        return ((x - y) * c, z - (x + y) * sn)
+
+    H, z_lip = T["H"], T["H"] - T["lip"]
+    outer = proj(plan(0), H)
+    span = outer.bounds[2] - outer.bounds[0]
+    gap = ISO_GAP * span
+    opening = proj(plan(T["rim"]), H)
+    rim = outer.difference(opening)
+    water = proj(plan(T["rim"] + 0.035), H - T["drop"]).intersection(opening.buffer(-gap))
+    walls = unary_union([proj(plan(0), z_lip), proj(plan(0.03), 0.0)]).convex_hull
+    walls = walls.difference(outer.buffer(gap))
+    # crease along the near vertical corner, so the two visible walls read as two faces
+    k = T["r"] * (1 - 1 / math.sqrt(2))
+    cx, cy = T["L"] - k, T["W"] - k
+    walls = walls.difference(LineString([pt(cx, cy, z_lip + 0.1), pt(cx, cy, -0.2)]).buffer(gap * 0.5))
+    # tap on the far short end: a post up from the rim and a spout reaching over the water
+    st = 0.055 * span
+    tap_pts = [pt(0.04, T["W"] / 2, H - 0.02), pt(0.04, T["W"] / 2, H + 0.20), pt(0.17, T["W"] / 2, H + 0.20)]
+    tap = LineString(tap_pts).buffer(st / 2, cap_style="round", join_style="round")
+    water = water.difference(tap.buffer(gap))
+    tub = unary_union([rim, walls, tap])
+    allg = unary_union([tub, water])
+    minx, miny, maxx, maxy = allg.bounds
+    sc = 1.0 / (maxx - minx)
+    move = lambda g: affinity.scale(affinity.translate(g, -(minx + maxx) / 2, -(miny + maxy) / 2), sc, sc, origin=(0, 0))  # noqa: E731
+    return {"tub": move(tub), "water": move(water), "height": (maxy - miny) * sc}
+
+
+def _polys(g):
+    return list(g.geoms) if hasattr(g, "geoms") else [g]
+
+
+def _poly_solid(poly, w, depth):
+    ext = [(x * w, y * w) for x, y in list(poly.exterior.coords)[:-1]]
+    sol = cq.Workplane("XY").polyline(ext).close().extrude(depth)
+    for h in poly.interiors:
+        sol = sol.cut(cq.Workplane("XY").polyline([(x * w, y * w) for x, y in list(h.coords)[:-1]]).close().extrude(depth))
+    return sol
+
+
+def iso_tub_solid(w, depth, split=False):
+    P = iso_polys()
+    parts = {}
+    for key in ("tub", "water"):
+        sol = None
+        for poly in _polys(P[key]):
+            if poly.is_empty or poly.area < 1e-6:
+                continue
+            ps = _poly_solid(poly, w, depth)
+            sol = ps if sol is None else sol.union(ps)
+        parts[key] = sol
+    return (parts["tub"], parts["water"]) if split else parts["tub"].union(parts["water"])
+
+
+def iso_svg_paths(g, ox, oy, scale):
+    """Shapely polygons -> SVG path data (y flipped), one path per polygon, holes via evenodd."""
+    out = []
+    for poly in _polys(g):
+        d = ""
+        for ring in [poly.exterior] + list(poly.interiors):
+            pts = list(ring.coords)[:-1]
+            d += "M" + "L".join(f"{ox + x * scale:.2f} {oy - y * scale:.2f}" for x, y in pts) + "Z"
+        out.append(d)
+    return out
+
+
 MARK = iso_tub_solid
 
 
@@ -243,44 +332,31 @@ def shape_to_svg_paths(wp, sx, sy, scale, mirror=False):
 
 
 def logo_svg(path, w_mm=12.0, scale=10.0, with_word=True):
+    P = iso_polys()
     pad = 6 * scale / 4
-    mw, mh = w_mm * scale, w_mm * 0.80 * scale
+    mw, mh = w_mm * scale, w_mm * P["height"] * scale
     W = mw + 2 * pad + (w_mm * 2.3 * scale if with_word else 0)
-    H = mh + 2 * pad
-    cx, cy = pad + mw / 2, pad + mh / 2
-    tub, water = MARK(w_mm, 0.2, split=True)            # print version: water in the sea-glass accent
-    body = [f'<path fill-rule="evenodd" fill="{PALETTE["slate"]}" d="{d}"/>' for d in shape_to_svg_paths(tub, cx, cy, scale)]
-    body += [f'<path fill-rule="evenodd" fill="{PALETTE["sea glass"]}" d="{d}"/>' for d in shape_to_svg_paths(water, cx, cy, scale)]
+    H = max(mh, w_mm * 0.8 * scale) + 2 * pad
+    cx, cy = pad + mw / 2, H / 2
+    body = [f'<path fill-rule="evenodd" fill="{PALETTE["slate"]}" d="{d}"/>' for d in iso_svg_paths(P["tub"], cx, cy, mw)]
+    body += [f'<path fill="{PALETTE["sea glass"]}" d="{d}"/>' for d in iso_svg_paths(P["water"], cx, cy, mw)]
     if with_word:
-        body.append(f'<text x="{pad + mw + pad * 0.9:.1f}" y="{cy + mh * 0.22:.1f}" font-family="Inter" font-weight="500" '
-                    f'font-size="{mh * 0.78:.1f}" letter-spacing="0.5" fill="{PALETTE["ink"]}">{NAME}</text>')
+        fs = w_mm * 0.8 * scale * 0.78
+        body.append(f'<text x="{pad + mw + pad * 0.9:.1f}" y="{cy + fs * 0.28:.1f}" font-family="Inter" font-weight="500" '
+                    f'font-size="{fs:.1f}" letter-spacing="0.5" fill="{PALETTE["ink"]}">{NAME}</text>')
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W:.1f} {H:.1f}" width="{W:.0f}" height="{H:.0f}">'
            + "".join(body) + "</svg>")
     with open(path, "w") as f:
         f.write(svg)
 
 
-# ---------------- compact icon (favicon / app icon): same three-quarter tub, written with SVG arcs ----------------
-def icon_svg(size=32, w=25.0, bg=None):
-    """Two-tone tub icon as a small hand-built SVG, numerically the same shape as iso_tub_solid()."""
-    k = {key: v * w for key, v in ISO.items()}
-    cx, cy = size / 2, size / 2
-    yc = -ISO_YMID * w
-    X = lambda x: f"{cx + x:.2f}"                                   # noqa: E731
-    Y = lambda y: f"{cy - (y + yc):.2f}"                            # noqa: E731
-    def ell(a, b, y):
-        return (f"M{X(-a)} {Y(y)}A{a:.2f} {b:.2f} 0 1 0 {X(a)} {Y(y)}A{a:.2f} {b:.2f} 0 1 0 {X(-a)} {Y(y)}Z")
-    rim = ell(k["a0"], k["b0"], k["y0"]) + ell(k["ai"], k["bi"], k["y0"])
-    body = (f"M{X(-k['a1'])} {Y(k['y1'])}A{k['a1']:.2f} {k['b1']:.2f} 0 0 0 {X(k['a1'])} {Y(k['y1'])}"
-            f"L{X(k['a2'])} {Y(k['y2'])}A{k['a2']:.2f} {k['b2']:.2f} 0 0 1 {X(-k['a2'])} {Y(k['y2'])}Z")
-    feet = ""
-    for side in (-1, 1):
-        xa, yb = side * k["fx"], k["y2"] - k["b2"] * 0.55
-        pts = [(xa - 0.045 * w, yb + 0.04 * w), (xa + 0.045 * w, yb + 0.04 * w),
-               (xa + side * 0.03 * w + 0.028 * w, k["fy"]), (xa + side * 0.03 * w - 0.028 * w, k["fy"])]
-        feet += '<path d="M' + "L".join(f"{X(x)} {Y(y)}" for x, y in pts) + 'Z"/>'
-    water = ell(k["aw"], k["bw"], k["y0"])
+# ---------------- compact icon (favicon / app icon): the same isometric tub polygons ----------------
+def icon_svg(size=32, w=26.0, bg=None):
+    P = iso_polys()
+    from shapely import simplify
+    c = size / 2
+    tub = "".join(f'<path fill-rule="evenodd" d="{d}"/>' for d in iso_svg_paths(simplify(P["tub"], 0.002), c, c, w))
+    water = "".join(f'<path d="{d}"/>' for d in iso_svg_paths(simplify(P["water"], 0.002), c, c, w))
     back = f'<rect width="{size}" height="{size}" rx="{size * 0.22:.1f}" fill="{bg}"/>' if bg else ""
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}">{back}'
-            f'<g fill="{PALETTE["slate"]}"><path fill-rule="evenodd" d="{rim}"/><path d="{body}"/>{feet}</g>'
-            f'<path fill="{PALETTE["sea glass"]}" d="{water}"/></svg>')
+            f'<g fill="{PALETTE["slate"]}">{tub}</g><g fill="{PALETTE["sea glass"]}">{water}</g></svg>')
