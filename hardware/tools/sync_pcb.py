@@ -27,9 +27,9 @@ RENAME = {"LED_DRV": "ACC_INT"}           # GPIO21 keeps its escape route under 
 NEW_PLACE = {
     "D1": (35.485, 20.535, 0),            # RGB LED where the green LED was
     "C31": (32.675, 20.275, 0),           # where the LED resistor R10 was
-    "U9": (35.5, 23.3, 0),
+    "U9": (35.5, 23.3, 180),              # LED outputs face the LED
     "U7": (28.0, 26.9, 0), "C28": (30.0, 26.9, 90), "C29": (28.0, 28.85, 0),
-    "BZ1": (25.3, 27.9, 90), "R31": (25.0, 24.6, 90), "R32": (26.2, 24.6, 90),
+    "BZ1": (25.3, 27.9, 270), "R31": (25.0, 24.6, 90), "R32": (26.2, 24.6, 90),
 }
 
 
