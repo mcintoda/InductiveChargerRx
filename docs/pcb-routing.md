@@ -49,7 +49,7 @@ How it got there:
 1. Freerouting 1.9 (`route.py prep` / `finish` / `again`, run under `xvfb-run`) does the bulk.
 2. `tools/fixroute.py` is a small grid A* router (F.Cu / In2 / B.Cu, DRC-driven). It reroutes what is left,
    does transactional rip-up (kept only if the DRC score improves), adds GND island vias, and falls back to
-   0.15 mm tracks and 0.5/0.25 mm vias in fine-pitch spots. Run it after any edit:
+   0.15 mm tracks in fine-pitch spots. Run it after any edit:
    `python3 hardware/tools/fixroute.py`.
 3. A few spots were laid out by hand (locked tracks):
    - **FDC block.** R23 (PAD5) and R24 (PAD6) drop straight down on B.Cu to a via inside their own
@@ -62,8 +62,8 @@ How it got there:
    - **TMP117.** GND vias in the exposed pad and beside it tie the split B.Cu pour through F.Cu.
    - **Right F.Cu shield strip.** Two vias tie it to the In1 shield plane.
 
-Four vias are 0.5 / 0.25 mm (GND ×3 and CLAMP1). Everything else is 0.6 / 0.3 mm. The minimum track is
-0.15 mm; the default is 0.2 mm.
+All 173 vias are JLC-standard 0.6 / 0.3 mm (the board rules enforce a 0.3 mm minimum drill). The minimum
+track is 0.15 mm; the default is 0.2 mm.
 
 Then `python3 hardware/tools/jlc_outputs.py` writes `hardware/fab/` (gerbers zip, `bom_jlc.csv`,
 `cpl_jlc.csv`). The folder is git-ignored, so regenerate it before ordering.
@@ -74,7 +74,7 @@ Then `python3 hardware/tools/jlc_outputs.py` writes `hardware/fab/` (gerbers zip
 | Layers / thickness | 4 / 1.0 mm, stackup JLC04101H-7628 |
 | Solder mask / silkscreen | **White** / black (the electrodes show through the translucent case) |
 | Surface finish | ENIG |
-| Min via | 0.25 / 0.5 mm on four vias (rest 0.3 / 0.6). Check the order page; if JLC surcharges sub-0.3 mm holes, the four can be hand-nudged to 0.3 mm |
+| Min via | 0.3 / 0.6 mm (standard, no extra cost) |
 | Assembly | **Bottom side**, standard PCBA, files `bom_jlc.csv` + `cpl_jlc.csv` |
 | Not assembled | Electrodes (copper), test pads, battery and Qi coil (hand-soldered) |
 

@@ -502,9 +502,9 @@ def in1_mask(board, g):
 
 
 def fallback(board, g, net, src, dst, dst_via):
-    """Retry with a 0.15 mm track, then also 0.5/0.25 mm vias. Commits and returns segment count, or 0."""
+    """Retry with a 0.15 mm track. Commits and returns segment count, or 0."""
     global TRACK_W, VIA_D, VIA_DRILL
-    for tw, vd, vdr in ((0.15, 0.6, 0.3), (0.15, 0.5, 0.25)):
+    for tw, vd, vdr in ((0.15, 0.6, 0.3),):          # vias stay JLC-standard 0.6 / 0.3 mm
         TRACK_W, VIA_D, VIA_DRILL = tw, vd, vdr
         try:
             obst = build_obstacles(board, g, net, TRACK_W / 2 + CLR + MARGIN)
