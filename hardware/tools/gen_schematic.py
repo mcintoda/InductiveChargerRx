@@ -299,7 +299,8 @@ MX, MY = 317.5, 114.3
 U1 = {"1": "GND", "2": "GND", "3": "+3V3", "45": "EN", "4": "IO0",
       "5": "TOUCH1", "6": "TOUCH2", "7": "TOUCH3", "8": "TOUCH4", "9": "TOUCH5", "10": "TOUCH6",
       "18": "SHIELD_DRV", "13": "VBAT_SENSE", "14": "SDA", "15": "SCL", "16": "SENSE_3V3",
-      "17": "QI_DET_N", "11": "TOUCH7", "36": "CHG_N", "25": "LED_DRV", "23": "USB_DN", "24": "USB_DP"}
+      "17": "QI_DET_N", "11": "TOUCH7", "36": "CHG_N", "25": "ACC_INT", "23": "USB_DN", "24": "USB_DP",
+      "20": "BUZ_A", "21": "BUZ_B"}
 U1.update({str(n): "GND" for n in range(42, 66) if n not in (44, 45)})
 P("U1", "MCU_Espressif:ESP32-S3-MINI-1", "ESP32-S3-MINI-1-N8", "BathMonitor:ESP32-S3-MINI-1", MX, MY, 0, U1,
   text=((5.08, -32.0, "left"), (-5.08, 34.0, "right")), MPN="ESP32-S3-MINI-1-N8",
@@ -349,12 +350,11 @@ W(pin("U1", "23"), (355.6, pin("U1", "23")[1])); TP("TP6", "USB_DN", 355.6, pin(
 W(pin("U1", "24"), (365.76, pin("U1", "24")[1])); TP("TP5", "USB_DP", 365.76, pin("U1", "24")[1], 270)
 LBL("USB_DN", 360.68, pin("U1", "23")[1], 0); LBL("USB_DP", 370.84, pin("U1", "24")[1], 0)   # to the flash tab
 W((355.6, pin("U1", "23")[1]), (360.68, pin("U1", "23")[1])); W((365.76, pin("U1", "24")[1]), (370.84, pin("U1", "24")[1]))
-# status LED
-LX, LY = 340.36, pin("U1", "25")[1]
-W(pin("U1", "25"), (LX, LY))
-R("R10", R1K, LX, LY + 3.81, 0, "LED_DRV", "LED_A")
-P("D1", "Device:LED", "Green", "LED_SMD:LED_0603_1608Metric", LX, LY + 11.43, 90, {"2": "LED_A", "1": "GND"}, text=((3.81, -1.27, "left"), (3.81, 1.27, "left")))
-GND(*pin("D1", "1"))
+# accelerometer interrupt (RTC GPIO21, deep-sleep wake) and the two piezo drive pins -> block J
+for num, net in [("25", "ACC_INT"), ("20", "BUZ_A"), ("21", "BUZ_B")]:
+    x, y = pin("U1", num)
+    side = 1 if x > MX else -1
+    W((x, y), (x + side * G, y)); LBL(net, x + side * G, y, 0 if side > 0 else 180)
 used = set(U1) | {"36"}
 NC("U1", *[n for n in pins_of(load_symbol("MCU_Espressif:ESP32-S3-MINI-1")) if n not in used])
 
@@ -437,6 +437,85 @@ TEXTS += [
     ("Level ladder electrodes (behind front wall)", 228.6, 175.26),
 ]
 
+
+
+# ===========================================================================
+# J. Motion, enclosure humidity, piezo sounder and the I2C RGB status LED.
+#    LIS2DW12 stays powered from +3V3 (~1 uA) so motion can wake the ESP32; SHTC3 and AW2013 live on the
+#    switched SENSE_3V3 rail with the other I2C parts. The LED anodes run from VBAT through Q2, which Q3 only
+#    turns on while SENSE_3V3 is up: with the AW2013 unpowered, its sink pins would otherwise back-feed the rail
+#    through the LED.
+# ===========================================================================
+def stub(ref, num, net, n=1):
+    """Short wire out of a pin, ending in a label or power symbol."""
+    p = next(p for p in PARTS if p["ref"] == ref)
+    x, y = pin(ref, num)
+    dx, dy = x - p["x"], y - p["y"]
+    ux, uy = (1 if dx > 0 else -1, 0) if abs(dx) >= abs(dy) else (0, 1 if dy > 0 else -1)
+    ex, ey = x + ux * G * n, y + uy * G * n
+    W((x, y), (ex, ey))
+    if net in ("GND", "+3V3", "VBAT"):
+        PWR(net, ex, ey, {(0, 1): 0, (0, -1): 180, (1, 0): 90, (-1, 0): 270}[(ux, uy)] if net == "GND" else
+            {(0, -1): 0, (0, 1): 180, (1, 0): 270, (-1, 0): 90}[(ux, uy)])
+    else:
+        LBL(net, ex, ey, {(1, 0): 0, (-1, 0): 180, (0, -1): 90, (0, 1): 270}[(ux, uy)])
+
+
+KY = 228.6
+P("U7", "BathMonitor:LIS2DW12", "LIS2DW12TR", "Package_LGA:LGA-12_2x2mm_P0.5mm", 45.72, KY, 0,
+  {"9": "+3V3", "10": "+3V3", "4": "SDA", "1": "SCL", "2": "+3V3", "3": "+3V3", "12": "ACC_INT", "11": None,
+   "5": None, "7": "GND", "6": "GND", "8": "GND"}, text=((-7.0, -13.0, "right"), (7.0, -13.0, "left")),
+  MPN="LIS2DW12TR", Note="I2C 0x19 (SA0 high), always powered: motion / tap wake on INT1 (active low)")
+for num, net in [("9", "+3V3"), ("10", "+3V3"), ("4", "SDA"), ("1", "SCL"), ("2", "+3V3"), ("3", "+3V3"),
+                 ("12", "ACC_INT"), ("7", "GND"), ("6", "GND"), ("8", "GND")]:
+    stub("U7", num, net)
+NC("U7", "11", "5")
+for ref, val, x in [("C28", C100N, 22.86), ("C29", C1U, 30.48)]:
+    C(ref, val, x, KY - 20.32, 0, "+3V3", "GND"); stub(ref, "1", "+3V3"); stub(ref, "2", "GND")
+
+P("U8", "BathMonitor:SHTC3", "SHTC3", "Sensor_Humidity:Sensirion_DFN-4-1EP_2x2mm_P1mm_EP0.7x1.6mm", 81.28, KY, 0,
+  {"1": "SENSE_3V3", "2": "SCL", "3": "SDA", "4": "GND", "5": "GND"}, text=((-6.0, -10.5, "right"), (6.0, -10.5, "left")),
+  MPN="SHTC3-TR-2.5KS", Note="I2C 0x70: humidity inside the sealed case (seal-leak warning)")
+for num, net in [("1", "SENSE_3V3"), ("2", "SCL"), ("3", "SDA"), ("4", "GND")]:
+    stub("U8", num, net)
+stub("U8", "5", "GND", 2)
+C("C30", C100N, 93.98, KY - 15.24, 0, "SENSE_3V3", "GND"); stub("C30", "1", "SENSE_3V3"); stub("C30", "2", "GND")
+
+P("U9", "BathMonitor:AW2013", "AW2013DNR", "BathMonitor:DFN-10-1EP_2x2mm_P0.4mm_AW2013", 124.46, KY, 0,
+  {"5": "SENSE_3V3", "9": "SDA", "10": "SCL", "4": None, "1": "LED_R", "2": "LED_G", "3": "LED_B",
+   "6": None, "7": None, "8": None, "11": "GND"}, text=((-7.0, -13.0, "right"), (7.0, -13.0, "left")),
+  MPN="AW2013DNR", Note="I2C 0x45, 3 x 15 mA constant-current sinks with a breathing engine")
+for num, net in [("5", "SENSE_3V3"), ("9", "SDA"), ("10", "SCL"), ("1", "LED_R"), ("2", "LED_G"), ("3", "LED_B"),
+                 ("11", "GND")]:
+    stub("U9", num, net)
+NC("U9", "4", "6", "7", "8")
+C("C31", C1U, 137.16, KY - 15.24, 0, "SENSE_3V3", "GND"); stub("C31", "1", "SENSE_3V3"); stub("C31", "2", "GND")
+
+P("D1", "Device:LED_ARGB", "RGB", "BathMonitor:LED_RGB_1615_XINGLIGHT", 160.02, KY, 0,
+  {"1": "LED_A", "2": "LED_R", "3": "LED_G", "4": "LED_B"}, text=((0, -10.5, None), (0, 10.5, None)),
+  MPN="XL-1615RGBC-RF", Note="Common-anode RGB status LED, glows through the translucent cup")
+for num, net in [("1", "LED_A"), ("2", "LED_R"), ("3", "LED_G"), ("4", "LED_B")]:
+    stub("D1", num, net)
+P("Q2", "Transistor_FET:AO3401A", "AO3401A", "Package_TO_SOT_SMD:SOT-23", 160.02, KY - 22.86, 0,
+  {"1": "LED_EN_N", "2": "VBAT", "3": "LED_A"}, text=((3.81, -3.0, "left"), (3.81, 3.0, "left")),
+  Note="LED anode supply from VBAT, on only while SENSE_3V3 is up")
+for num, net in [("1", "LED_EN_N"), ("2", "VBAT"), ("3", "LED_A")]:
+    stub("Q2", num, net)
+R("R10", "100k 1%", 180.34, KY - 25.4, 0, "VBAT", "LED_EN_N"); stub("R10", "1", "VBAT"); stub("R10", "2", "LED_EN_N")
+P("Q3", "Transistor_FET:BSS138", "BSS138", "Package_TO_SOT_SMD:SOT-23", 180.34, KY - 7.62, 0,
+  {"1": "SENSE_3V3", "2": "GND", "3": "LED_EN_N"}, text=((3.81, -3.0, "left"), (3.81, 3.0, "left")))
+for num, net in [("1", "SENSE_3V3"), ("2", "GND"), ("3", "LED_EN_N")]:
+    stub("Q3", num, net)
+
+P("BZ1", "Connector_Generic:Conn_01x02", "Piezo 20mm", "Connector_Wire:SolderWire-0.1sqmm_1x02_P3.6mm_D0.4mm_OD1mm",
+  210.82, KY, 0, {"1": "PIEZO_A", "2": "PIEZO_B"}, text=((0, -5.5, None), (0, 7.0, None)),
+  Note="20 mm piezo disc bonded inside the plug, wired to these pads; driven differentially by GPIO16/17")
+for num, net in [("1", "PIEZO_A"), ("2", "PIEZO_B")]:
+    stub("BZ1", num, net, 2)
+R("R31", R1K, 195.58, KY - 12.7, 90, "BUZ_A", "PIEZO_A"); stub("R31", "1", "BUZ_A"); stub("R31", "2", "PIEZO_A")
+R("R32", R1K, 195.58, KY + 12.7, 90, "BUZ_B", "PIEZO_B"); stub("R32", "1", "BUZ_B"); stub("R32", "2", "PIEZO_B")
+
+TEXTS += [("Motion, case humidity, piezo sounder, RGB status LED", 22.86, 200.66)]
 
 # ===========================================================================
 # writer
