@@ -1,7 +1,6 @@
 Digi-Key Part Number,Manufacturer,Manufacturer Part Number,Quantity,Description,Note
 ,TDK,WR303050-12F5-ID,4,"Qi receiver coil 30 x 29.6 x 0.9 mm, 8.23 uH",3 builds + 1 spare; leads solder to the L1 pads
-1528-1841-ND,Adafruit,1578,3,"LiPo 3.7 V 500 mAh 29 x 36 x 4.75 mm, protected, JST-PH",See the battery note in docs/order-digikey.md: 0.75 mm thicker than the 403040 the case is sized for; cut the JST plug off and solder to J1
 ,PUI Audio,AB2063B-2-LW50,5,"Piezo bender 20 mm, 6.3 kHz, wire leads",Bonded inside the plug, leads to BZ1; Digi-Key's listed substitute for the obsolete Murata 7BB-20-6
-1168-TG-A1660-40-40-0.5-ND,t-Global Technology,TG-A1660-40-40-0.5,1,"Thermal gap pad 40 x 40 x 0.5 mm",Cut 10 x 7 mm pieces for the TMP117 thermal window (16 per sheet)
-473-1232-ND,MG Chemicals,8462-85ML,1,"Silicone grease 85 ml",O-ring lubricant (thin film only)
+1168-TG-A1660-40-40-0.5-ND,t-Global Technology,TG-A1660-40-40-0.5,1,Thermal gap pad 40 x 40 x 0.5 mm,Cut 10 x 7 mm pieces for the TMP117 thermal window (16 per sheet)
+473-1232-ND,MG Chemicals,8462-85ML,1,Silicone grease 85 ml,O-ring lubricant (thin film only)
 SCP667-ND,SCS,3HIC125,1,"Humidity indicator cards, 3-spot, can of 125",Cut one spot and stick it inside the cup as the leak indicator
