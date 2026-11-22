@@ -1,5 +1,7 @@
 #include "net.h"
 
+#include "brand_icon.h"
+
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
@@ -110,10 +112,12 @@ static bool form_get(const char *body, const char *key, char *out, size_t n)
 
 static const char *PAGE_HEAD =
     "<!doctype html><meta name=viewport content='width=device-width,initial-scale=1'><title>brim</title>"
+    "<link rel=icon type=image/svg+xml href=/icon.svg>"
     "<style>body{font-family:system-ui;margin:24px;max-width:420px;color:#2F3A45;background:#E8ECEA}"
     "label{display:block;margin-top:14px;font-size:14px}input,select{width:100%;padding:8px;font-size:16px}"
     "button{margin-top:18px;padding:10px 16px;font-size:16px;background:#61798A;color:#fff;border:0;border-radius:6px}"
-    "code{background:#fff;padding:2px 6px;border-radius:4px}</style><h2>brim</h2>";
+    "code{background:#fff;padding:2px 6px;border-radius:4px}</style>"
+    "<h2><img src=/icon.svg width=32 height=32 alt='' style='vertical-align:-7px;margin-right:6px'>brim</h2>";
 
 static esp_err_t page_root(httpd_req_t *req)
 {
@@ -171,7 +175,7 @@ static esp_err_t page_save(httpd_req_t *req)
     settings_save(s);
     s_saved = true;
     xEventGroupSetBits(s_ev, EV_SAVED);
-    char resp[800];
+    char resp[1200];
     int n = snprintf(resp, sizeof(resp), "%s<p>Saved. brim will now join <b>%s</b>.</p><p>Subscribe to <code>%s</code> "
                      "in the ntfy app to get alerts.</p>", PAGE_HEAD, s->ssid, s->topic);
     httpd_resp_set_type(req, "text/html");
@@ -196,6 +200,13 @@ static esp_err_t page_update(httpd_req_t *req)
     return httpd_resp_sendstr(req, "Update written. brim restarts in a moment.");
 }
 
+static esp_err_t page_icon(httpd_req_t *req)
+{
+    httpd_resp_set_type(req, "image/svg+xml");
+    httpd_resp_set_hdr(req, "Cache-Control", "max-age=86400");
+    return httpd_resp_send(req, BRAND_ICON_SVG, sizeof(BRAND_ICON_SVG) - 1);
+}
+
 static esp_err_t start_httpd(void)
 {
     httpd_config_t cfg = HTTPD_DEFAULT_CONFIG();
@@ -205,6 +216,8 @@ static esp_err_t start_httpd(void)
     httpd_uri_t save = {.uri = "/save", .method = HTTP_POST, .handler = page_save};
     httpd_register_uri_handler(s_httpd, &root);
     httpd_register_uri_handler(s_httpd, &save);
+    httpd_uri_t icon = {.uri = "/icon.svg", .method = HTTP_GET, .handler = page_icon};
+    httpd_register_uri_handler(s_httpd, &icon);
     if (s_status) {
         httpd_uri_t upd = {.uri = "/update", .method = HTTP_POST, .handler = page_update};
         httpd_register_uri_handler(s_httpd, &upd);

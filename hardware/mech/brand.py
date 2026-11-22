@@ -2,11 +2,11 @@
 """Brand identity + industrial-design features for the bath monitor (rev B).
 
 All features are shallow debosses or grooves: no paint, inserts or glue required.
-  front (cup) : ripple mark + wordmark in the dry top band; small alarm arrows on both margins at
+  front (cup) : bathtub mark + wordmark in the dry top band; small alarm arrows on both margins at
                 the default alarm level. No scale: through the translucent cup the electrodes show as
                 soft grey panels (copper under white solder mask). Nothing is cut over the electrodes.
   sides (cup) : a WATERLINE groove around both long sides at the default alarm level.
-  back (plug) : ripple mark + wordmark, the Qi COIL OUTLINE (one 30 mm ring exactly over the coil),
+  back (plug) : bathtub mark + wordmark, the Qi COIL OUTLINE (one 30 mm ring exactly over the coil),
                 "Qi" / "charge this side", rating line.
 The same 2-D geometry drives the CAD and the SVG logo, so they always match.
 """
@@ -31,7 +31,52 @@ PALETTE = {
 DEBOSS = 0.35                 # mm
 
 
-# ---------------- the mark: ripples from a pebble, seen at a low angle ----------------
+# ---------------- the mark: a bathtub filled almost to the brim ----------------
+def _bottom_rounded(cx, cy, w, h, r, depth):
+    """Rectangle with only its two bottom corners rounded."""
+    sk = cq.Sketch().push([(cx, cy)]).rect(w, h).reset().vertices("<Y").fillet(r)
+    return cq.Workplane("XY").placeSketch(sk).extrude(depth)
+
+
+def tub_solid(w, depth, split=False):
+    """Side view of a freestanding tub: rim with overhanging lips, round-bottomed basin, two feet, and the
+    water a hair below the rim (the alert moment). Strokes are ~0.065 w: 0.8 mm at the 12-13 mm deboss."""
+    s, g = 0.065 * w, 0.045 * w                  # wall stroke, gap between wall and water
+    rim_t, rim_top = 0.075 * w, 0.28 * w
+    b_top, b_bot, b_w, b_r = rim_top - rim_t, -0.20 * w, 0.84 * w, 0.19 * w
+    # rim: full width, slightly rounded ends
+    rim = cq.Workplane("XY").placeSketch(cq.Sketch().push([(0, rim_top - rim_t / 2)]).rect(w, rim_t)
+                                         .reset().vertices().fillet(rim_t * 0.45)).extrude(depth)
+    # basin wall: outer minus inner (inner runs up into the rim so the wall opens at the top)
+    outer = _bottom_rounded(0, (b_top + b_bot) / 2, b_w, b_top - b_bot, b_r, depth)
+    in_bot, in_top = b_bot + s, b_top + 0.01 * w
+    inner = _bottom_rounded(0, (in_top + in_bot) / 2, b_w - 2 * s, in_top - in_bot, b_r - s, depth)
+    wall = outer.cut(inner)
+    # water: the inner shape inset by g, topped by a gentle wave just under the rim
+    w_bot, w_w = in_bot + g, b_w - 2 * s - 2 * g
+    y_w, amp = b_top - 0.075 * w, 0.018 * w
+    body = _bottom_rounded(0, (y_w + 2 * amp + w_bot) / 2, w_w, y_w + 2 * amp - w_bot, b_r - s - g, depth)
+    n, x0 = 48, -w_w / 2 - 0.01 * w
+    wave = [(x0 + (w_w + 0.02 * w) * i / n, y_w + amp * math.sin(2 * math.pi * 1.5 * i / n)) for i in range(n + 1)]
+    cutter = cq.Workplane("XY").polyline(wave + [(-x0, w_bot - 0.05 * w), (x0, w_bot - 0.05 * w)]).close().extrude(depth)
+    water = body.intersect(cutter)
+    # feet: short splayed legs under the rounded corners
+    feet = []
+    for side in (-1, 1):
+        xa = side * 0.27 * w
+        feet.append(cq.Workplane("XY").polyline([(xa - 0.045 * w, b_bot + 0.06 * w), (xa + 0.045 * w, b_bot + 0.06 * w),
+                                                 (xa + side * 0.035 * w + 0.03 * w, b_bot - 0.075 * w),
+                                                 (xa + side * 0.035 * w - 0.03 * w, b_bot - 0.075 * w)]).close().extrude(depth))
+    tub = rim.union(wall)
+    for f in feet:
+        tub = tub.union(f)
+    return (tub, water) if split else tub.union(water)
+
+
+MARK = tub_solid                                 # the brand mark used on the device and in the logo
+
+
+# ---------------- previous mark (rev B): ripples from a pebble, seen at a low angle ----------------
 def ripple_solid(w, depth):
     a, k = w / 2.0, 0.40
     parts = []
@@ -92,7 +137,7 @@ def front_features(E):
     feats = []
     _, y_mark = E.pcb_to_dev(19.0, 8.0)
     _, y_word = E.pcb_to_dev(19.0, 19.5)
-    feats.append(front(ripple_solid(13.0, DEBOSS), 0, y_mark))
+    feats.append(front(MARK(13.0, DEBOSS), 0, y_mark))
     feats.append(front(text_solid(NAME, 6.5, DEBOSS), 0, y_word))
     # alarm-level arrows on both front margins (outside the electrodes), tips at the default alarm line.
     # No scale: the electrodes themselves show through the translucent cup as soft grey panels
@@ -124,7 +169,7 @@ def back_features(E):
     _, y_mark = E.pcb_to_dev(19.0, 9.0)
     _, y_word = E.pcb_to_dev(19.0, 19.0)
     _, y_tag = E.pcb_to_dev(19.0, 25.0)
-    feats.append(back(ripple_solid(12.0, DEBOSS), 0, y_mark, z))
+    feats.append(back(MARK(12.0, DEBOSS), 0, y_mark, z))
     feats.append(back(text_solid(NAME, 6.0, DEBOSS), 0, y_word, z))
     feats.append(back(text_solid(TAGLINE, 2.6, DEBOSS, FONT_SMALL), 0, y_tag, z))
     # Qi coil outline: one continuous ring at the coil's 30 mm outside diameter
@@ -145,25 +190,26 @@ def shape_to_svg_paths(wp, sx, sy, scale, mirror=False):
     for f in wp.faces(">Z").vals():
         d = []
         for wire in [f.outerWire()] + f.innerWires():
+            # walk the wire as one ordered curve (per-edge sampling breaks on reversed edges)
+            n = max(64, int(wire.Length() * scale / 1.5))
             pts = []
-            for e in wire.Edges():
-                n = 2 if e.geomType() == "LINE" else 96
-                for t in [i / n for i in range(n + 1)]:
-                    p = e.positionAt(t)
-                    pts.append((sx + (-p.x if mirror else p.x) * scale, sy - p.y * scale))
+            for i in range(n):
+                p = wire.positionAt(i / n)
+                pts.append((sx + (-p.x if mirror else p.x) * scale, sy - p.y * scale))
             d.append("M" + " L".join(f"{x:.2f},{y:.2f}" for x, y in pts) + " Z")
         paths.append(" ".join(d))
     return paths
 
 
 def logo_svg(path, w_mm=13.0, scale=9.0, with_word=True):
-    mark = ripple_solid(w_mm, 0.2)
     pad = 6 * scale / 4
     mw, mh = w_mm * scale, w_mm * 0.62 * scale
     W = mw + 2 * pad + (w_mm * 2.3 * scale if with_word else 0)
     H = mh + 2 * pad
-    cx, cy = pad + mw / 2, pad + mh * 0.62
-    body = [f'<path fill-rule="evenodd" fill="{PALETTE["slate"]}" d="{d}"/>' for d in shape_to_svg_paths(mark, cx, cy, scale)]
+    cx, cy = pad + mw / 2, pad + mh * 0.47
+    tub, water = tub_solid(w_mm, 0.2, split=True)       # print version: water in the sea-glass accent
+    body = [f'<path fill-rule="evenodd" fill="{PALETTE["slate"]}" d="{d}"/>' for d in shape_to_svg_paths(tub, cx, cy, scale)]
+    body += [f'<path fill-rule="evenodd" fill="{PALETTE["sea glass"]}" d="{d}"/>' for d in shape_to_svg_paths(water, cx, cy, scale)]
     if with_word:
         body.append(f'<text x="{pad + mw + pad * 0.9:.1f}" y="{cy + mh * 0.18:.1f}" font-family="Inter" font-weight="500" '
                     f'font-size="{mh * 0.95:.1f}" letter-spacing="0.5" fill="{PALETTE["ink"]}">{NAME}</text>')
@@ -171,3 +217,37 @@ def logo_svg(path, w_mm=13.0, scale=9.0, with_word=True):
            + "".join(body) + "</svg>")
     with open(path, "w") as f:
         f.write(svg)
+
+
+# ---------------- compact icon (favicon / app icon): same tub geometry, written with SVG arcs ----------------
+def icon_svg(size=32, w=26.0, bg=None):
+    """Two-tone tub icon as a small hand-built SVG (a few hundred bytes), numerically the same shape as
+    tub_solid(). Used for docs/img/brand_icon.svg and the firmware's settings page."""
+    s, g = 0.065 * w, 0.045 * w
+    rim_t, rim_top = 0.075 * w, 0.28 * w
+    b_top, b_bot, b_w, b_r = rim_top - rim_t, -0.20 * w, 0.84 * w, 0.19 * w
+    cx, cy = size / 2, size / 2 + 0.0025 * w              # vertical centre of the shape is at 0.0025 w
+    X = lambda x: f"{cx + x:.2f}"                                   # noqa: E731
+    Y = lambda y: f"{cy - y:.2f}"                                   # noqa: E731
+    a, ai, r, ri = b_w / 2, b_w / 2 - s, b_r, b_r - s
+    in_bot = b_bot + s
+    wall = (f"M{X(-a)} {Y(b_top)}V{Y(b_bot + r)}A{r:.2f} {r:.2f} 0 0 0 {X(-a + r)} {Y(b_bot)}H{X(a - r)}"
+            f"A{r:.2f} {r:.2f} 0 0 0 {X(a)} {Y(b_bot + r)}V{Y(b_top)}H{X(ai)}V{Y(in_bot + ri)}"
+            f"A{ri:.2f} {ri:.2f} 0 0 1 {X(ai - ri)} {Y(in_bot)}H{X(-ai + ri)}A{ri:.2f} {ri:.2f} 0 0 1 {X(-ai)} {Y(in_bot + ri)}"
+            f"V{Y(b_top)}Z")
+    ww, wb, rw = b_w - 2 * s - 2 * g, in_bot + g, b_r - s - g
+    y_w, amp = b_top - 0.075 * w, 0.018 * w
+    wave = " ".join(f"{X(-ww / 2 + ww * i / 12)} {Y(y_w + amp * math.sin(2 * math.pi * 1.5 * i / 12))}" for i in range(13))
+    water = (f"M{wave}V{Y(wb + rw)}A{rw:.2f} {rw:.2f} 0 0 1 {X(ww / 2 - rw)} {Y(wb)}H{X(-ww / 2 + rw)}"
+             f"A{rw:.2f} {rw:.2f} 0 0 1 {X(-ww / 2)} {Y(wb + rw)}Z")
+    feet = ""
+    for side in (-1, 1):
+        xa = side * 0.27 * w
+        pts = [(xa - 0.045 * w, b_bot + 0.06 * w), (xa + 0.045 * w, b_bot + 0.06 * w),
+               (xa + side * 0.035 * w + 0.03 * w, b_bot - 0.075 * w), (xa + side * 0.035 * w - 0.03 * w, b_bot - 0.075 * w)]
+        feet += '<path d="M' + "L".join(f"{X(x)} {Y(y)}" for x, y in pts) + 'Z"/>'   # own paths: no winding holes
+    rim = (f'<rect x="{X(-w / 2)}" y="{Y(rim_top)}" width="{w:.2f}" height="{rim_t:.2f}" rx="{rim_t * 0.45:.2f}"/>')
+    back = f'<rect width="{size}" height="{size}" rx="{size * 0.22:.1f}" fill="{bg}"/>' if bg else ""
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}">{back}'
+            f'<g fill="{PALETTE["slate"]}">{rim}<path d="{wall}"/>{feet}</g>'
+            f'<path fill="{PALETTE["sea glass"]}" d="{water}"/></svg>')
