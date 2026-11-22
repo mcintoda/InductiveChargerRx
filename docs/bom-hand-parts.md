@@ -1,0 +1,28 @@
+# BOM: parts JLC does not supply
+
+One list for everything that is not on the JLC assembly BOM (`hardware/fab/bom_jlc.csv`): the hand-fitted parts and
+the enclosure consumables. Quantities cover **3 prototype builds** plus spares. The source of truth is
+[`hardware/bom_hand_parts.csv`](../hardware/bom_hand_parts.csv) (open it in a spreadsheet, or upload the Digi-Key
+rows to Digi-Key's BOM Manager, which matches on the manufacturer part number).
+
+| # | Qty | Part | MPN | Supplier | Supplier # | ~US$ | Where / notes |
+|---|---|---|---|---|---|---|---|
+| 1 | 3 | Li-ion polymer cell 3.7 V 500 mAh, 403040 (4.0 x 30 x 40 mm), with protection PCM, 2 wires | achard 403040-500mAh | Amazon | [B0CHBGZ778](https://www.amazon.com/Polymer-Rechargeable-Battery-Bracelet-403040-500mah/dp/B0CHBGZ778) | 6 | Behind the electrodes, wires to J1 (red = pin 1). Check <= 4.2 mm thick and a PCM under the tape. Alternatives: Amazon B09FLYNRPG (JST, check polarity), B0CHYS7XFV (41 mm long) |
+| 2 | 4 | Qi receiver coil 30 x 29.6 x 0.9 mm, 8.23 uH | TDK WR303050-12F5-ID | Digi-Key | [link](https://www.digikey.com/en/products/detail/tdk-corporation/WR303050-12F5-ID/6124579) | 4.5 | Behind the battery, leads to L1. Also Mouser 810-WR303050-12F5-ID |
+| 3 | 5 | Piezo bender 20 mm, 6.3 kHz, wire leads | PUI Audio AB2063B-2-LW50 | Digi-Key | [link](https://www.digikey.com/en/products/detail/pui-audio-inc/AB2063B-2-LW50/22535104) | 0.66 | Bonded (cyanoacrylate) inside the plug at PCB (19, 23.5), leads to BZ1 |
+| 4 | 1 | Thermal gap pad 40 x 40 x 0.5 mm, 16.6 W/m-K | t-Global Technology TG-A1660-40-40-0.5 | Digi-Key | [1168-TG-A1660-40-40-0.5-ND](https://www.digikey.com/en/products/detail/t-global-technology/TG-A1660-40-40-0-5/11617038) | 8 | Cut 10 x 7 mm pieces: TMP117 tab to the thermal window |
+| 5 | 1 | Silicone grease, 85 ml | MG Chemicals 8462-85ML | Digi-Key | [473-1232-ND](https://www.digikey.com/en/products/detail/mg-chemicals/8462-85ML/6035523) | 10 | Thin film on the O-ring |
+| 6 | 1 | Humidity indicator cards, 3-spot (can of 125) | SCS 3HIC125 | Digi-Key | [SCP667-ND](https://www.digikey.com/product-detail/en/scs/3HIC125/SCP667-ND/1621628) | 20 | Cut one spot, stick it inside the cup as the leak indicator |
+| 7 | 1 | O-ring 90 x 1.5 mm, FKM 80 Shore A (pack of 5) | Tameson S26DT-X5 | Tameson | [S26DT-X5](https://tameson.com/products/s26dt-x5-fkm-o-ring-90-x-1p5mm-od-93mm-80-shore-a-5-pieces) | 8 | Plug groove. EPDM 70 Sh A is ideal but not found in this size; NBR alternative: Tameson S26DS-X20 |
+| 8 | 1 | Screw, flat head, thread-forming for plastic, 18-8 stainless, M2.2 x 4 mm (pack; 4 per device) | McMaster-Carr 95893A165 | McMaster-Carr | [95893A165](https://www.mcmaster.com/product/95893A165/) | 10 | Side walls into the plug (4 per device). Confirm the M2.2 x 4 mm variant on the page. Needs enclosure.py SCREW_CLEAR 2.5 / SCREW_PILOT 1.8 |
+| 9 | 1 | Microcellular urethane (PORON-type) foam sheet, 1/16 in, 12 x 12 in | Zoro Select ZUSA-MCP-101 | Zoro | [G1984851](https://www.zoro.com/zoro-select-foam-sheet-microcellular-12-in-w-12-in-l-116-in-thick-black-zusa-mcp-101/i/G1984851) | 17 | Cut 30 mm discs: between the coil and the plug |
+| 10 | 1 | Suction cups 40 mm, mushroom head (pack of 10) | Bambu Lab HA011 | Bambu Lab store / Amazon | [HA011](https://us.store.bambulab.com/products/suction-caps-with-mushroom-head) | 2 | Bracket keyholes, 2 per device (docs/enclosure.md 2.7) |
+
+Approximate total for the list: **about US$114** plus shipping. Prices are search snapshots: check them in the cart.
+
+## Before ordering
+- **Battery:** marketplace 403040 cells vary. On arrival check thickness (≤ 4.2 mm), that a protection board sits under the tape, and polarity (red to J1 pin 1). The case is sized for 4.0 × 30 × 40 mm.
+- **Screws:** M2.2 needs the case's clearance hole at 2.5 mm and pilot at 1.8 mm (`SCREW_CLEAR` / `SCREW_PILOT` in `hardware/mech/enclosure.py`) before printing.
+- **O-ring:** FKM in the exact 90 × 1.5 mm size. EPDM would be ideal but was not found in that size.
+
+Not in this list: the PCB and its SMD parts (JLC PCBA), the enclosure prints (`hardware/mech/out/`, JLC3DP), and a USB-C cable for the first flash.
