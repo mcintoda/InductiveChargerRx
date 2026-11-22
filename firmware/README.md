@@ -26,7 +26,7 @@ then run:
 
 No buttons and no pins to short. esptool resets the chip into its bootloader through the ESP32-S3's
 built-in USB-Serial/JTAG, and a blank chip enumerates on its own. The firmware stays awake while a computer is
-attached. Then snap the tab off (pliers, bend once along the slots), file the stub flush, and assemble.
+attached. Then snap the tab off (pliers, bend once along the slots) and assemble. No filing needed: the enclosure clears the rough stub.
 The TP5/TP6 pads (D+/D−) still work for re-flashing a board without its tab. IO0 (TP4) is only for recovery.
 Later updates: put brim on its charger, open the settings page, upload `build/brim.bin`.
 

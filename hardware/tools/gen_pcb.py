@@ -44,7 +44,9 @@ NECK = (16.0, 22.0, 102.0, 104.0)         # narrow neck for thermal isolation
 # break-off USB-C flash tab on the right edge: x0 (after a 1.5 mm slot), x1, y0, y1; snapped off before assembly
 FTAB = (39.5, 53.5, 9.5, 21.5)
 FSLOTS = [(11.5, 14.0), (17.0, 19.5)]     # slots between the three bridges (y ranges, x 38.0 .. 39.5)
-FBITES = [10.1, 10.9, 20.1, 20.9]   # mouse-bite holes (y) on the outer two bridges, x = 38.25
+FBITES = [10.1, 10.9, 14.3, 16.87, 20.1, 20.9]   # mouse-bite holes (y), centred on the board edge x = 38.0;
+# 14.3 / 16.87 flank the four inner-layer traces on the middle bridge (0.25 mm hole clearance), so all three
+# bridges break on the edge line and the snapped stub stays within ~0.3 mm: no filing needed
 
 
 def pad_center_y(k):                      # k = 1 (bottom) .. 6 (top / default alarm)
@@ -276,7 +278,7 @@ board.Add(ka)
 U = pcbnew.Dwgs_User
 rect(U, 4.0, 50.0, 34.0, 90.0, 0.2); text(U, "Li-ion 403040, 500 mAh (behind PCB, B side)", 19, 60, 1.0)
 circle(pcbnew.Cmts_User, 19.0, 70.0, 15.0, 0.2); text(pcbnew.Cmts_User, "Qi Rx coil 30 mm (against back wall)", 19, 88.5, 1.0)
-# mouse bites: 0.5 mm NPTH holes on the outer two bridges of the flash tab (not in BOM / CPL: ref starts with '#')
+# mouse bites: 0.5 mm NPTH holes on all three bridges of the flash tab (not in BOM / CPL: ref starts with '#')
 for i, y in enumerate(FBITES, 1):          # one single-hole footprint per bite (pad offset 0)
     mb = pcbnew.FOOTPRINT(board)
     mb.SetReference(f"#MB{i}"); mb.Reference().SetVisible(False); mb.SetValue("mouse bite"); mb.Value().SetVisible(False)
@@ -286,7 +288,7 @@ for i, y in enumerate(FBITES, 1):          # one single-hole footprint per bite 
     h.SetLayerSet(pcbnew.PAD.UnplatedHoleMask())
     mb.Add(h)
     board.Add(mb)
-    mb.SetPosition(P(W_B + 0.25, y))
+    mb.SetPosition(P(W_B, y))
 text(pcbnew.B_SilkS, "USB FLASH TAB - SNAP OFF", (fx0 + fx1) / 2, fy1 - 0.9, 0.7, mirror=True)
 rect(pcbnew.Eco1_User, -2.6, -3.0, W_B + 2.6, ty1 + 2.6, 0.2); text(pcbnew.Eco1_User, "enclosure inner wall", 19, ty1 + 1.6, 1.0)
 for y, label in [(PAD6_TOP, "default alarm level (top of pad 6)"),

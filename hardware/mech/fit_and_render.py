@@ -29,13 +29,21 @@ Z_PCB = E.T_FRONT
 Z_BACK_PCB = Z_PCB + E.PCB_T
 
 
+STUB = 0.6                                         # worst-case break-off stub, see pcb()
+
+
 def pcb():
     x0, y0 = E.pcb_to_dev(0, 0)
     body = (cq.Workplane("XY").workplane(offset=Z_PCB).center(0, y0 - 51.0)
             .placeSketch(cq.Sketch().rect(E.PCB_W, 102.0).vertices(">Y").fillet(5.5)).extrude(E.PCB_T))
     tx, ty = E.pcb_to_dev(19.0, 107.0)
     tab = cq.Workplane("XY").workplane(offset=Z_PCB).center(tx, ty).rect(12.0, 10.0).extrude(E.PCB_T)
-    return body.union(tab)
+    # unfiled stub left where the USB flash tab was snapped off (right edge, PCB y 9.5..21.5): the mouse bites sit
+    # on the edge line, so a break leaves <= ~0.3 mm; model 0.6 mm of rough FR4 as the worst case
+    _, sy = E.pcb_to_dev(0, (9.5 + 21.5) / 2)
+    stub = (cq.Workplane("XY").workplane(offset=Z_PCB).center(E.PCB_W / 2 + STUB / 2, sy)
+            .rect(STUB, 12.0).extrude(E.PCB_T))
+    return body.union(tab).union(stub)
 
 
 def box(cx, cy, w, l, z0, h):

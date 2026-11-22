@@ -14,7 +14,7 @@ a spray bottle, salt, a vacuum jar or hand vacuum pump.
 | Resistance VBAT–GND and 3V3–GND before power | > 10 kΩ | Look for solder bridges at U2 (QFN) and U1 |
 | 3.7 V at J1 from a bench supply, 100 mA limit | 3V3 = 3.30 V ± 2 % | Check U4 orientation |
 | Flash through the USB-C flash tab (no battery needed, no buttons) | `idf.py flash monitor` boots; the 3V3 rail reads 3.30 V from USB | Check J2 solder joints, the CC resistors (R27–R30) and U6 |
-| Snap off the flash tab and file the edge flush | No copper burr bridging the 4 cut traces | Re-file |
+| Snap off the flash tab (no filing) | Stub ≤ 0.6 mm; no copper burr bridging the 4 cut inner-layer traces (look at the edge with a loupe) | Trim a burr with a knife; only file if the stub is over 0.6 mm |
 | Idle current in deep sleep, dry, off the charger | **≤ 60 µA** (budget 40 µA) | Check that GPIO12 is low (TMP117 rail off) and nothing back-feeds through SDA/SCL |
 
 ## 2. Touch electrodes (in the closed enclosure)
