@@ -362,7 +362,7 @@ def remove_bad_vias(board, report):
             for x, y, desc, lay in its:
                 if desc.startswith("Via"):
                     bad.add((round(float(x), 3), round(float(y), 3)))
-    doomed = [t for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and
+    doomed = [t for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and not t.IsLocked() and
               (round(t.GetPosition().x / 1e6, 3), round(t.GetPosition().y / 1e6, 3)) in bad]
     for v in doomed:
         # take the via's stub tracks with it
@@ -375,13 +375,13 @@ def remove_bad_vias(board, report):
     return len(doomed)
 
 
-def remove_bad_tracks(board, report, kinds=("[clearance]",)):
-    """Unlocked tracks with a clearance error, or with a dangling end."""
+def remove_bad_tracks(board, report, kinds=("[clearance]", "[hole_clearance]")):
+    """Unlocked tracks / vias with a clearance error, or tracks with a dangling end."""
     doomed = set()
     for kind in kinds:
         for blk in report.split(kind)[1:]:
             for x, y, desc, lay in ITEM.findall(blk.split("\n[")[0])[:2]:
-                if desc.startswith("Track"):
+                if desc.startswith("Track") or (desc.startswith("Via") and kind != "[track_dangling]"):
                     t = find_item(board, float(x), float(y), desc, lay)
                     if t is not None and not t.IsLocked():
                         doomed.add(t.m_Uuid.AsString())
