@@ -520,10 +520,11 @@ for ref, val, x in [("C28", C100N, 22.86), ("C29", C1U, 30.48)]:
     C(ref, val, x, KY - 20.32, 0, "+3V3", "GND"); stub(ref, "1", "+3V3"); stub(ref, "2", "GND")
 
 P("U9", "BathMonitor:AW2013", "AW2013DNR", "BathMonitor:DFN-10-1EP_2x2mm_P0.4mm_AW2013", 124.46, KY, 0,
-  {"5": "SENSE_3V3", "9": "SDA", "10": "SCL", "4": None, "1": "LED_R", "2": "LED_G", "3": "LED_B",
+  {"5": "SENSE_3V3", "9": "SDA", "10": "SCL", "4": None, "1": "LED_G", "2": "LED_B", "3": "LED_R",
    "6": None, "7": None, "8": None, "11": "GND"}, text=((-7.0, -13.0, "right"), (7.0, -13.0, "left")),
   MPN="AW2013DNR", Note="I2C 0x45, 3 x 15 mA constant-current sinks with a breathing engine")
-for num, net in [("5", "SENSE_3V3"), ("9", "SDA"), ("10", "SCL"), ("1", "LED_R"), ("2", "LED_G"), ("3", "LED_B"),
+# channel order follows the board layout (LED0 = green, LED1 = blue, LED2 = red); status.c maps the colours
+for num, net in [("5", "SENSE_3V3"), ("9", "SDA"), ("10", "SCL"), ("1", "LED_G"), ("2", "LED_B"), ("3", "LED_R"),
                  ("11", "GND")]:
     stub("U9", num, net)
 NC("U9", "4", "6", "7", "8")

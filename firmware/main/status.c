@@ -38,7 +38,7 @@ static void apply(const pattern_t *p)
     esp_err_t err = w(RSTR, 0x55);                     // soft reset: known state
     if (on) {
         err |= w(GCR, 0x01);                           // enable
-        const uint8_t pwm[3] = {p->r, p->g, p->b};
+        const uint8_t pwm[3] = {p->g, p->b, p->r};    // LED0 = green, LED1 = blue, LED2 = red (board layout)
         for (int ch = 0; ch < 3; ch++) {
             err |= w(LCFG0 + ch, IMAX_5MA | (p->breath ? MD_BREATH : 0));
             err |= w(PWM0 + ch, pwm[ch]);
@@ -85,5 +85,5 @@ void status_battery(int pct)
 void status_quiet(bool quiet)
 {
     if (s_state == LED_OFF || !s_rail) return;
-    w(LCTR, quiet ? 0 : (PAT[s_state].r ? 1 : 0) | (PAT[s_state].g ? 2 : 0) | (PAT[s_state].b ? 4 : 0));
+    w(LCTR, quiet ? 0 : (PAT[s_state].g ? 1 : 0) | (PAT[s_state].b ? 2 : 0) | (PAT[s_state].r ? 4 : 0));
 }
