@@ -8,24 +8,23 @@ asset and the CAD regenerate from it. Do a trademark search before using it publ
 
 ![Mockup](img/brand_mockup.png)
 
-## The mark (rev C): a bathtub filled to just below the brim
+## The mark (rev C): a bathtub in three-quarter view, filled to just below the brim
 
 ![brim icon](img/brand_icon.png)
 
-A freestanding tub in side view: a rim with overhanging lips, a round-bottomed basin on two short splayed
-feet, and the water a hair below the rim with a gentle wave on top. That moment is exactly what the
-device is for: *alert before it brims*.
+A clawfoot tub seen from slightly above: the oval rim, the water surface filling the opening almost to
+the lip, and the body and feet below. That moment is exactly what the device is for: *alert before it brims*.
 
 - **Print / screen:** two tones. The tub is slate, the water is sea glass (`brand_logo.*`, `brand_icon.*`).
-- **On the device:** one tone, debossed 0.35 mm like everything else. Strokes are ~0.065 × the mark width
-  (0.8 mm at 12–13 mm), and the gap between the wall and the water is ~0.55 mm. That prints cleanly in SLA
-  and MJF.
+- **On the device:** one tone, debossed 0.35 mm like everything else. It's 11 mm wide on the front and
+  10 mm on the back. The rim and the gaps between parts are ≥ 0.045 × width, so ≥ 0.5 mm on the part,
+  which prints in SLA and MJF.
 - **Firmware:** the settings page serves the same icon as its favicon and page header
   (`firmware/main/brand_icon.h`).
 
-CAD, logo and icon all come from one geometry (`tub_solid()` and `icon_svg()` in `brand.py`).
-Regenerate everything with `python3 hardware/mech/brand_render.py`. The rev B ripple mark (`ripple_solid()`)
-is kept in the file for reference.
+CAD, logo and icon all come from one set of proportions (`ISO` in `brand.py`, used by `iso_tub_solid()` and
+`icon_svg()`). Regenerate everything with `python3 hardware/mech/brand_render.py`. The earlier side-view tub
+(`tub_solid()`) and the rev B ripple (`ripple_solid()`) are kept in the file for reference.
 
 ## Palette (muted)
 | Name | Hex | Use |
