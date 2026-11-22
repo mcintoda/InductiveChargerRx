@@ -34,12 +34,12 @@ Freerouting (open source) reads the DSN and writes the SES. Any of these works:
 Then run `route.py finish`. Pass criteria: DRC with **0 unconnected items, 0 clearance errors**. Silkscreen
 warnings are cosmetic.
 
-## Status (2026-11-21): fully routed
+## Status (2026-11-22, rev C): fully routed
 
 ![Copper layers F.Cu / In2 / B.Cu](img/pcb-routed-layers.png)
 
-`hardware/kicad/bath_monitor.kicad_pcb` is routed: **0 unconnected, 0 clearance / hole / edge errors, no
-dangling copper**. The pad connectivity matches the schematic netlist (54 nets; the TMP117 exposed pad is
+`hardware/kicad/bath_monitor.kicad_pcb` is routed: **0 unconnected, 0 clearance / hole / edge errors**
+(six short dead-end stubs remain as DRC warnings, harmless). The pad connectivity matches the schematic netlist (60 nets; the TMP117 exposed pad is
 tied to GND, which the symbol has no pin for). The only DRC items left are cosmetic warnings: silkscreen
 overlaps and silk clipped by mask or edge (back silk only carries designators), plus `lib_footprint_issues`
 because the footprints are embedded rather than read from a library.
@@ -61,8 +61,12 @@ How it got there:
    - **R5 / R28 GND.** Each has its own GND via. The RECT and TAB_CC2 links were moved off them.
    - **TMP117.** GND vias in the exposed pad and beside it tie the split B.Cu pour through F.Cu.
    - **Right F.Cu shield strip.** Two vias tie it to the In1 shield plane.
+   - **Rev C parts** (accelerometer U7, LED driver U9 + RGB LED D1, piezo pads BZ1) were added to the routed
+     board with `tools/sync_pcb.py` (no re-generation, so the routing above is kept), then routed by fixroute
+     plus a few locked hand tracks: the LED corner (AW2013 channels LED0/1/2 = green/blue/red to fit the
+     pads), a GND via inside U7's 2 x 2 mm footprint for its ground pads, and two SDA bridges.
 
-All 173 vias are JLC-standard 0.6 / 0.3 mm (the board rules enforce a 0.3 mm minimum drill). The minimum
+All 207 vias are JLC-standard 0.6 / 0.3 mm (the board rules enforce a 0.3 mm minimum drill). The minimum
 track is 0.15 mm; the default is 0.2 mm.
 
 Then `python3 hardware/tools/jlc_outputs.py` writes `hardware/fab/` (gerbers zip, `bom_jlc.csv`,
