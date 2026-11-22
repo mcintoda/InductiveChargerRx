@@ -191,7 +191,11 @@ pack(["C1", "C2", "C3", "C23", "C4", "C11", "C21", "C12", "C13", "C22", "R1", "R
 # power / housekeeping column (right)
 place("U4", 32.3, 7.6)
 pack(["C14", "C15", "C17", "C18", "R9", "C19", "Q1", "R4", "R5", "R6", "R7", "R8", "C16",
-      "R18", "R19", "R10", "D1"], 27.2, 9.9, 37.4, 24.5)
+      "R18", "R19"], 27.2, 9.9, 37.4, 24.5)
+# rev C: accelerometer, case-humidity sensor, RGB LED + driver, piezo pads (same spots sync_pcb.py uses)
+from sync_pcb import NEW_PLACE  # noqa: E402
+for _ref, (_x, _y, _r) in NEW_PLACE.items():
+    place(_ref, _x, _y, _r)
 # touch series resistors directly below the module's GPIO pads
 pack(["R11", "R12", "R13", "R14", "R15", "R16", "R20", "R17"], 11.4, 21.2, 26.6, 23.8, gap=0.75, rot=90)
 # wire pads (coil left / battery right) and pogo test pads (centre)

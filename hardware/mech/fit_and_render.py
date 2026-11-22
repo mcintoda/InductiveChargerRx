@@ -59,8 +59,13 @@ def parts():
     # passives envelope: electronics band (PCB y 4.6..29.5), full width, minus the module footprint
     ex, ey = E.pcb_to_dev(19.0, (4.6 + 29.5) / 2)
     comps = box(ex, ey, E.PCB_W - 0.2, 29.5 - 4.6, Z_BACK_PCB, 1.35).cut(box(mx, my, 15.7, 20.85, Z_BACK_PCB - 0.1, 2))
+    # piezo sounder: 20 mm disc (0.45 mm incl. adhesive) bonded to the plug's inner face, between the
+    # module clamp posts and the battery; leads go to the BZ1 pads (PCB 25.3, 27.9)
+    zx, zy = E.pcb_to_dev(19.0, 23.5)
+    z_in = E.DEPTH - E.T_BACK
+    piezo = cq.Workplane("XY").workplane(offset=z_in - 0.46).center(zx, zy).circle(10.0).extrude(0.45)
     return {"pcb": pcb(), "module": box(mx, my, 15.5, 20.65, Z_BACK_PCB, 2.4), "parts": comps,
-            "battery": batt, "coil": coil, "foam": foam}
+            "battery": batt, "coil": coil, "foam": foam, "piezo": piezo}
 
 
 def vol(a, b):

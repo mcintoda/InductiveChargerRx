@@ -42,3 +42,33 @@ make -C test          # level estimation, film rejection, drift, fill rate, alar
 3. Factory reset: put it on the charger 3 times within 20 s.
 4. Level sensing (settings page): `FDC1004` (default; falls back to touch on boards without U5), `Touch` (ratiometric) or `Compare`.
    Compare logs `CMP,...` lines on the USB console for the bench protocol in `docs/sensing-options.md`.
+
+## On the device (rev C)
+The phone gets every alert through ntfy. The device also signals on its own, so a full bath is noticed even when
+the phone is in another room or the Wi-Fi is down.
+
+| LED (RGB, 5 mA per colour) | Meaning |
+|---|---|
+| Cyan blink | Waiting for Wi-Fi setup (join **brim-setup-XXXX**) |
+| Amber breathing / green steady | On the charger: charging / charged |
+| Dim blue blip every 4 s | Watching a bath |
+| Yellow slow breathing | Nearly full (about 2 min to go) |
+| Red fast blink + 3 × 3 beeps | Bath full. Repeats every minute while it keeps rising, for up to 15 min |
+| Green steady | Alarm acknowledged on the device |
+| Magenta breathing | Water above your temperature limit |
+| Orange double blink | brim is tilted / out of its bracket |
+| One 1 s flash (green / yellow / red) | Tapped or picked up while asleep: battery above 50 % / above 20 % / below |
+
+| Gesture | Effect |
+|---|---|
+| **Double-tap the case** during an alarm | Acknowledge: no more repeats or beeps this bath (two green flashes + a chirp) |
+| Tap or pick it up while it sleeps | Shows the battery colour, then back to sleep |
+
+Other checks:
+- **Tilt.** At the start of each bath brim learns which way is "up" in its bracket. If it is tilted more than
+  30° for 20 s while the bath is filling, the phone gets "brim is tilted".
+- **Moisture in the case.** The SHTC3 measures the air inside the sealed case at every wake. Absolute humidity in a
+  sealed case stays flat as the bath warms it. A rise of more than 3 g/m³, or RH above 90 %, on 3 readings in a row
+  sends "Moisture inside brim" (at most once a day). Open it, dry it and check the O-ring.
+- The piezo tone defaults to 4 kHz (`BUZ_HZ` in `buzzer.c`). Tune it to the loudest frequency of the disc once it
+  is bonded into the plug.

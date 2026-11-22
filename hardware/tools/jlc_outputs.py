@@ -39,7 +39,7 @@ if VARIANT not in VARIANTS:
 DNP = set(VARIANTS[VARIANT])
 OUT = _args[0] if _args else os.path.join(HW, "fab")
 OX, OY = 100.0, 50.0
-NOT_PLACED = ("E", "TP", "J1", "L1", "#")
+NOT_PLACED = ("E", "TP", "J1", "L1", "BZ", "#")
 ROT_FIX = {}          # e.g. {"SOT-23": 180} after checking the JLC preview
 LAYERS = "F.Cu,In1.Cu,In2.Cu,B.Cu,F.Mask,B.Mask,F.SilkS,B.SilkS,F.Paste,B.Paste,Edge.Cuts"
 
