@@ -24,6 +24,7 @@
 #include "buzzer.h"
 #include "driver/usb_serial_jtag.h"
 #include "esp_log.h"
+#include "esp_ota_ops.h"
 #include "fdc1004.h"
 #include "fdclevel.h"
 #include "esp_pm.h"
@@ -186,8 +187,15 @@ static void charger_mode(void)
         snprintf(msg, sizeof(msg), "Tap for settings (open for 10 min): %s", url);
         net_ntfy_click(&s_set, "brim is charging", msg, 1, "battery", url);   // priority 1: silent
     }
+    // changes need physical presence: a double-tap on the device (no accelerometer: the first 2 min on the pad)
+    if (s_acc_fitted) { accel_awake(); accel_events(); }
+    else net_unlock(120);
     double t0 = now_s();
     while (now_s() - t0 < 10 * 60 && power_on_charger()) {
+        if (s_acc_fitted && (accel_events() & ACC_EV_DOUBLE_TAP)) {
+            net_unlock(120);
+            status_flash(0, 255, 0, 2, 150);
+        }
         int mv = power_battery_mv();
         st.battery_pct = mv > 0 ? power_battery_pct(mv) : -1;
         st.charging = power_charging();
@@ -344,6 +352,8 @@ void app_main(void)
     net_init();
     sense_init();
     esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
+    // rollback is enabled: an image that got this far (settings, power, radio, sensors up) is good, keep it
+    esp_ota_mark_app_valid_cancel_rollback();
     ESP_LOGI(TAG, "wake cause %d, on charger %d, provisioned %d", cause, power_on_charger(), settings_provisioned(&s_set));
 
     if (!s_fdc_probed) {                                  // which board variant is this?

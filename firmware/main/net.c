@@ -16,6 +16,7 @@
 #include "esp_mac.h"
 #include "esp_netif.h"
 #include "esp_ota_ops.h"
+#include "esp_timer.h"
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
@@ -33,6 +34,57 @@ static bool s_saved, s_ota_done, s_wifi_started;
 static esp_netif_t *s_sta, *s_ap;
 static volatile bool s_dns_run;
 static char s_ip[16];
+static char s_key[17];                     // per-session anti-CSRF key, embedded in the page's forms
+static volatile int64_t s_unlock_until;    // esp_timer us: settings / firmware changes allowed until then
+
+// ---------------- request hygiene ----------------
+static void new_key(void)
+{
+    for (int i = 0; i < 16; i++) s_key[i] = "0123456789abcdef"[esp_random() & 15];
+    s_key[16] = 0;
+}
+
+void net_unlock(int seconds) { s_unlock_until = esp_timer_get_time() + (int64_t)seconds * 1000000; }
+static bool unlocked(void) { return esp_timer_get_time() < s_unlock_until; }
+
+// Host header must name this device (blocks DNS-rebinding pages from reading or driving it)
+static bool host_ok(httpd_req_t *req)
+{
+    char h[48];
+    if (httpd_req_get_hdr_value_str(req, "Host", h, sizeof(h)) != ESP_OK) return false;
+    char *colon = strchr(h, ':');
+    if (colon) *colon = 0;
+    return !strcmp(h, s_status ? s_ip : "192.168.4.1");
+}
+
+// HTML-escape for text and attribute values (SSIDs may contain ' " < > &)
+static const char *esc(const char *in, char *out, size_t n)
+{
+    size_t o = 0;
+    for (; *in && o + 7 < n; in++) {
+        const char *r = NULL;
+        switch (*in) {
+        case '&': r = "&amp;"; break;
+        case '<': r = "&lt;"; break;
+        case '>': r = "&gt;"; break;
+        case '"': r = "&quot;"; break;
+        case '\'': r = "&#39;"; break;
+        }
+        if (r) { size_t l = strlen(r); memcpy(out + o, r, l); o += l; }
+        else out[o++] = *in;
+    }
+    out[o] = 0;
+    return out;
+}
+
+// ntfy server: a bare host name with an optional port, nothing that could change the URL's path or user
+static bool host_name_ok(const char *h)
+{
+    if (!h[0] || strlen(h) >= 64) return false;
+    for (; *h; h++)
+        if (!isalnum((unsigned char)*h) && *h != '.' && *h != '-' && *h != ':') return false;
+    return true;
+}
 
 static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
 {
@@ -106,6 +158,18 @@ esp_err_t net_ntfy_click(const settings_t *s, const char *title, const char *msg
 }
 
 // ---------------- web pages ----------------
+static esp_err_t page_redirect(httpd_req_t *req, httpd_err_code_t err);
+static const char *PAGE_HEAD;
+
+static esp_err_t send_locked(httpd_req_t *req)
+{
+    httpd_resp_set_status(req, "403 Forbidden");
+    httpd_resp_set_type(req, "text/html");
+    char resp[1000];
+    int n = snprintf(resp, sizeof(resp), "%s<p><b>Locked.</b> Double-tap brim on its charger (it flashes green), "
+                     "then press Save or Upload again within 2 minutes.</p><p><a href=/>Back</a></p>", PAGE_HEAD);
+    return httpd_resp_send(req, resp, n);
+}
 static void url_decode(char *s)
 {
     char *o = s;
@@ -138,22 +202,31 @@ static const char *PAGE_HEAD =
 
 static esp_err_t page_root(httpd_req_t *req)
 {
+    if (!host_ok(req)) return page_redirect(req, HTTPD_404_NOT_FOUND);
     static char buf[4096];   // static: the httpd task is single-threaded; keeps 4 kB off its stack
+    static char e_ssid[200], e_host[400], e_topic[200];
     const settings_t *s = s_settings;
+    esc(s->ssid, e_ssid, sizeof(e_ssid));
+    esc(s->ntfy_host, e_host, sizeof(e_host));
+    esc(s->topic, e_topic, sizeof(e_topic));
     int n = snprintf(buf, sizeof(buf), "%s", PAGE_HEAD);
     if (!s_status && s->ssid[0] && !s->wifi_ok)
         n += snprintf(buf + n, sizeof(buf) - n,
                       "<p style='background:#fde2e1;padding:10px;border-radius:6px'>brim couldn't join <b>%s</b>. "
-                      "Check the password, and that it is a 2.4 GHz network, then save again.</p>", s->ssid);
+                      "Check the password, and that it is a 2.4 GHz network, then save again.</p>", e_ssid);
+    if (s_status && !unlocked())
+        n += snprintf(buf + n, sizeof(buf) - n,
+                      "<p style='background:#fff3cd;padding:10px;border-radius:6px'><b>Double-tap brim</b> on its "
+                      "charger to unlock changes for 2 minutes.</p>");
     if (s_status)
         n += snprintf(buf + n, sizeof(buf) - n, "<p>Battery %d %% %s &middot; water %s</p>", s_status->battery_pct,
                       s_status->charging ? "(charging)" : "", isnan(s_status->temp_c) ? "--" : "measured");
     n += snprintf(buf + n, sizeof(buf) - n,
-                  "<form method=post action=/save>"
+                  "<form method=post action=/save><input type=hidden name=k value=%s>"
                   "<label>Wi-Fi name<input name=ssid value='%s' required></label>"
                   "<label>Wi-Fi password<input name=pass type=password placeholder='%s'></label>"
                   "<label>Alarm at the top of pad<select name=pad>",
-                  s->ssid, s->pass[0] ? "unchanged" : "");
+                  s_key, e_ssid, s->pass[0] ? "unchanged" : "");
     for (int p = 1; p <= 6; p++)
         n += snprintf(buf + n, sizeof(buf) - n, "<option value=%d%s>%d%s</option>", p, p == s->alarm_pad ? " selected" : "",
                       p, p == 6 ? " (top, default)" : p == 1 ? " (bottom)" : "");
@@ -169,16 +242,17 @@ static esp_err_t page_root(httpd_req_t *req)
                   "<button type=button onclick=\"t.select();document.execCommand('copy');this.textContent='Copied'\">"
                   "Copy topic</button><br>"
                   "<button>Save</button></form>",
-                  s->temp_limit_c, s->notify_filling ? " checked" : "", s->ntfy_host,
+                  s->temp_limit_c, s->notify_filling ? " checked" : "", e_host,
                   s->sense_mode == SENSE_TOUCH ? " selected" : "", s->sense_mode == SENSE_FDC ? " selected" : "",
-                  s->sense_mode == SENSE_COMPARE ? " selected" : "", s->topic);
+                  s->sense_mode == SENSE_COMPARE ? " selected" : "", e_topic);
     if (s_status)
         n += snprintf(buf + n, sizeof(buf) - n,
-                      "<form method=post action=/test><button>Send a test alert</button></form>"
+                      "<form method=post action=/test><input type=hidden name=k value=%s>"
+                      "<button>Send a test alert</button></form>"
                       "<h3>Firmware update</h3><form method=post action=/update enctype=application/octet-stream "
-                      "onsubmit=\"event.preventDefault();fetch('/update',{method:'POST',body:this.f.files[0]})"
-                      ".then(r=>r.text()).then(t=>document.body.innerHTML+='<p>'+t+'</p>')\">"
-                      "<input name=f type=file accept=.bin><button>Upload</button></form>");
+                      "onsubmit=\"event.preventDefault();fetch('/update',{method:'POST',headers:{'X-Brim-Key':'%s'},"
+                      "body:this.f.files[0]}).then(r=>r.text()).then(t=>document.body.innerHTML+='<p>'+t+'</p>')\">"
+                      "<input name=f type=file accept=.bin><button>Upload</button></form>", s_key, s_key);
     if (n >= (int)sizeof(buf)) n = sizeof(buf) - 1;   // never send past the end if a field grows
     httpd_resp_set_type(req, "text/html");
     return httpd_resp_send(req, buf, n);
@@ -186,13 +260,24 @@ static esp_err_t page_root(httpd_req_t *req)
 
 static esp_err_t page_save(httpd_req_t *req)
 {
-    char body[512] = {0}, v[96];
-    int len = httpd_req_recv(req, body, sizeof(body) - 1);
-    if (len <= 0) return httpd_resp_send_500(req);
+    static char body[1024], v[200];      // v holds a still-encoded value: 63-char password x 3
+    if (!host_ok(req)) return httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Wrong host");
+    if (req->content_len >= sizeof(body)) return httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Form too large");
+    int len = 0;
+    while (len < (int)req->content_len) {
+        int r = httpd_req_recv(req, body + len, req->content_len - len);
+        if (r <= 0) return httpd_resp_send_500(req);
+        len += r;
+    }
+    body[len] = 0;
+    if (!form_get(body, "k", v, sizeof(v)) || strcmp(v, s_key))
+        return httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Stale page: reload it and try again");
+    if (s_status && !unlocked())
+        return send_locked(req);
     settings_t *s = s_settings;
     if (form_get(body, "ssid", v, sizeof(v)) && strcmp(v, s->ssid)) { strlcpy(s->ssid, v, sizeof(s->ssid)); s->wifi_ok = false; }
     if (form_get(body, "pass", v, sizeof(v)) && v[0]) { strlcpy(s->pass, v, sizeof(s->pass)); s->wifi_ok = false; }   // blank = keep
-    if (form_get(body, "host", v, sizeof(v)) && v[0]) strlcpy(s->ntfy_host, v, sizeof(s->ntfy_host));
+    if (form_get(body, "host", v, sizeof(v)) && v[0] && host_name_ok(v)) strlcpy(s->ntfy_host, v, sizeof(s->ntfy_host));
     if (form_get(body, "pad", v, sizeof(v))) { int p = atoi(v); if (p >= 1 && p <= 6) s->alarm_pad = p; }
     if (form_get(body, "tlim", v, sizeof(v))) { float t = strtof(v, NULL); if (t >= 30 && t <= 50) s->temp_limit_c = t; }
     s->notify_filling = form_get(body, "fill", v, sizeof(v));
@@ -201,18 +286,23 @@ static esp_err_t page_save(httpd_req_t *req)
     settings_save(s);
     s_saved = true;
     xEventGroupSetBits(s_ev, EV_SAVED);
-    char resp[1500];
+    char resp[1700], e_ssid[200];
     int n = snprintf(resp, sizeof(resp),
                      "%s<p>Saved. brim will now join <b>%s</b>.</p><p>Within a minute you should get a "
                      "<b>brim is connected</b> alert in ntfy (topic <code>%s</code>).</p><p>No alert and the light blinks "
                      "cyan again? The Wi-Fi password was wrong: rejoin <b>brim-setup</b> and fix it.</p>",
-                     PAGE_HEAD, s->ssid, s->topic);
+                     PAGE_HEAD, esc(s->ssid, e_ssid, sizeof(e_ssid)), s->topic);
     httpd_resp_set_type(req, "text/html");
     return httpd_resp_send(req, resp, n);
 }
 
 static esp_err_t page_test(httpd_req_t *req)
 {
+    char body[64] = {0}, v[24];
+    if (!host_ok(req)) return httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Wrong host");
+    int len = httpd_req_recv(req, body, sizeof(body) - 1);
+    if (len <= 0 || !form_get(body, "k", v, sizeof(v)) || strcmp(v, s_key))
+        return httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Stale page: reload it and try again");
     esp_err_t e = net_ntfy(s_settings, "brim test", "If you can read this, brim's alerts reach this phone.", 4, "bathtub");
     char resp[1000];
     int n = snprintf(resp, sizeof(resp), "%s<p>%s</p><p><a href=/>Back</a></p>", PAGE_HEAD,
@@ -266,14 +356,23 @@ static void dns_task(void *arg)
 
 static esp_err_t page_update(httpd_req_t *req)
 {
+    char key[24];
+    if (!host_ok(req)) return httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Wrong host");
+    // custom header: a cross-site page can't send it without a CORS preflight, which this server never grants
+    if (httpd_req_get_hdr_value_str(req, "X-Brim-Key", key, sizeof(key)) != ESP_OK || strcmp(key, s_key))
+        return httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Stale page: reload it and try again");
+    if (!unlocked()) return send_locked(req);
     const esp_partition_t *part = esp_ota_get_next_update_partition(NULL);
     esp_ota_handle_t h;
-    if (!part || esp_ota_begin(part, OTA_WITH_SEQUENTIAL_WRITES, &h) != ESP_OK) return httpd_resp_send_500(req);
+    if (!part || req->content_len == 0 || req->content_len > part->size)
+        return httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Not a brim firmware file");
+    if (esp_ota_begin(part, OTA_WITH_SEQUENTIAL_WRITES, &h) != ESP_OK) return httpd_resp_send_500(req);
     char buf[1024];
-    int remaining = req->content_len;
+    int remaining = req->content_len, stalls = 0;
     while (remaining > 0) {
         int r = httpd_req_recv(req, buf, remaining < (int)sizeof(buf) ? remaining : (int)sizeof(buf));
-        if (r == HTTPD_SOCK_ERR_TIMEOUT) continue;
+        if (r == HTTPD_SOCK_ERR_TIMEOUT && ++stalls < 5) continue;     // a stalled upload can't hold the server
+        stalls = 0;
         if (r <= 0 || esp_ota_write(h, buf, r) != ESP_OK) { esp_ota_abort(h); return httpd_resp_send_500(req); }
         remaining -= r;
     }
@@ -315,7 +414,6 @@ bool net_provision(settings_t *s, int timeout_ms)
 {
     s_settings = s;
     s_status = NULL;
-    if (!s->topic[0]) settings_new_topic(s->topic, sizeof(s->topic));
     if (!s_ap) s_ap = esp_netif_create_default_wifi_ap();
     uint8_t mac[6];
     esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP);
@@ -326,6 +424,9 @@ bool net_provision(settings_t *s, int timeout_ms)
     esp_wifi_set_config(WIFI_IF_AP, &ap);
     esp_wifi_start();
     s_wifi_started = true;
+    // the RNG is only a true RNG while the radio runs: make the secrets after esp_wifi_start()
+    if (!s->topic[0]) settings_new_topic(s->topic, sizeof(s->topic));
+    new_key();
     start_httpd();
     s_dns_run = true;
     xTaskCreate(dns_task, "dns", 3072, NULL, 5, NULL);
@@ -344,6 +445,8 @@ esp_err_t net_web_start(settings_t *s, const net_status_t *status)
     s_settings = s;
     s_status = status;
     s_saved = s_ota_done = false;
+    s_unlock_until = 0;
+    new_key();
     return start_httpd();
 }
 

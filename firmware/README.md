@@ -40,7 +40,8 @@ make -C test          # level estimation, film rejection, drift, fill rate, alar
    Enter Wi-Fi, pick the alarm pad, **Copy** the ntfy topic and subscribe to it in the free ntfy app, then Save.
    brim joins the Wi-Fi and sends **"brim is connected"**. Wrong password: setup re-opens with an error (cyan blink).
 2. On the Qi charger it sends a silent **"brim is charging"** alert; tap it for the settings page (10 minutes),
-   which also has **Send a test alert** and the firmware upload.
+   which also has **Send a test alert** and the firmware upload. Saving or uploading there needs a **double-tap on
+   brim** first (unlocks for 2 min; physical presence), see [`docs/security.md`](../docs/security.md).
 3. Factory reset: put it on the charger 3 times within 20 s.
 4. Level sensing (settings page): `FDC1004` (default; falls back to touch on boards without U5), `Touch` (ratiometric) or `Compare`.
    Compare logs `CMP,...` lines on the USB console for the bench protocol in `docs/sensing-options.md`.
