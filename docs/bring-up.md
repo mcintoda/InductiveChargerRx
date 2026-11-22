@@ -50,6 +50,20 @@ a spray bottle, salt, a vacuum jar or hand vacuum pump.
 | ntfy: fill a container past pad 6 | iPhone gets "Bath nearly full" then "BATH FULL", plus repeats while still filling, stopping when the "tap" stops |
 | Wi-Fi off during a fill | Alarm is retried and logged; nothing crashes |
 
+## 5b. Rev C: motion, case humidity, sounder, RGB LED
+| Check | Pass | If not |
+|---|---|---|
+| Boot log: `LIS2DW12 fitted` | WHO_AM_I = 0x44 at 0x19 | Check U7 orientation (pin 1 top-left, ST shows a bottom view) and that SA0/CS read high |
+| Tap the case while it sleeps | Wakes, one battery-colour flash, back to sleep within ~1 s | INT1 must idle HIGH (CTRL3 H_LACTIVE); scope GPIO21 |
+| Deep-sleep current with the accelerometer armed | ≤ 2 µA above the rev B figure | LIS2DW12 must be in low-power mode 1 at 12.5 Hz; SA0 and CS tied high (no pull-up current) |
+| `case air` log line | Plausible T and RH; RH falls as a warm bath heats the case while g/m³ stays flat | SHTC3 needs the sensor rail on: it shares SENSE_3V3 with the TMP117 |
+| Breathe on a vent-less open board, then close it | RH rises; a closed, dry case stays at a flat g/m³ for a week | Tune `CASEAIR_RISE_GM3` if needed |
+| LED colours (README table) | All three colours light at 5 mA. Rail stays ≥ 3.0 V with two colours on | AW2013 at 0x45; LED anode is SENSE_3V3 (GPIO12), so no LED while the rail is off |
+| FDC1004 noise with the LED breathing | Same σ as with the LED off (the LED pauses during each conversion) | Keep `status_quiet()` around `fdc_read_all()` |
+| Piezo bonded in the plug, enclosure closed | Clearly audible from the next room with the door open. Sweep 2–7 kHz, set `BUZ_HZ` to the loudest | Try a thinner bond line (cyanoacrylate, not silicone) or a disc closer to the plug's centre |
+| Double-tap during an alarm | Two green flashes + chirp, no more repeats | Lower the tap threshold (TAP_THS 0x09 = 0.56 g) if taps through the bracket are missed |
+| Tilt the device 45° out of the bracket during a fill | "brim is tilted" after 20 s | Check the learned reference: it is taken at the start of the bath |
+
 ## 6. Power budget
 | Check | Pass |
 |---|---|

@@ -120,6 +120,12 @@ Sources: [JLC3DP capabilities](https://jlc3dp.com/capabilities/3d-printing-servi
    water, and 20 cycles between 15 °C and 45 °C. A humidity-indicator dot inside makes any ingress visible.
 4. To open: remove the 4 screws and lever the plug out at the top notch.
 
+### 2.5b Piezo sounder
+A 20 mm piezo disc with leads (e.g. Murata 7BB-20-6L0) is bonded with cyanoacrylate to the plug's inner face, centred
+at PCB (19, 23.5): between the two module clamp posts and the battery, so the plug panel becomes the sounding board.
+Its two leads go to the BZ1 pads (PCB 25.3, 27.9). The fit check models it (0.45 mm incl. adhesive): 0 interference.
+Bond it brass side down and keep the bond line thin; a soft (silicone) bond damps the sound.
+
 ### 2.6 Notes
 - **Buoyancy:** it displaces about 53 cm³. In SLA resin the device weighs about 53 g (about neutral); in PP about 48 g and floats.
   It doesn't matter in the bracket. If floating is wanted, drop the plug posts and use foam instead.
