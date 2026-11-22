@@ -3,7 +3,7 @@
 
 Sealing concept
   * The CUP is one piece: thin flat front wall (sensing face), side walls, open back.
-  * The PLUG (back cover / Qi face) carries a 1.5 mm EPDM O-ring in a groove on its skirt and
+  * The PLUG (back cover / Qi face) carries a 1.5 mm NBR O-ring in a groove on its skirt and
     is pushed into the cup bore: a RADIAL (piston) seal. Squeeze is set by geometry, not by
     screw torque, so there is no flange and nothing to glue.
   * Four M2 A4-stainless self-tapping screws through the side walls into the plug hold it in.

@@ -13,16 +13,18 @@ rows to Digi-Key's BOM Manager, which matches on the manufacturer part number).
 | 4 | 1 | Thermal gap pad 40 x 40 x 0.5 mm, 16.6 W/m-K | t-Global Technology TG-A1660-40-40-0.5 | Digi-Key | [1168-TG-A1660-40-40-0.5-ND](https://www.digikey.com/en/products/detail/t-global-technology/TG-A1660-40-40-0-5/11617038) | 8 | Cut 10 x 7 mm pieces: TMP117 tab to the thermal window |
 | 5 | 1 | Silicone grease, 85 ml | MG Chemicals 8462-85ML | Digi-Key | [473-1232-ND](https://www.digikey.com/en/products/detail/mg-chemicals/8462-85ML/6035523) | 10 | Thin film on the O-ring |
 | 6 | 1 | Humidity indicator cards, 3-spot (can of 125) | SCS 3HIC125 | Digi-Key | [SCP667-ND](https://www.digikey.com/product-detail/en/scs/3HIC125/SCP667-ND/1621628) | 20 | Cut one spot, stick it inside the cup as the leak indicator |
-| 7 | 1 | O-ring 90 x 1.5 mm, FKM 80 Shore A (pack of 5) | Tameson S26DT-X5 | Tameson | [S26DT-X5](https://tameson.com/products/s26dt-x5-fkm-o-ring-90-x-1p5mm-od-93mm-80-shore-a-5-pieces) | 8 | Plug groove. EPDM 70 Sh A is ideal but not found in this size; NBR alternative: Tameson S26DS-X20 |
+| 7 | 1 | O-ring 90 mm ID × 1.5 mm cross-section (93 mm OD), nitrile (NBR) 70 Shore A, pack of 5–10 | any (uxcell or similar) | Amazon | [search](https://www.amazon.com/s?k=90mm+ID+1.5mm+nitrile+o-ring) | 8 | Plug groove. Must be exactly 1.5 mm cross-section: McMaster's 90 mm Viton rings (8683N269) are 2 mm and don't fit. NBR is fine in bath water and with silicone grease |
 | 8 | 1 | Screw, flat head, thread-forming for plastic, 18-8 stainless, Torx drive, M2 x 6 mm (pack of 50; 4 per device) | McMaster-Carr 95893A165 | McMaster-Carr | [95893A165](https://www.mcmaster.com/95893A165/) | 13.33 | Side walls into the plug, 4 per device. Fits the existing M2 holes (2.3 mm clearance, 1.6 mm pilot). The tip reaches 1.5 mm past the plug skirt, 0.9 mm clear of the coil: checked in fit_and_render.py |
-| 9 | 1 | Microcellular urethane (PORON-type) foam sheet, 1/16 in, 12 x 12 in | Zoro Select ZUSA-MCP-101 | Zoro | [G1984851](https://www.zoro.com/zoro-select-foam-sheet-microcellular-12-in-w-12-in-l-116-in-thick-black-zusa-mcp-101/i/G1984851) | 17 | Cut 30 mm discs: between the coil and the plug |
-| 10 | 1 | Suction cups 40 mm, mushroom head (pack of 10) | Bambu Lab HA011 | Bambu Lab store / Amazon | [HA011](https://us.store.bambulab.com/products/suction-caps-with-mushroom-head) | 2 | Bracket keyholes, 2 per device (docs/enclosure.md 2.7) |
+| 9 | 1 | Quick-recovery urethane foam (PORON-type), 1/16 in, 12 × 12 in, 18 psi (medium) | McMaster-Carr 86375K132 | McMaster-Carr | [86375K132](https://www.mcmaster.com/86375K132/) | 17 | Cut 30 mm discs: between the coil and the plug. Also the battery-swelling buffer |
+| 10 | 1 | Suction cups 40 mm, clear PVC, mushroom head (pack of 12; leave the hooks off) | Flintronic | Amazon | [search](https://www.amazon.com/s?k=Flintronic+suction+cups+40mm+mushroom+head) | 10 | Bracket keyholes, 2 per device (docs/enclosure.md 2.7) |
 
-Approximate total for the list: **about US$118** plus shipping. Prices are search snapshots: check them in the cart.
+**Three suppliers only:** Amazon (items 1, 7, 10), Digi-Key (items 2–6) and McMaster-Carr (items 8, 9). Approximate total: **about US$126** plus shipping. Prices are search snapshots: check them in the cart.
 
 ## Before ordering
 - **Battery:** marketplace cells vary. On arrival check thickness (≤ 4.4 mm), that a protection board sits under the tape, and polarity (red to J1 pin 1). Cut the connector off and solder the wires to J1, so the listing's connector model, size and polarity warnings don't apply, as long as red goes to pin 1. The case is sized for 25.5 × 36 × 4.3 mm, with room for +10 % swelling (see enclosure.md).
 - **Screws:** McMaster 95893A165 (M2 x 6 mm, 18-8, Torx, thread-forming for plastic, pack of 50). They fit the case's existing M2 holes.
-- **O-ring:** FKM in the exact 90 × 1.5 mm size. EPDM would be ideal but was not found in that size.
+- **O-ring:** nitrile (NBR) in the exact 90 mm ID × 1.5 mm size (93 mm OD). Check the cross-section in the listing: a 2 mm ring will not fit the groove. EPDM would be ideal but isn't sold in this size by these three suppliers; NBR is fine at bath temperatures. FKM (Tameson S26DT-X5) is the upgrade if you ever order elsewhere.
+- **Foam:** McMaster 86375K132 is the same type of open-cell urethane as PORON; confirm the 1/16" thickness on the product page.
+- **Suction cups:** marketplace listings drift; any 40 mm clear PVC mushroom-head cup fits the keyholes (head ≤ 12 mm, neck ≤ 5.8 mm).
 
 Not in this list: the PCB and its SMD parts (JLC PCBA), the enclosure prints (`hardware/mech/out/`, JLC3DP), and a USB-C cable for the first flash.

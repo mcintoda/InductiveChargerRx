@@ -67,7 +67,7 @@ Sources: [Hammond 1555 datasheet](https://www.mouser.com/datasheet/2/177/1555-12
 
 | Gland parameter (static radial, CS 1.5 mm) | Value |
 |---|---|
-| O-ring | **90 × 1.5 mm EPDM 70 Sh A** (hot water, soap and bath oils. Silicone also works but is less tear-resistant) |
+| O-ring | **90 × 1.5 mm NBR 70 Sh A** (Amazon; fine in bath water and soap. EPDM is ideal but not sold in this size by Amazon/Digi-Key/McMaster; FKM is an upgrade) |
 | Installed stretch on the groove bottom | 3.3 % (groove perimeter 292.1 mm) |
 | Groove depth / width | 1.05 / 2.30 mm |
 | Radial clearance, plug ↔ bore | 0.10 mm |
@@ -110,11 +110,11 @@ Sources: [JLC3DP capabilities](https://jlc3dp.com/capabilities/3d-printing-servi
 
 | Qty | Part |
 |---|---|
-| 1 | O-ring 90 × 1.5 mm, EPDM 70 Sh A (buy a few) |
+| 1 | O-ring 90 × 1.5 mm, NBR 70 Sh A (buy a few) |
 | 4 | Screw M2 × 6 mm, flat head, thread-forming for plastic, 18-8 stainless, Torx (McMaster-Carr **95893A165**, pack of 50). The tip reaches ~1.5 mm past the plug skirt, clear of the coil and foam (fit check) |
 | 1 | PORON foam 1.6 mm, Ø30 mm (behind the coil) |
 | 1 | Thermal gap pad 0.5 mm, 10 × 7 mm (TMP117 tab ↔ thermal window) |
-| 2 | Suction cup Ø40 mm with mushroom head, see section 2.7 (e.g. Bambu Lab HA011) |
+| 2 | Suction cup Ø40 mm with mushroom head, see section 2.7 (Amazon, e.g. Flintronic 40 mm 12-pack) |
 | – | Silicone O-ring grease (no epoxy anywhere) |
 
 ### 2.5 Assembly and leak test
@@ -149,9 +149,9 @@ keyhole and then hang the bracket so the neck slides to the top of the slot. Ind
 
 | Option | Why | Source |
 |---|---|---|
-| **Bambu Lab "Suction Caps with Mushroom Head", 40 mm, part HA011 (10 pcs, clear PVC)** (recommended) | Mushroom head made for keyholes, one stable part number, cheap (about US$1.50 per 10), sold in the US, EU, UK, AU and Asia | [US store](https://us.store.bambulab.com/products/suction-caps-with-mushroom-head), [EU store](https://eu.store.bambulab.com/en-be/products/suction-caps-with-mushroom-head) |
+| Bambu Lab "Suction Caps with Mushroom Head", 40 mm, part HA011 (10 pcs, clear PVC) | Mushroom head made for keyholes, one stable part number, cheap (about US$1.50 per 10), sold in the US, EU, UK, AU and Asia | [US store](https://us.store.bambulab.com/products/suction-caps-with-mushroom-head), [EU store](https://eu.store.bambulab.com/en-be/products/suction-caps-with-mushroom-head) |
 | Kinter "Premium Suction Cup – Mushroom Head" (clear, UV-resistant PVC) | US maker that designs these cups specifically for keyhole openings. Check sizes with Kinter | [Kinter](https://products.kinter.com/viewitems/all-categories/premium-suction-cup-mushroom-head) |
-| Flintronic 40 mm mushroom-head 12-pack (PVC, with hooks) | Widely sold on Amazon. Leave the hooks off | [listing](https://ibspot.com/products/flintronic-suction-cups-pack-of-12-clear-plastic-suction-cups-diameter-40-mm-pvc-wall-hooks-with-suction-cup-and-hooks-transparent-plastic-suction-cups-suction-cup-hooks-extra-strong-for) |
+| **Flintronic 40 mm mushroom-head 12-pack (PVC, with hooks)** (recommended: Amazon) | Widely sold on Amazon. Leave the hooks off | [listing](https://ibspot.com/products/flintronic-suction-cups-pack-of-12-clear-plastic-suction-cups-diameter-40-mm-pvc-wall-hooks-with-suction-cup-and-hooks-transparent-plastic-suction-cups-suction-cup-hooks-extra-strong-for) |
 | Adams 1-3/4" (44.5 mm) cups with stud + knurled nut, 25-pack (alternative) | Bolt-through instead of keyhole. The stud fits the 6 mm slot, with the nut on the device side of the bracket. A buyer reports the stud can pull out of the cup, so it's the second choice | [listing](https://www.dkhardware.com/1-3-4-medium-suction-cups-with-studs-and-knurled-nuts-25-suction-cups-asc134n-product-26445.html) |
 
 **The keyhole in `enclosure.py` is parametric** because none of these vendors publish head or neck sizes:

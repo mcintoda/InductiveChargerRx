@@ -141,7 +141,7 @@ def main():
     cs = E.ORING_CS * 0.98
     ax.add_patch(plt.Circle((gx - (E.GLAND_DEPTH + E.PLUG_CLR) / 2, E.GROOVE_Z0 + E.GLAND_W / 2), cs / 2,
                             color="k", alpha=0.85))
-    ax.text(gx + 1.2, E.GROOVE_Z0 + 1.2, "EPDM O-ring 90 x 1.5\n(shown uncompressed;\n22 % squeeze when fitted)", fontsize=7)
+    ax.text(gx + 1.2, E.GROOVE_Z0 + 1.2, "NBR O-ring 90 x 1.5\n(shown uncompressed;\n22 % squeeze when fitted)", fontsize=7)
     ax.annotate("M2 screw axis\n(outboard of seal)", xy=(-E.OUT_W / 2, E.SCREW_Z), xytext=(-E.OUT_W / 2 - 7, E.SCREW_Z + 2.8),
                 fontsize=7, arrowprops=dict(arrowstyle="->", lw=0.6))
     ax.set_xlim(-E.OUT_W / 2 - 9, -E.OUT_W / 2 + 9); ax.set_ylim(E.DEPTH + 1, -1)
