@@ -163,10 +163,47 @@ def TP(ref, net, x, y, r, text="tp"):
 
 
 G = 2.54
+_BLOCKS = []
+
+
+def _block(name):
+    """Start of a functional block: later _place_blocks() can move it as a unit."""
+    _BLOCKS.append((name, len(PARTS), len(WIRES), len(LABELS), len(NCS)))
+
+
+# A2 sheet layout: each block moves as a unit so that blocks that share nets sit next to each other and can be
+# joined with short wires (sch_route.py) instead of net labels.  A, B, C stay where they were drawn.
+BLOCK_OFFSET = {"D": (80.01, 39.37), "I": (147.32, -73.66), "H": (52.07, 46.99), "F": (59.69, 110.49),
+                "J": (100.33, 107.95)}
+TEXT_BLOCK = {"FDC1004 option": "H", "USB-C flash tab": "I", "TMP117 water": "F", "ESP32-S3-MINI-1": "D",
+              "Level ladder": "D", "Motion, piezo": "J"}
+
+
+def _place_blocks():
+    for name, ((p0, w0, l0, n0), (p1, w1, l1, n1)) in _block_ranges().items():
+        dx, dy = BLOCK_OFFSET.get(name, (0, 0))
+        if not (dx or dy):
+            continue
+        for p in PARTS[p0:p1]:
+            p["x"] = q(p["x"] + dx); p["y"] = q(p["y"] + dy)
+        WIRES[w0:w1] = [((q(a[0] + dx), q(a[1] + dy)), (q(b[0] + dx), q(b[1] + dy))) for a, b in WIRES[w0:w1]]
+        LABELS[l0:l1] = [(nm, q(x + dx), q(y + dy), an) for nm, x, y, an in LABELS[l0:l1]]
+        NCS[n0:n1] = [(q(x + dx), q(y + dy)) for x, y in NCS[n0:n1]]
+    for k, (t, x, y) in enumerate(TEXTS):
+        b = next((v for pre, v in TEXT_BLOCK.items() if t.startswith(pre)), None)
+        if b:
+            dx, dy = BLOCK_OFFSET.get(b, (0, 0))
+            TEXTS[k] = (t, q(x + dx), q(y + dy))
+
+
+def _block_ranges():
+    ends = _BLOCKS[1:] + [(None, len(PARTS), len(WIRES), len(LABELS), len(NCS))]
+    return {b[0]: (b[1:], e[1:]) for b, e in zip(_BLOCKS, ends)}
 
 # ===========================================================================
 # A. Qi receiver + charger
 # ===========================================================================
+_block("A")
 UX, UY = 101.6, 76.2
 P("U2", "Battery_Management:BQ51050BRHL", "BQ51050BRHLR", "Package_DFN_QFN:Texas_VQFN-RHL-20",
   UX, UY, 0, {"1": "GND", "20": "GND", "21": "GND", "2": "AC1", "19": "AC2", "3": "BOOT1", "17": "BOOT2",
@@ -246,6 +283,7 @@ C("C22", C100N, 137.16, BAT_Y + 3.81, 0, "VBAT", "GND"); GND(*pin("C22", "2"))
 # ===========================================================================
 # B. Qi-present wake detector
 # ===========================================================================
+_block("B")
 R("R4", R1M, 157.48, 107.95, 0, "RECT", "QI_GATE")
 R("R5", R1M, 157.48, 115.57, 0, "QI_GATE", "GND"); GND(*pin("R5", "2"))
 P("Q1", "Transistor_FET:BSS138", "BSS138", "Package_TO_SOT_SMD:SOT-23", 180.34, 111.76, 0,
@@ -257,6 +295,7 @@ W(pin("Q1", "3"), pin("R6", "2"), (190.5, 101.6)); LBL("QI_DET_N", 190.5, 101.6,
 # ===========================================================================
 # C. 3.3 V LDO
 # ===========================================================================
+_block("C")
 P("U4", "Regulator_Linear:XC6220B331MR", "XC6220B331MR", "Package_TO_SOT_SMD:SOT-23-5", 193.04, BAT_Y + 2.54, 0,
   {"1": "VBAT", "3": "VBAT", "2": "GND", "5": "+3V3"}, text=((0, -10.16, None), (0, -7.62, None)), Note="1 A, 8 uA Iq. Alt: RT9080-33GJ5")
 W(pin("U2", "4"), pin("U4", "1"))
@@ -276,6 +315,7 @@ W(pin("R7", "2"), (246.38, 58.42), pin("C16", "1"), (254.0, 58.42)); LBL("VBAT_S
 # ===========================================================================
 # F. TMP117
 # ===========================================================================
+_block("F")
 P("U3", "Sensor_Temperature:TMP117xxDRV", "TMP117AIDRVR", "Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm",
   203.2, 152.4, 0, {"5": "SENSE_3V3", "2": "GND", "1": "SCL", "6": "SDA", "4": "GND"}, text=((3.0, -8.0, "left"), (3.0, 13.5, "left")),
   MPN="TMP117AIDRVR", Note="I2C 0x48, on isolated PCB tongue; powered from GPIO12 only while measuring")
@@ -295,6 +335,7 @@ PWR("FLAG", 198.12, RAIL)
 # ===========================================================================
 # D. ESP32-S3 + E. level ladder
 # ===========================================================================
+_block("D")
 MX, MY = 317.5, 114.3
 U1 = {"1": "GND", "2": "GND", "3": "+3V3", "45": "EN", "4": "IO0",
       "5": "TOUCH1", "6": "TOUCH2", "7": "TOUCH3", "8": "TOUCH4", "9": "TOUCH5", "10": "TOUCH6",
@@ -358,11 +399,17 @@ for num, net in [("25", "ACC_INT"), ("20", "BUZ_A"), ("21", "BUZ_B")]:
 used = set(U1) | {"36"}
 NC("U1", *[n for n in pins_of(load_symbol("MCU_Espressif:ESP32-S3-MINI-1")) if n not in used])
 
+# the same electrode / shield nets, labelled on the ladder side
+for i, net, ang in [(1, "PAD1", 90), (5, "PAD5", 90), (6, "PAD6", 90), (7, "PAD_REF", 270)]:
+    LBL(net, 246.38, 116.84 + 7.62 * (i - 1), ang)
+LBL("SHIELD", 289.56, SH_Y, 90)
+
 # ===========================================================================
 # H. FDC1004 option: differential / ratiometric capacitance-to-digital converter
 #    CIN1 = PAD1 (reference liquid), CIN2 = PAD5, CIN3 = PAD6 (alarm region), CIN4 = REF (reference
 #    environment); SHLD1 drives the same shield. 0R links select it per board (see docs/sensing-options.md).
 # ===========================================================================
+_block("H")
 FX, FY = 279.4, 220.98
 P("U5", "BathMonitor:FDC1004DGS", "FDC1004DGSR", "Package_SO:VSSOP-10_3x3mm_P0.5mm", FX, FY, 0,
   {"1": "FDC_SHLD", "2": "FDC_CIN1", "3": "FDC_CIN2", "4": "FDC_CIN3", "5": "FDC_CIN4", "6": None,
@@ -386,16 +433,13 @@ W(pin("U5", "8"), (FX, FY - 22.86), (FX + 25.4, FY - 22.86)); LBL("SENSE_3V3", F
 for ref, val, dx in [("C24", C100N, 7.62), ("C25", C1U, 17.78)]:
     C(ref, val, FX + dx, FY - 19.05, 0, "SENSE_3V3", "GND"); GND(*pin(ref, "2"))
 GND(*pin("U5", "7"))
-# the same electrode / shield nets, labelled on the ladder side
-for i, net, ang in [(1, "PAD1", 90), (5, "PAD5", 90), (6, "PAD6", 90), (7, "PAD_REF", 270)]:
-    LBL(net, 246.38, 116.84 + 7.62 * (i - 1), ang)
-LBL("SHIELD", 289.56, SH_Y, 90)
 
 # ===========================================================================
 # I. Flash tab: USB-C socket + its own 3.3 V LDO on a break-off tab (mouse bites).
 #    Plug a USB-C cable into a computer and run `idf.py flash`: no battery, no buttons. Snap off afterwards.
 #    Rd = 2 x 10k in parallel = 5k on each CC pin (USB-C sink, 5.1k +-20 %), reusing the 10k value.
 # ===========================================================================
+_block("I")
 JX, JY = 330.2, 224.79
 P("J2", "Connector:USB_C_Receptacle_USB2.0_16P", "USB-C", "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12", JX, JY, 0,
   {"A4": "TAB_VBUS", "A9": "TAB_VBUS", "B4": "TAB_VBUS", "B9": "TAB_VBUS", "A1": "GND", "A12": "GND", "B1": "GND",
@@ -447,6 +491,7 @@ TEXTS += [
 #    The rail is a GPIO, so the firmware limits the LED to 5 mA per colour and holds it steady while the FDC1004
 #    converts.
 # ===========================================================================
+_block("J")
 def stub(ref, num, net, n=1):
     """Short wire out of a pin, ending in a label or power symbol."""
     p = next(p for p in PARTS if p["ref"] == ref)
@@ -541,6 +586,10 @@ def field_layout(p, sym):
 
 
 def main():
+    _place_blocks()
+    import sch_route
+    n, kept = sch_route.route(sys.modules[__name__])
+    print(f"schematic router: {n} connections drawn as wires, labels kept for: {', '.join(kept) or 'none'}")
     lib_symbols, items, pts = {}, [], []
     for p in PARTS:
         if p["lib"] not in lib_symbols:
@@ -603,7 +652,7 @@ def main():
         items.append([Sym("text"), t, [Sym("at"), x, y, 0], eff(size=2.0, justify="left bottom"), [Sym("uuid"), uid("t", t)]])
 
     sch = [Sym("kicad_sch"), [Sym("version"), 20230121], [Sym("generator"), Sym("eeschema")],
-           [Sym("uuid"), ROOT], [Sym("paper"), "A3"],
+           [Sym("uuid"), ROOT], [Sym("paper"), "A2"],
            [Sym("title_block"), [Sym("title"), "Bath Monitor"], [Sym("date"), "2026-11-22"], [Sym("rev"), "C"],
             [Sym("comment"), 1, "Generated by hardware/tools/gen_schematic.py - edit the script, not this file"]],
            [Sym("lib_symbols")] + list(lib_symbols.values())] + items + \
