@@ -201,7 +201,7 @@ pack([f"TP{i}" for i in range(1, 9)], 7.4, 23.9, 26.3, 29.4, gap=0.2)
 # FDC1004 option: on the back just below the electronics band, right of the hand-routed lanes
 pack(["U5", "C24", "C25", "R22", "R23", "R24", "R25", "R26"], 23.6, 30.2, 37.4, 35.8, gap=0.3)
 # USB-C flash tab: socket mouth on the tab's outer edge, LDO + CC resistors beside it
-place("J2", fx1 - 3.9, (fy0 + fy1) / 2, 270)
+place("J2", fx1 - 3.14, (fy0 + fy1) / 2, 270)   # HRO drawing: PCB edge 5.79 mm in front of the peg holes, so the shell overhangs ~0.5 mm
 pack(["U6", "C26", "C27", "R27", "R28", "R29", "R30"], fx0 + 0.6, fy0 + 0.6, fx0 + 5.1, fy1 - 0.6, gap=0.3)
 # thermal tab
 place("U3", 19.0, 107.0, 90)
