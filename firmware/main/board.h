@@ -15,7 +15,7 @@ static const touch_pad_t SENSE_CH[N_SENSE_PADS] = {
 #define PIN_VBAT_SENSE   GPIO_NUM_9       // ADC1_CH8, 1M/1M divider
 #define PIN_SDA          GPIO_NUM_10
 #define PIN_SCL          GPIO_NUM_11
-#define PIN_SENSE_PWR    GPIO_NUM_12      // powers TMP117, FDC1004, SHTC3, AW2013 + RGB LED, I2C pull-ups
+#define PIN_SENSE_PWR    GPIO_NUM_12      // powers TMP117, FDC1004, AW2013 + RGB LED, I2C pull-ups
 #define PIN_QI_DET_N     GPIO_NUM_13      // low while on a Qi pad (RTC GPIO, ext1 wake)
 #define PIN_CHG_N        GPIO_NUM_40      // BQ51050B CHG, open drain, low while charging
 #define PIN_ACC_INT      GPIO_NUM_21      // LIS2DW12 INT1, active low push-pull (RTC GPIO, ext1 wake)
@@ -24,7 +24,6 @@ static const touch_pad_t SENSE_CH[N_SENSE_PADS] = {
 
 #define TMP117_ADDR      0x48
 #define LIS2DW12_ADDR    0x19             // SA0 tied high (no pull-up current)
-#define SHTC3_ADDR       0x70
 #define AW2013_ADDR      0x45
 
 // geometry (mm) - see docs/placement-and-electrodes.md

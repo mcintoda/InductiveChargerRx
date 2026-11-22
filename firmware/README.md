@@ -67,8 +67,5 @@ the phone is in another room or the Wi-Fi is down.
 Other checks:
 - **Tilt.** At the start of each bath brim learns which way is "up" in its bracket. If it is tilted more than
   30° for 20 s while the bath is filling, the phone gets "brim is tilted".
-- **Moisture in the case.** The SHTC3 measures the air inside the sealed case at every wake. Absolute humidity in a
-  sealed case stays flat as the bath warms it. A rise of more than 3 g/m³, or RH above 90 %, on 3 readings in a row
-  sends "Moisture inside brim" (at most once a day). Open it, dry it and check the O-ring.
 - The piezo tone defaults to 4 kHz (`BUZ_HZ` in `buzzer.c`). Tune it to the loudest frequency of the disc once it
   is bonded into the plug.

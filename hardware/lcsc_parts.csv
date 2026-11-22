@@ -22,7 +22,6 @@ FDC1004DGSR,C2865994,confirmed,TI FDC1004DGSR VSSOP-10 (LCSC); option - see docs
 0R,C17168,confirmed,UNI-ROYAL 0402WGF0000TCE; 0402 0 ohm jumper basic (widely used number); FDC1004 links R22-R26
 USB-C,C165948,confirmed,Korean Hroparts TYPE-C-31-M-12 16P USB 2.0 right-angle SMD receptacle; on the break-off flash tab
 LIS2DW12TR,C189624,confirmed,ST LIS2DW12TR LGA-12 2x2; JLC extended (JLC stock checked 2026-11-22)
-SHTC3,C194656,confirmed,Sensirion SHTC3-TR-2.5KS DFN-4 2x2; JLC extended
 AW2013DNR,C252440,confirmed,AWINIC AW2013DNR DFN-10 2x2 I2C RGB LED driver; JLC extended
 RGB,C965840,confirmed,XINGLIGHT XL-1615RGBC-RF common-anode RGB LED 1.6x1.5
 Piezo 20mm,,hand,"20 mm piezo disc with leads (e.g. Murata 7BB-20-6L0), bonded inside the plug - hand-wired to BZ1"

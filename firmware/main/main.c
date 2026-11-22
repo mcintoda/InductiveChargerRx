@@ -8,7 +8,7 @@
 //
 // On the device itself (rev C): RGB status LED, piezo sounder for local alarms (works without Wi-Fi),
 // double-tap on the case = acknowledge the alarm, LIS2DW12 wakes on motion (tap / pick up -> battery colour)
-// and flags a tilted / fallen device during a bath, SHTC3 inside the case warns of a leaking seal.
+// and flags a tilted / fallen device during a bath.
 //
 // Level sensing (settings page, docs/sensing-options.md):
 //   fdc      FDC1004 on PAD1 / PAD5 / PAD6 / REF (alarm region 40..60 mm only) (default)
@@ -22,7 +22,6 @@
 #include "accel.h"
 #include "board.h"
 #include "buzzer.h"
-#include "caseair.h"
 #include "driver/usb_serial_jtag.h"
 #include "esp_log.h"
 #include "fdc1004.h"
@@ -41,7 +40,6 @@
 #include "sensor_bus.h"
 #include "sense_touch.h"
 #include "settings.h"
-#include "shtc3.h"
 #include "status.h"
 #include "tilt.h"
 #include "tmp117.h"
@@ -57,7 +55,6 @@ static RTC_DATA_ATTR fdc_cal_t s_fdc;
 static RTC_DATA_ATTR fdc_state_t s_fdc_st;      // CAPDAC per channel
 static RTC_DATA_ATTR bool s_fdc_probed, s_fdc_fitted;
 static RTC_DATA_ATTR bool s_acc_probed, s_acc_fitted;
-static RTC_DATA_ATTR caseair_t s_air;
 static RTC_DATA_ATTR tilt_t s_tilt;
 static bool s_rail_held;                       // sensor rail kept on while awake (FDC fitted)
 
@@ -159,20 +156,6 @@ static void notify_text(const char *title, const char *msg, int prio, const char
     if (settings_provisioned(&s_set)) send(&o);
 }
 
-// humidity inside the sealed case: a rising absolute humidity means the seal lets water in
-static void check_case_air(void)
-{
-    float t, rh;
-    if (shtc3_read(&t, &rh) != ESP_OK) return;
-    ESP_LOGI(TAG, "case air %.1f C %.0f %%RH (%.1f g/m3)", t, rh, caseair_abs_humidity(t, rh));
-    if (caseair_update(&s_air, t, rh, (float)(now_s() - 1.7e9))) {
-        char m[160];
-        snprintf(m, sizeof(m), "Humidity inside brim is %.0f %% - the seal may be letting water in. "
-                 "Open it, dry it and check the O-ring before the next bath.", rh);
-        status_flash(255, 80, 0, 3, 200);
-        notify_text("Moisture inside brim", m, 4, "droplet,warning");
-    }
-}
 
 // ---------------- charger ----------------
 static bool factory_reset_gesture(void)
@@ -373,7 +356,6 @@ void app_main(void)
         if (net_provision(&s_set, 15 * 60 * 1000)) esp_restart();
         sleep_now(false, 0);
     }
-    check_case_air();
     // moved or tapped while asleep: show the battery, then straight back to sleep unless a bath is running
     if (cause == ESP_SLEEP_WAKEUP_EXT1 && s_acc_fitted && (esp_sleep_get_ext1_wakeup_status() & (1ULL << PIN_ACC_INT))) {
         accel_events();

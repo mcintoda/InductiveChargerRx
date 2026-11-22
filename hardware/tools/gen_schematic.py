@@ -440,8 +440,8 @@ TEXTS += [
 
 
 # ===========================================================================
-# J. Motion, enclosure humidity, piezo sounder and the I2C RGB status LED.
-#    LIS2DW12 stays powered from +3V3 (~1 uA) so motion can wake the ESP32; SHTC3 and AW2013 live on the
+# J. Motion, piezo sounder and the I2C RGB status LED.
+#    LIS2DW12 stays powered from +3V3 (~1 uA) so motion can wake the ESP32; the AW2013 lives on the
 #    switched SENSE_3V3 rail with the other I2C parts, and so does the LED anode: the AW2013 sinks and the LED
 #    switch off together (an always-on anode would back-feed the unpowered AW2013 through its pin ESD diodes).
 #    The rail is a GPIO, so the firmware limits the LED to 5 mA per colour and holds it steady while the FDC1004
@@ -474,14 +474,6 @@ NC("U7", "11", "5")
 for ref, val, x in [("C28", C100N, 22.86), ("C29", C1U, 30.48)]:
     C(ref, val, x, KY - 20.32, 0, "+3V3", "GND"); stub(ref, "1", "+3V3"); stub(ref, "2", "GND")
 
-P("U8", "BathMonitor:SHTC3", "SHTC3", "Sensor_Humidity:Sensirion_DFN-4-1EP_2x2mm_P1mm_EP0.7x1.6mm", 81.28, KY, 0,
-  {"1": "SENSE_3V3", "2": "SCL", "3": "SDA", "4": "GND", "5": "GND"}, text=((-6.0, -10.5, "right"), (6.0, -10.5, "left")),
-  MPN="SHTC3-TR-2.5KS", Note="I2C 0x70: humidity inside the sealed case (seal-leak warning)")
-for num, net in [("1", "SENSE_3V3"), ("2", "SCL"), ("3", "SDA"), ("4", "GND")]:
-    stub("U8", num, net)
-stub("U8", "5", "GND", 2)
-C("C30", C100N, 93.98, KY - 15.24, 0, "SENSE_3V3", "GND"); stub("C30", "1", "SENSE_3V3"); stub("C30", "2", "GND")
-
 P("U9", "BathMonitor:AW2013", "AW2013DNR", "BathMonitor:DFN-10-1EP_2x2mm_P0.4mm_AW2013", 124.46, KY, 0,
   {"5": "SENSE_3V3", "9": "SDA", "10": "SCL", "4": None, "1": "LED_R", "2": "LED_G", "3": "LED_B",
    "6": None, "7": None, "8": None, "11": "GND"}, text=((-7.0, -13.0, "right"), (7.0, -13.0, "left")),
@@ -506,7 +498,7 @@ for num, net in [("1", "PIEZO_A"), ("2", "PIEZO_B")]:
 R("R31", R1K, 195.58, KY - 12.7, 90, "BUZ_A", "PIEZO_A"); stub("R31", "1", "BUZ_A"); stub("R31", "2", "PIEZO_A")
 R("R32", R1K, 195.58, KY + 12.7, 90, "BUZ_B", "PIEZO_B"); stub("R32", "1", "BUZ_B"); stub("R32", "2", "PIEZO_B")
 
-TEXTS += [("Motion, case humidity, piezo sounder, RGB status LED", 22.86, 200.66)]
+TEXTS += [("Motion, piezo sounder, RGB status LED", 22.86, 200.66)]
 
 # ===========================================================================
 # writer

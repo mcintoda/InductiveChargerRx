@@ -8,7 +8,6 @@
 #include "../main/level.h"
 #include "../main/policy.h"
 #include "../main/rate.h"
-#include "../main/caseair.h"
 #include "../main/tilt.h"
 
 static int fails, checks;
@@ -209,29 +208,6 @@ static void test_policy(void)
 }
 
 
-static void test_caseair(void)
-{
-    caseair_t c = {0};
-    // sealed case: 50 % RH at 22 C, warmed to 40 C by the bath. RH falls, absolute humidity stays: no alert
-    float ah = caseair_abs_humidity(22, 50);
-    CHECK(fabsf(ah - 9.7f) < 0.3f, "absolute humidity at 22 C / 50 %% = %.2f g/m3 (expected ~9.7)", ah);
-    int alerts = 0;
-    for (int i = 0; i < 200; i++) {
-        float t = 22 + 18 * (i % 40) / 40.0f;                  // temperature cycling with each bath
-        float es22 = 6.112f * expf(17.62f * 22 / (243.12f + 22)), es = 6.112f * expf(17.62f * t / (243.12f + t));
-        float rh = 50 * es22 / es * (273.15f + t) / (273.15f + 22);   // same vapour content
-        alerts += caseair_update(&c, t, rh, i * 600.0f);
-    }
-    CHECK(alerts == 0, "sealed case flagged %d times", alerts);
-    // a leak: water inside, RH goes to 95 % at 35 C -> one alert after CASEAIR_CONFIRM readings, none again soon
-    int first = -1; alerts = 0;
-    for (int i = 0; i < 20; i++) {
-        if (caseair_update(&c, 35, 95, 200 * 600.0f + i * 600.0f)) { alerts++; if (first < 0) first = i; }
-    }
-    CHECK(alerts == 1 && first == CASEAIR_CONFIRM - 1, "leak: %d alerts, first at reading %d", alerts, first);
-    printf("  case air: sealed case quiet over 200 readings, leak flagged after %d readings\n", first + 1);
-}
-
 static void test_tilt(void)
 {
     tilt_t t = {0};
@@ -273,7 +249,6 @@ int main(void)
     printf("fdc1004\n"); test_fdc();
     printf("rate\n"); test_rate();
     printf("policy\n"); test_policy(); test_policy_ack();
-    printf("case air\n"); test_caseair();
     printf("tilt\n"); test_tilt();
     printf("%d/%d checks passed\n", checks - fails, checks);
     return fails ? 1 : 0;

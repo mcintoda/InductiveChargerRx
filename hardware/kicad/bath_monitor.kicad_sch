@@ -5153,163 +5153,6 @@
         )
       )
     )
-    (symbol "BathMonitor:SHTC3"
-      (pin_names
-        (offset 1.016)
-      )
-      (in_bom yes)
-      (on_board yes)
-      (property "Reference" "U"
-        (at -5.08 8.89 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-          )
-          (justify left)
-        )
-      )
-      (property "Value" "SHTC3"
-        (at 2.54 8.89 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-          )
-          (justify left)
-        )
-      )
-      (property "Footprint" "Sensor_Humidity:Sensirion_DFN-4-1EP_2x2mm_P1mm_EP0.7x1.6mm"
-        (at 0 0 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-          )
-          hide
-        )
-      )
-      (property "Datasheet" "https://sensirion.com/products/catalog/SHTC3"
-        (at 0 0 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-          )
-          hide
-        )
-      )
-      (property "ki_description" "Humidity and temperature sensor, +/-2 %RH, I2C 0x70, 1.62-3.6 V, DFN-4 2x2 (pin 5 = exposed pad, VSS)"
-        (at 0 0 0)
-        (effects
-          (font
-            (size 1.27 1.27)
-          )
-          hide
-        )
-      )
-      (symbol "SHTC3_0_1"
-        (rectangle
-          (start -5.08 7.62)
-          (end 5.08 -7.62)
-          (stroke
-            (width 0.254)
-            (type default)
-          )
-          (fill
-            (type background)
-          )
-        )
-      )
-      (symbol "SHTC3_1_1"
-        (pin power_in line
-          (at 0 10.16 270)
-          (length 2.54)
-          (name "VDD"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-          (number "1"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-        )
-        (pin input line
-          (at -7.62 0 0)
-          (length 2.54)
-          (name "SCL"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-          (number "2"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-        )
-        (pin bidirectional line
-          (at -7.62 2.54 0)
-          (length 2.54)
-          (name "SDA"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-          (number "3"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-        )
-        (pin power_in line
-          (at -1.27 -10.16 90)
-          (length 2.54)
-          (name "VSS"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-          (number "4"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-        )
-        (pin passive line
-          (at 1.27 -10.16 90)
-          (length 2.54)
-          (name "EP"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-          (number "5"
-            (effects
-              (font
-                (size 1.27 1.27)
-              )
-            )
-          )
-        )
-      )
-    )
     (symbol "BathMonitor:AW2013"
       (pin_names
         (offset 1.016)
@@ -15343,325 +15186,6 @@
     )
   )
   (symbol
-    (lib_id "BathMonitor:SHTC3")
-    (at 81.28 228.6 0)
-    (unit 1)
-    (in_bom yes)
-    (on_board yes)
-    (dnp no)
-    (uuid "4e238a14-8f48-5724-867f-c04a2b96e87c")
-    (property "Reference" "U8"
-      (at 75.28 218.1 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        (justify right)
-      )
-    )
-    (property "Value" "SHTC3"
-      (at 87.28 218.1 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        (justify left)
-      )
-    )
-    (property "Footprint" "Sensor_Humidity:Sensirion_DFN-4-1EP_2x2mm_P1mm_EP0.7x1.6mm"
-      (at 81.28 228.6 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 81.28 228.6 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "MPN" "SHTC3-TR-2.5KS"
-      (at 81.28 228.6 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Note" "I2C 0x70: humidity inside the sealed case (seal-leak warning)"
-      (at 81.28 228.6 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "9e793261-31d8-5438-9aa5-4bff888fcfe2")
-    )
-    (pin "2"
-      (uuid "98854bb3-5caf-56cf-bb7a-7f088d70f094")
-    )
-    (pin "3"
-      (uuid "b86d51bf-4878-563e-a0f9-2239adf7976a")
-    )
-    (pin "4"
-      (uuid "e2abe806-23c0-5432-b11e-fb23a6362bab")
-    )
-    (pin "5"
-      (uuid "0bcfb5fb-3c2b-53c1-8b43-dd4a96600660")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "U8")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
-    (lib_id "power:GND")
-    (at 80.01 241.3 0)
-    (unit 1)
-    (in_bom no)
-    (on_board no)
-    (dnp no)
-    (uuid "f1a0195f-04e8-522d-9f76-74ea571160ee")
-    (property "Reference" "#PWR061"
-      (at 80.01 241.3 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Value" "GND"
-      (at 80.01 244.9 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-      )
-    )
-    (property "Footprint" ""
-      (at 80.01 241.3 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 80.01 241.3 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "90958202-b9e3-53dd-836a-b4e02425215f")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR061")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
-    (lib_id "power:GND")
-    (at 82.55 243.84 0)
-    (unit 1)
-    (in_bom no)
-    (on_board no)
-    (dnp no)
-    (uuid "1906c5bc-e4c6-598f-9594-1d46adeedffe")
-    (property "Reference" "#PWR062"
-      (at 82.55 243.84 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Value" "GND"
-      (at 82.55 247.44 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-      )
-    )
-    (property "Footprint" ""
-      (at 82.55 243.84 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 82.55 243.84 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "5e116fc5-c485-5b49-ad2d-adeff2810ae4")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR062")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
-    (lib_id "Device:C")
-    (at 93.98 213.36 0)
-    (unit 1)
-    (in_bom yes)
-    (on_board yes)
-    (dnp no)
-    (uuid "bf69bfcc-6439-5f3c-adbc-0c880e263135")
-    (property "Reference" "C30"
-      (at 96.52 212.09 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        (justify left)
-      )
-    )
-    (property "Value" "100nF"
-      (at 96.52 214.63 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        (justify left)
-      )
-    )
-    (property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-      (at 93.98 213.36 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 93.98 213.36 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Rating" "50V X7R"
-      (at 93.98 213.36 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "bcf139cf-5ec0-56b1-9378-91ba66a71d42")
-    )
-    (pin "2"
-      (uuid "9030cc8d-404e-53fa-afff-7ca2ea2cf81a")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "C30")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
-    (lib_id "power:GND")
-    (at 93.98 219.71 0)
-    (unit 1)
-    (in_bom no)
-    (on_board no)
-    (dnp no)
-    (uuid "b10daa0f-379d-5763-8fc2-d700e3c435d3")
-    (property "Reference" "#PWR063"
-      (at 93.98 219.71 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Value" "GND"
-      (at 93.98 223.31 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-      )
-    )
-    (property "Footprint" ""
-      (at 93.98 219.71 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (property "Datasheet" "~"
-      (at 93.98 219.71 0)
-      (effects
-        (font
-          (size 1.27 1.27)
-        )
-        hide
-      )
-    )
-    (pin "1"
-      (uuid "99845331-406c-5ade-b0a1-b0499cb494a4")
-    )
-    (instances
-      (project "bath_monitor"
-        (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR063")
-          (unit 1)
-        )
-      )
-    )
-  )
-  (symbol
     (lib_id "BathMonitor:AW2013")
     (at 124.46 228.6 0)
     (unit 1)
@@ -15772,8 +15296,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "a5714e04-140f-5d11-b8b8-40e43898e608")
-    (property "Reference" "#PWR064"
+    (uuid "f1a0195f-04e8-522d-9f76-74ea571160ee")
+    (property "Reference" "#PWR061"
       (at 124.46 243.84 0)
       (effects
         (font
@@ -15809,12 +15333,12 @@
       )
     )
     (pin "1"
-      (uuid "04d46282-dbc5-5825-8efc-24a3493165ff")
+      (uuid "90958202-b9e3-53dd-836a-b4e02425215f")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR064")
+          (reference "#PWR061")
           (unit 1)
         )
       )
@@ -15895,8 +15419,8 @@
     (in_bom no)
     (on_board no)
     (dnp no)
-    (uuid "13b1d34f-00f0-50fe-851f-466aaed4c273")
-    (property "Reference" "#PWR065"
+    (uuid "1906c5bc-e4c6-598f-9594-1d46adeedffe")
+    (property "Reference" "#PWR062"
       (at 137.16 219.71 0)
       (effects
         (font
@@ -15932,12 +15456,12 @@
       )
     )
     (pin "1"
-      (uuid "0ee3c14b-1abe-59fd-b9f6-3a73d3c4ab0e")
+      (uuid "5e116fc5-c485-5b49-ad2d-adeff2810ae4")
     )
     (instances
       (project "bath_monitor"
         (path "/4370ec4f-8414-5150-9ebe-449f3b20150f"
-          (reference "#PWR065")
+          (reference "#PWR062")
           (unit 1)
         )
       )
@@ -18615,83 +18139,6 @@
   )
   (wire
     (pts
-      (xy 81.28 218.44)
-      (xy 81.28 215.9)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "056ebc32-86e6-5f53-bd23-158c2147ab2a")
-  )
-  (wire
-    (pts
-      (xy 73.66 228.6)
-      (xy 71.12 228.6)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "51ff86e3-0121-598f-8c46-a20fd4c3aefe")
-  )
-  (wire
-    (pts
-      (xy 73.66 226.06)
-      (xy 71.12 226.06)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "864ee4f6-4c9b-5b3f-97f8-bbd8d6a29921")
-  )
-  (wire
-    (pts
-      (xy 80.01 238.76)
-      (xy 80.01 241.3)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "9bf6b5f4-a9b8-524b-a656-f69563a33e19")
-  )
-  (wire
-    (pts
-      (xy 82.55 238.76)
-      (xy 82.55 243.84)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "99308376-330e-57a3-934a-e365b077bc68")
-  )
-  (wire
-    (pts
-      (xy 93.98 209.55)
-      (xy 93.98 207.01)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "bee0e849-e671-5e9d-92c2-3750f8437e1d")
-  )
-  (wire
-    (pts
-      (xy 93.98 217.17)
-      (xy 93.98 219.71)
-    )
-    (stroke
-      (width 0)
-      (type default)
-    )
-    (uuid "cabb91c3-2b02-55a8-b290-4cf92f1d0d1c")
-  )
-  (wire
-    (pts
       (xy 124.46 215.9)
       (xy 124.46 213.36)
     )
@@ -18699,7 +18146,7 @@
       (width 0)
       (type default)
     )
-    (uuid "7345b457-74b1-5e1b-ad97-acbb2272a86d")
+    (uuid "13888d81-b991-523b-bb3b-7aac38ca9a63")
   )
   (wire
     (pts
@@ -18710,7 +18157,7 @@
       (width 0)
       (type default)
     )
-    (uuid "43cc814b-8e6f-52ec-8542-21cce8a1314e")
+    (uuid "6c812812-391f-52f0-bded-0688ed4e6d77")
   )
   (wire
     (pts
@@ -18721,7 +18168,7 @@
       (width 0)
       (type default)
     )
-    (uuid "5a82a4f5-b7b5-5993-8cc4-09a88fece52c")
+    (uuid "18d682c8-7649-57aa-b24e-ceb2fa499d75")
   )
   (wire
     (pts
@@ -18732,7 +18179,7 @@
       (width 0)
       (type default)
     )
-    (uuid "eb20f5cf-54db-5ae0-acb0-3ed15dc0d748")
+    (uuid "c8769535-fba1-5895-a3e5-195c18226977")
   )
   (wire
     (pts
@@ -18743,7 +18190,7 @@
       (width 0)
       (type default)
     )
-    (uuid "63a5b682-3795-5255-883d-c6b42b74378c")
+    (uuid "5e638803-723d-589a-905a-5a48dcf99751")
   )
   (wire
     (pts
@@ -18754,7 +18201,7 @@
       (width 0)
       (type default)
     )
-    (uuid "cb34ec46-6175-55a6-8469-421f9868c093")
+    (uuid "264005eb-c26d-54f0-8003-3772cbd72113")
   )
   (wire
     (pts
@@ -18765,7 +18212,7 @@
       (width 0)
       (type default)
     )
-    (uuid "972f45cf-7ef7-5c44-a0b6-d937deb29b73")
+    (uuid "88784914-a73d-5e33-98fa-8a169b9fc4c6")
   )
   (wire
     (pts
@@ -18776,7 +18223,7 @@
       (width 0)
       (type default)
     )
-    (uuid "b36b38c8-0b8e-5726-ba43-e573cd1752ce")
+    (uuid "90dc5b7e-4f80-5b8a-8268-08a1f711407f")
   )
   (wire
     (pts
@@ -18787,7 +18234,7 @@
       (width 0)
       (type default)
     )
-    (uuid "b38d70a0-bad1-5064-86a2-baa555761396")
+    (uuid "91d14ec5-6773-52da-939e-fb06e6bf271d")
   )
   (wire
     (pts
@@ -18798,7 +18245,7 @@
       (width 0)
       (type default)
     )
-    (uuid "027850f0-a74b-52f4-b855-78053d41b358")
+    (uuid "8a352b1c-0b33-56c8-a54d-62a4f3c86a17")
   )
   (wire
     (pts
@@ -18809,7 +18256,7 @@
       (width 0)
       (type default)
     )
-    (uuid "4005cb07-8024-5c54-9a1d-9aadf20a3d38")
+    (uuid "e2ffeacf-be47-572e-80f7-592d6f8d2fdd")
   )
   (wire
     (pts
@@ -18820,7 +18267,7 @@
       (width 0)
       (type default)
     )
-    (uuid "4bcbcc34-10eb-5596-897c-853984219660")
+    (uuid "b732921d-2210-5872-8313-f44333da31df")
   )
   (wire
     (pts
@@ -18831,7 +18278,7 @@
       (width 0)
       (type default)
     )
-    (uuid "f4b21be0-76be-5fa3-8e67-c19fb4aa32b5")
+    (uuid "54b099b0-ce91-5c38-8d0a-654c536fb095")
   )
   (wire
     (pts
@@ -18842,7 +18289,7 @@
       (width 0)
       (type default)
     )
-    (uuid "1e520f7b-4314-5b91-bd23-5ba2054e8d44")
+    (uuid "783abf6b-2a77-5f72-9f47-a86959d2354f")
   )
   (wire
     (pts
@@ -18853,7 +18300,7 @@
       (width 0)
       (type default)
     )
-    (uuid "737dc979-5212-56cb-bc76-96924767479e")
+    (uuid "ffcd1cd0-53f8-56ba-af38-2e9004e3ed30")
   )
   (wire
     (pts
@@ -18864,7 +18311,7 @@
       (width 0)
       (type default)
     )
-    (uuid "cb2674e6-74bb-571d-8302-74c71f2ea38f")
+    (uuid "bb30ac2d-52ea-512f-8d4c-a5645e0bc8b3")
   )
   (wire
     (pts
@@ -18875,7 +18322,7 @@
       (width 0)
       (type default)
     )
-    (uuid "24c5760a-84cf-505f-9fd9-1df278bda5dd")
+    (uuid "4adc3ee2-f135-514e-b202-ac37e608aacb")
   )
   (wire
     (pts
@@ -18886,7 +18333,7 @@
       (width 0)
       (type default)
     )
-    (uuid "42858cd7-52cf-58a1-b5a6-4d3e6137ebe6")
+    (uuid "e8656594-657d-5f05-aa32-0825f058a3fd")
   )
   (wire
     (pts
@@ -18897,7 +18344,7 @@
       (width 0)
       (type default)
     )
-    (uuid "aa4812c9-efcc-593c-931c-892442140d80")
+    (uuid "aaa372b8-9bf3-507c-8d32-2ba58791b2f9")
   )
   (junction
     (at 33.02 60.96)
@@ -19609,50 +19056,6 @@
     (uuid "7a9ebfe9-1fa4-5d6b-92af-9dc05dd02683")
   )
   (label "SENSE_3V3"
-    (at 81.28 215.9 90)
-    (fields_autoplaced)
-    (effects
-      (font
-        (size 1.27 1.27)
-      )
-      (justify left bottom)
-    )
-    (uuid "3ef411f6-f49a-570a-a96c-0036c5e875f6")
-  )
-  (label "SCL"
-    (at 71.12 228.6 180)
-    (fields_autoplaced)
-    (effects
-      (font
-        (size 1.27 1.27)
-      )
-      (justify right bottom)
-    )
-    (uuid "6bf6af48-85fb-5fab-a0d4-f168455f4692")
-  )
-  (label "SDA"
-    (at 71.12 226.06 180)
-    (fields_autoplaced)
-    (effects
-      (font
-        (size 1.27 1.27)
-      )
-      (justify right bottom)
-    )
-    (uuid "fe84f86e-4be5-5ed4-aa65-44406da8eacb")
-  )
-  (label "SENSE_3V3"
-    (at 93.98 207.01 90)
-    (fields_autoplaced)
-    (effects
-      (font
-        (size 1.27 1.27)
-      )
-      (justify left bottom)
-    )
-    (uuid "d5fe7043-c491-52b6-a078-02447b830897")
-  )
-  (label "SENSE_3V3"
     (at 124.46 213.36 90)
     (fields_autoplaced)
     (effects
@@ -20057,7 +19460,7 @@
     )
     (uuid "4332da4e-83f5-5ef7-82dc-36d2a167ea15")
   )
-  (text "Motion, case humidity, piezo sounder, RGB status LED"
+  (text "Motion, piezo sounder, RGB status LED"
     (at 22.86 200.66 0)
     (effects
       (font
@@ -20065,7 +19468,7 @@
       )
       (justify left bottom)
     )
-    (uuid "11ee5425-eb05-5006-91ad-4a89f98613bc")
+    (uuid "0dd6fedc-4e83-5cbb-bcc0-6e9cc8da9968")
   )
   (sheet_instances
     (path "/"
