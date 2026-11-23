@@ -78,7 +78,62 @@ nav .btn { padding: 10px 16px; font-size: 14px; }
 .toast b { font-size: 14px; }
 .toast span { color: var(--muted); }
 @keyframes pop { from { transform: translateY(10px) scale(.96); opacity: .0; } to { transform: none; opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .water, .toast { animation: none; } }
+.wave { position: absolute; left: 0; top: -9px; width: 200%; height: 18px; animation: drift 9s linear infinite; }
+.wave path { fill: var(--water); }
+.wave.back { top: -12px; opacity: .55; animation-duration: 14s; animation-direction: reverse; }
+@keyframes drift { to { transform: translateX(-50%); } }
+.toast b.alarm { color: var(--alarm); }
+.toast.swap { animation: pop .45s cubic-bezier(.2,1.4,.4,1) both; }
+
+/* bath simulator */
+.sim { display: grid; gap: 14px; }
+.simfig { position: relative; background: var(--foam); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.simfig svg { width: 100%; height: auto; display: block; }
+.pad { fill: var(--line); transition: fill .35s; }
+.pad.wet { fill: var(--glass); }
+#led { transition: fill .2s; }
+#led.watch { fill: #3B6FD8; animation: blip 2s linear infinite; }
+#led.near { fill: #E8C93A; animation: breathe 1.6s ease-in-out infinite; }
+#led.full { fill: var(--alarm); animation: blink .35s steps(1) infinite; }
+#beep { opacity: 0; }
+#beep.on { animation: ring 1s ease-out infinite; }
+@keyframes blip { 0%, 10% { opacity: 1; } 14%, 100% { opacity: .15; } }
+@keyframes breathe { 50% { opacity: .3; } }
+@keyframes blink { 50% { opacity: .15; } }
+@keyframes ring { from { opacity: .8; transform: scale(.6); } to { opacity: 0; transform: scale(1.6); } }
+#beep { transform-box: fill-box; transform-origin: center; }
+.note { position: absolute; right: 12px; top: 12px; width: min(250px, 62%); background: var(--mist); border: 1px solid var(--line); border-radius: 14px;
+  padding: 10px 12px; font-size: 13px; display: grid; gap: 2px; box-shadow: 0 10px 24px rgba(20,40,50,.14); transition: border-color .3s; }
+.note b { font-size: 14px; }
+.note span { color: var(--muted); }
+.note.full { border-color: var(--alarm); }
+.note.full b { color: var(--alarm); }
+.note.pop { animation: pop .4s cubic-bezier(.2,1.4,.4,1) both; }
+.readout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.readout div { background: var(--foam); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; }
+.readout span { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.readout b { font: 600 20px var(--display); font-variant-numeric: tabular-nums; }
+.ctl { display: flex; align-items: center; gap: 12px; }
+.ctl .btn { padding: 10px 16px; font-size: 14px; flex: none; }
+.ctl input { flex: 1; min-width: 0; accent-color: var(--slate); }
+.ctl output { font: 500 14px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; min-width: 3.2em; text-align: right; }
+.timeline li { transition: opacity .3s; }
+.timeline.live li { opacity: .45; }
+.timeline.live li.on { opacity: 1; }
+.timeline li.on::before { background: var(--slate); }
+.timeline li.hot.on::before { background: var(--alarm); box-shadow: 0 0 0 5px color-mix(in srgb, var(--alarm) 25%, transparent); }
+
+/* scroll entrance: content is always visible; it only settles 18 px upward */
+.lift { transform: translateY(18px); }
+.settle { transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+.feat div, .steps li, details, .readout div { transition: transform .25s, background-color .25s; }
+.feat div:hover { background: color-mix(in srgb, var(--deep) 88%, var(--glass)); }
+.steps li:hover { transform: translateY(-3px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .water, .toast, .wave, .note.pop, #led, #beep.on { animation: none !important; }
+  .lift { transform: none; }
+}
 
 /* sections */
 section { padding-block: 88px; }
@@ -103,7 +158,7 @@ section { padding-block: 88px; }
 .feat .k { font: 500 13px var(--mono); color: var(--glass); }
 
 .ladder { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 48px; align-items: center; }
-.ladder svg { width: 100%; height: auto; max-width: 460px; }
+
 .timeline { display: grid; gap: 0; border-left: 2px solid var(--line); margin: 0; padding: 0; }
 .timeline li { list-style: none; position: relative; padding: 0 0 26px 24px; display: grid; gap: 4px; }
 .timeline li::before { content: ""; position: absolute; left: -7px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--mist); border: 2px solid var(--slate); }
@@ -146,6 +201,8 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
 @media (max-width: 860px) {
   nav ul { display: none; }
   .hero .in, .ladder, .specs, .join .in { grid-template-columns: 1fr; }
+  .readout b { font-size: 15px; }
+  .readout span { font-size: 10px; }
   .hero .copy { padding-bottom: 0; }
   .toast { left: 0; top: 0; }
   .steps, .feat { grid-template-columns: 1fr; }
@@ -186,12 +243,15 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
       </svg>
       <div class="toast" role="img" aria-label="Phone notification: Bath nearly full, about 2 minutes to go">
         <svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="var(--slate)"/><path d="M8 15 l9 5 l9 -5 l-9 -5z" fill="var(--on-slate)" opacity=".9"/><path d="M8 16 v4 l9 5 v-4z M26 16 v4 l-9 5 v-4z" fill="var(--on-slate)" opacity=".6"/></svg>
-        <b>Bath nearly full</b>
-        <span>About 2 min to go. Water 39.5&nbsp;°C.</span>
+        <b id="tt">Bath nearly full</b>
+        <span id="tm">About 2 min to go. Water 39.5&nbsp;°C.</span>
       </div>
     </div>
   </div>
-  <div class="water" aria-hidden="true"></div>
+  <div class="water" aria-hidden="true">
+    <svg class="wave back" viewBox="0 0 2880 18" preserveAspectRatio="none"><path d="M0 9 Q 90 0 180 9 T 360 9 T 540 9 T 720 9 T 900 9 T 1080 9 T 1260 9 T 1440 9 T 1620 9 T 1800 9 T 1980 9 T 2160 9 T 2340 9 T 2520 9 T 2700 9 T 2880 9 V 18 H 0 Z"/></svg>
+    <svg class="wave" viewBox="0 0 2880 18" preserveAspectRatio="none"><path d="M0 9 Q 90 0 180 9 T 360 9 T 540 9 T 720 9 T 900 9 T 1080 9 T 1260 9 T 1440 9 T 1620 9 T 1800 9 T 1980 9 T 2160 9 T 2340 9 T 2520 9 T 2700 9 T 2880 9 V 18 H 0 Z"/></svg>
+  </div>
   <span class="brimline" aria-hidden="true">your full line</span>
 </header>
 
@@ -222,21 +282,37 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
 
 <section>
   <div class="in ladder">
-    <svg viewBox="0 0 420 340" role="img" aria-label="Water level rising past six sensing pads toward the full line">
-      <rect x="140" y="20" width="140" height="300" rx="30" fill="var(--foam)" stroke="var(--line)" stroke-width="2"/>
-      <g fill="var(--line)"><rect x="166" y="96" width="88" height="30" rx="3"/><rect x="166" y="130" width="88" height="30" rx="3"/><rect x="166" y="164" width="88" height="30" rx="3"/><rect x="166" y="198" width="88" height="30" rx="3"/><rect x="166" y="232" width="88" height="30" rx="3"/><rect x="166" y="266" width="88" height="30" rx="3"/></g>
-      <rect x="0" y="180" width="420" height="160" fill="var(--water)" opacity=".75"/>
-      <line x1="0" y1="180" x2="420" y2="180" stroke="var(--glass)" stroke-width="2" stroke-dasharray="7 5"/>
-      <line x1="0" y1="96" x2="420" y2="96" stroke="var(--alarm)" stroke-width="1.5" stroke-dasharray="3 4"/>
-      <path d="M150 96 l10 -6 v12z M270 96 l-10 -6 v12z" fill="var(--alarm)"/>
-      <text x="8" y="88" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--alarm)">FULL LINE</text>
-      <text x="8" y="172" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--muted)">WATER NOW</text>
-      <text x="296" y="140" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--muted)">+1.8 cm/min</text>
-      <text x="296" y="156" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--muted)">≈ 2 min to full</text>
-    </svg>
+    <div class="sim">
+      <div class="simfig">
+        <svg viewBox="0 0 420 360" role="img" aria-label="Simulation: water rising past brim's six sensing pads toward the full line">
+          <rect x="140" y="20" width="140" height="340" rx="30" fill="var(--mist)" stroke="var(--line)" stroke-width="2"/>
+          <rect class="pad" data-k="1" x="166" y="268" width="88" height="30" rx="3"/><rect class="pad" data-k="2" x="166" y="234" width="88" height="30" rx="3"/><rect class="pad" data-k="3" x="166" y="200" width="88" height="30" rx="3"/><rect class="pad" data-k="4" x="166" y="166" width="88" height="30" rx="3"/><rect class="pad" data-k="5" x="166" y="132" width="88" height="30" rx="3"/><rect class="pad" data-k="6" x="166" y="98" width="88" height="30" rx="3"/>
+          <circle id="beep" cx="210" cy="56" r="16" fill="none" stroke="var(--alarm)" stroke-width="2"/>
+          <circle id="led" cx="210" cy="56" r="7" fill="var(--line)"/>
+          <g id="simwater" opacity=".62">
+            <svg x="0" y="-8" width="840" height="16" viewBox="0 0 2880 18" preserveAspectRatio="none" overflow="visible"><g class="wave" style="position:static"><path d="M0 9 Q 90 0 180 9 T 360 9 T 540 9 T 720 9 T 900 9 T 1080 9 T 1260 9 T 1440 9 T 1620 9 T 1800 9 T 1980 9 T 2160 9 T 2340 9 T 2520 9 T 2700 9 T 2880 9 V 18 H 0 Z" fill="var(--water)"/></g></svg>
+            <rect x="0" y="6" width="840" height="400" fill="var(--water)"/>
+          </g>
+          <line x1="0" y1="96" x2="420" y2="96" stroke="var(--alarm)" stroke-width="1.5" stroke-dasharray="3 4"/>
+          <path d="M150 96 l10 -6 v12z M270 96 l-10 -6 v12z" fill="var(--alarm)"/>
+          <text x="10" y="88" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--alarm)">FULL LINE</text>
+        </svg>
+        <div class="note" id="note" aria-live="polite"><b id="nt">Waiting for a bath</b><span id="nm">brim is asleep, drawing almost nothing.</span></div>
+      </div>
+      <div class="readout">
+        <div><span>To full line</span><b id="rl">--</b></div>
+        <div><span>Rising</span><b id="rr">--</b></div>
+        <div><span>Full in</span><b id="re">--</b></div>
+      </div>
+      <div class="ctl">
+        <button class="btn" id="play" type="button">Play a bath</button>
+        <input id="scrub" type="range" min="0" max="290" step="1" value="170" aria-label="Time since the tap was turned on">
+        <output id="clock" for="scrub">2:50</output>
+      </div>
+    </div>
     <div>
-      <div class="head" style="margin-bottom:28px"><span class="eyebrow">One bath, start to finish</span><h2>It watches the rise, so it can warn you early.</h2></div>
-      <ol class="timeline">
+      <div class="head" style="margin-bottom:28px"><span class="eyebrow">One bath, start to finish</span><h2>It watches the rise, so it can warn you early.</h2><p>Press play, or drag the slider, to run a bath at a typical 18 mm a minute.</p></div>
+      <ol class="timeline" id="tl">
         <li><span class="t">Water touches the lowest pad</span><b>brim wakes up</b><p>A dim blue blip every few seconds means it's watching.</p></li>
         <li><span class="t">About 2 minutes out</span><b>Bath nearly full</b><p>It measures how fast the water is rising and works out when it'll reach your line.</p></li>
         <li class="hot"><span class="t">At your line</span><b>BATH FULL</b><p>An urgent alert, plus a red light and beeps. It repeats each minute while the water keeps rising, up to 15 minutes, unless you double-tap.</p></li>
@@ -315,6 +391,92 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
 </footer>
 
 <script>
+(function () {
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (id) { return document.getElementById(id); };
+
+  // hero: the notification moves from "nearly full" to "BATH FULL" and back
+  var heroMsgs = [["Bath nearly full", "About 2 min to go. Water 39.5\u00a0°C.", false],
+                  ["BATH FULL", "At your line. Turn off the tap.", true]];
+  var hi = 0;
+  if (!reduce) setInterval(function () {
+    hi = 1 - hi;
+    var t = $('tt'), toast = t.parentNode;
+    t.textContent = heroMsgs[hi][0]; t.className = heroMsgs[hi][2] ? 'alarm' : '';
+    $('tm').textContent = heroMsgs[hi][1];
+    toast.classList.remove('swap'); void toast.offsetWidth; toast.classList.add('swap');
+  }, 4200);
+
+  // bath simulator: level(t) = -18 mm + 0.3 mm/s * t, full line at 60 mm (top of pad 6)
+  var RATE = 0.3, FULL = 60, PX = 3.4, BASE = 300;
+  var pads = document.querySelectorAll('.pad'), tl = $('tl').children, stage = -1;
+  function fmt(sec) { sec = Math.max(0, Math.round(sec)); return Math.floor(sec / 60) + ':' + ('0' + sec % 60).slice(-2); }
+  function note(k, title, msg) {
+    var n = $('note');
+    $('nt').textContent = title; $('nm').textContent = msg;
+    n.className = 'note' + (k === 3 ? ' full' : '');
+    if (!reduce) { void n.offsetWidth; n.classList.add('pop'); }
+  }
+  function render(t) {
+    var lvl = -18 + RATE * t, y = BASE - lvl * PX;
+    $('simwater').setAttribute('transform', 'translate(0 ' + y.toFixed(1) + ')');
+    for (var i = 0; i < pads.length; i++) pads[i].classList.toggle('wet', lvl >= (+pads[i].dataset.k) * 10 - 5);
+    var awake = lvl >= 0, eta = (FULL - lvl) / RATE;
+    var k = !awake ? 0 : lvl >= FULL ? 3 : eta <= 120 ? 2 : 1;
+    $('rl').textContent = awake ? (lvl >= FULL ? '+' : '') + Math.round(lvl >= FULL ? lvl - FULL : FULL - lvl) + ' mm' : '--';
+    $('rr').textContent = awake ? '18 mm/min' : '--';
+    $('re').textContent = !awake ? '--' : lvl >= FULL ? 'now' : fmt(eta);
+    $('clock').textContent = fmt(t);
+    if (k !== stage) {
+      stage = k;
+      $('led').setAttribute('class', ['', 'watch', 'near', 'full'][k]);
+      $('beep').setAttribute('class', k === 3 ? 'on' : '');
+      if (k === 0) note(0, 'Waiting for a bath', 'brim is asleep, drawing almost nothing.');
+      if (k === 1) note(1, 'brim is watching', 'On the device: a dim blue blip every 4 s. No alert yet.');
+      if (k === 2) note(2, 'Bath nearly full', 'About 2 min to go. Water 39.5 °C.');
+      if (k === 3) note(3, 'BATH FULL', 'At your line. Turn off the tap. Double-tap brim to silence.');
+      $('tl').classList.add('live');
+      for (var j = 0; j < tl.length; j++) tl[j].classList.toggle('on', j === k - 1 || (k === 1 && j === 0));
+    }
+  }
+  var scrub = $('scrub'), btn = $('play'), raf = 0, last = 0, T = +scrub.value;   // T: float time; the slider snaps to whole seconds
+  function tick(now) {
+    var dt = last ? (now - last) / 1000 : 0; last = now;
+    T = Math.min(290, T + dt * 26);
+    scrub.value = T; render(T);
+    if (T >= 290) return stop();
+    raf = requestAnimationFrame(tick);
+  }
+  function play() { if (T >= 290) T = 0; last = 0; btn.textContent = 'Pause'; raf = requestAnimationFrame(tick); }
+  function stop() { cancelAnimationFrame(raf); raf = 0; btn.textContent = T >= 290 ? 'Play again' : 'Play a bath'; }
+  btn.addEventListener('click', function () { raf ? stop() : play(); });
+  scrub.addEventListener('input', function () { if (raf) stop(); T = +scrub.value; render(T); });
+  render(+scrub.value);
+
+  // autoplay the bath once when it scrolls into view
+  if (!reduce && 'IntersectionObserver' in window) {
+    var once = new IntersectionObserver(function (es) {
+      if (es[0].isIntersecting) { once.disconnect(); T = 0; play(); }
+    }, { threshold: 0.5 });
+    once.observe(document.querySelector('.simfig'));
+  }
+
+  // entrance: blocks below the fold settle up 18 px as they arrive (never hidden)
+  if (!reduce && 'IntersectionObserver' in window) {
+    var els = document.querySelectorAll('.head, .steps li, .feat div, .timeline, .specs > *, details, .join .in > *');
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.remove('lift'); io.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    els.forEach(function (el, i) {
+      if (el.getBoundingClientRect().top > innerHeight) {
+        el.classList.add('lift', 'settle');
+        el.style.transitionDelay = (i % 3) * 70 + 'ms';
+        io.observe(el);
+      }
+    });
+  }
+})();
+
 document.getElementById('wait').addEventListener('submit', function (e) {
   e.preventDefault();
   var el = document.getElementById('email');
