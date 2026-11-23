@@ -12,7 +12,8 @@ typedef struct {
     char topic[33];        // ntfy topic (random, generated at setup)
     char ntfy_host[64];    // default ntfy.sh; a self-hosted server works too
     int alarm_pad;         // 1..6, default 6 (top)
-    float temp_limit_c;    // default 42
+    float temp_limit_c;    // "too hot" above this; default 38 (young children)
+    float temp_cool_c;     // "cooling down" below this, 0 = off (default)
     bool notify_filling;   // default off
     int sense_mode;        // SENSE_FDC (default), SENSE_TOUCH or SENSE_COMPARE (see docs/sensing-options.md)
     bool wifi_ok;          // these Wi-Fi details have joined the network at least once (false: setup re-opens)

@@ -134,6 +134,7 @@ Why not a buck converter: from a 3.6–4.2 V battery to 3.3 V, an LDO is 80–90
 | Deep sleep, touch wake on pad 1 | ~20 µA | 24 h | ~0.5 |
 | Bath active, light sleep, sampling every 2 s | ~2 mA | 25 min | ~0.8 |
 | Wi-Fi bursts (~5 events × ~3 s × ~120 mA) | — | — | ~0.5 |
+| Check-in every 2 days (~3 s Wi-Fi) | — | — | ~0.05 |
 | **Total (one bath per day)** | | | **~1.8** |
 
 With 320 mAh, that's about **6 months between charges** at one bath per day (it was ~4 months at ~2.3 mAh/day).
@@ -211,7 +212,12 @@ Even at 2× worse in practice, it's still about 3 months. Measure on the bench w
 - `Bath filling — 37.8 °C` (optional, off by default)
 - `Bath nearly full — ~2 min to target, 39.1 °C`
 - 🔴 `BATH AT TARGET LEVEL — turn off the tap. 39.4 °C` (urgent priority, repeats every 60 s while still rising)
-- `Water too hot: 43.0 °C` (threshold configurable, default 42 °C)
+- `Bath too hot: 39.0 °C` (threshold set on the settings page, default **38 °C** for young children; quick-set 38 / 40 / 42)
+- `Bath cooling down: 34.8 °C` (optional, off by default; only after the bath has been warm)
+- `brim OK · battery 72 %` (silent, weekly)
+- `brim hasn't checked in` (sent **by the ntfy server**, not the device: every 2 days brim re-schedules this message
+  70 h ahead under one sequence ID, ntfy's dead man's switch. If brim dies or loses Wi-Fi, it is delivered. A factory
+  reset cancels it. ntfy.sh limits scheduling to 3 days; a server that can't schedule returns 4xx and brim stops retrying)
 - `Sensor detached / submerged` (all pads wet within one sample, which means it fell in)
 - `Bath monitor battery low (18 %)`
 
@@ -311,6 +317,7 @@ Even at 2× worse in practice, it's still about 3 months. Measure on the bench w
 | 2026-11-22 | User walkthrough fixes: captive portal (DNS + redirect), copy button for the ntfy topic, Wi-Fi verified after setup with a "brim is connected" alert (bad password re-opens setup), silent "brim is charging" alert linking to the settings page, test-alert button. Quick start guide (docs/quick-start.html) |
 | 2026-11-22 | Security review (docs/security.md): settings and OTA on the home network now need a per-page key, a Host check and a double-tap on the device; values HTML-escaped; topic made with the radio on; ntfy host validated; form size bugs and the OTA-rollback bug fixed. Open before shipping to others: signed images, flash/NVS encryption, WPA2 setup network |
 | 2026-11-23 | Sleep current: touch wake sampled every ~22 ms by mistake (sleep_cycle counts ~136 kHz ticks), now ~0.48 s; U4 XC6220 → RT9080-33GJ5 (2 µA). Estimated sleep ~40 → ~20 µA, ~6 months per charge. Charger: Anker 313 pad for prototypes, OEM 5 W pad quote for a bundled "brim nest". Phones with Samsung Wireless PowerShare / Pixel Battery Share can charge brim |
+| 2026-11-23 | Check-in: brim re-arms an ntfy dead-man's-switch alert ("brim hasn't checked in", 70 h) every 2 days and sends a silent weekly "brim OK · battery". Hot limit default 42 → 38 °C with 38/40/42 quick-set; optional "cooling down" alert; both set on the settings page |
 | 2026-11-19 | Branding: working name "brim", drop-to-the-brim mark, foam/tide/deep/aqua palette, Inter type. Debossed logo + wordmark on the dry front band, alarm-level chevrons, Qi target over the coil on the back (docs/branding.md) |
 | 2026-11-19 | Brand rev B: ripple (pebble-in-water) mark, muted palette (mist / slate / ink / sea glass), unpainted deboss. Case: 2.5 mm front round, graduated level scale with pad numbers, alarm chevron, waterline groove on the sides, Qi coil outline on the back |
 | 2026-11-19 | Markings simplified: level horizontal scale on the left margin only (ticks + pad numbers in one column), alarm chevron on the right; Qi outline is one plain ring (no dashes or alignment ticks) |

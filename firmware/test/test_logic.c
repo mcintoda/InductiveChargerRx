@@ -180,6 +180,27 @@ static int run_bath(policy_t *p, int alarm_pad, float fill_mm_min, float stop_at
     return n;
 }
 
+static void test_cool(void)
+{
+    policy_t p; policy_out_t o; int n = 0;
+    policy_init(&p, lvl_pad_top_mm(6), 38, false);
+    policy_set_cool(&p, 35);
+    // fill starts lukewarm (34 C) and warms: no "cooling" alert while it was never warm
+    float temps[] = {34.0f, 34.5f, 36.0f, 37.5f, 37.0f, 36.0f, 35.2f, 34.8f, 34.0f, 33.0f};
+    for (int i = 0; i < 10; i++) {
+        policy_in_t in = {.now_s = i * 120.0f, .wet = true, .level_mm = 30, .eta_s = -1, .temp_c = temps[i], .battery_pct = 80};
+        if (policy_step(&p, &in, &o) && o.ev == EV_TOO_COOL) { n++; CHECK(temps[i] < 35, "cool alert at %.1f C", temps[i]); }
+    }
+    printf("  cool: %d alert(s)\n", n);
+    CHECK(n == 1, "cooling alert sent %d times", n);
+    // off by default
+    policy_init(&p, lvl_pad_top_mm(6), 38, false);
+    for (int i = 0; i < 10; i++) {
+        policy_in_t in = {.now_s = i * 120.0f, .wet = true, .level_mm = 30, .eta_s = -1, .temp_c = temps[i], .battery_pct = 80};
+        CHECK(!(policy_step(&p, &in, &o) && o.ev == EV_TOO_COOL), "cool alert while disabled");
+    }
+}
+
 static void test_policy(void)
 {
     policy_t p; int na, nn, nh; float ta;
@@ -248,7 +269,7 @@ int main(void)
     printf("return path\n"); test_return_path();
     printf("fdc1004\n"); test_fdc();
     printf("rate\n"); test_rate();
-    printf("policy\n"); test_policy(); test_policy_ack();
+    printf("policy\n"); test_policy(); test_policy_ack(); test_cool();
     printf("tilt\n"); test_tilt();
     printf("%d/%d checks passed\n", checks - fails, checks);
     return fails ? 1 : 0;

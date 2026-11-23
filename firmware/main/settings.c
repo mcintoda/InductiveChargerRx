@@ -12,7 +12,7 @@ static void defaults(settings_t *s)
     memset(s, 0, sizeof(*s));
     strcpy(s->ntfy_host, "ntfy.sh");
     s->alarm_pad = 6;
-    s->temp_limit_c = 42.0f;
+    s->temp_limit_c = 38.0f;             // families with young children; adults can pick 40-42 on the settings page
     s->sense_mode = SENSE_FDC;           // falls back to touch if no FDC1004 answers
 }
 
@@ -39,6 +39,7 @@ esp_err_t settings_load(settings_t *s)
     int32_t v;
     if (nvs_get_i32(h, "pad", &v) == ESP_OK && v >= 1 && v <= 6) s->alarm_pad = v;
     if (nvs_get_i32(h, "tlim10", &v) == ESP_OK && v > 200 && v < 600) s->temp_limit_c = v / 10.0f;
+    if (nvs_get_i32(h, "tcool10", &v) == ESP_OK && v >= 0 && v < 400) s->temp_cool_c = v / 10.0f;
     uint8_t b;
     if (nvs_get_u8(h, "fill", &b) == ESP_OK) s->notify_filling = b;
     if (nvs_get_u8(h, "sense", &b) == ESP_OK && b <= SENSE_COMPARE) s->sense_mode = b;
@@ -58,6 +59,7 @@ esp_err_t settings_save(const settings_t *s)
     nvs_set_str(h, "host", s->ntfy_host);
     nvs_set_i32(h, "pad", s->alarm_pad);
     nvs_set_i32(h, "tlim10", (int32_t)(s->temp_limit_c * 10));
+    nvs_set_i32(h, "tcool10", (int32_t)(s->temp_cool_c * 10));
     nvs_set_u8(h, "fill", s->notify_filling);
     nvs_set_u8(h, "sense", (uint8_t)s->sense_mode);
     nvs_set_u8(h, "wifiok", s->wifi_ok);

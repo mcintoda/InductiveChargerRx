@@ -31,7 +31,9 @@ static bool emit(policy_out_t *o, policy_event_t ev, int prio, const char *title
 static void end_session(policy_t *p)
 {
     bool lowbat = p->lowbat_sent;
+    float cool = p->temp_cool_c;
     policy_init(p, p->alarm_mm, p->temp_limit_c, p->notify_filling);
+    p->temp_cool_c = cool;
     p->lowbat_sent = lowbat;            // low battery is reported once per charge, not per bath
 }
 
@@ -105,7 +107,18 @@ bool policy_step(policy_t *p, const policy_in_t *in, policy_out_t *out)
         snprintf(m, sizeof(m), "Water is %s, above your %.0f \xC2\xB0" "C limit.", t, p->temp_limit_c);
         return emit(out, EV_TOO_HOT, 4, "Bath too hot", "thermometer", m);
     }
+    // "too cool": only once the bath has been warm (0.5 C above the level), so a slow-warming fill doesn't trigger it
+    if (p->temp_cool_c > 0 && !isnan(in->temp_c)) {
+        if (in->temp_c >= p->temp_cool_c + 0.5f) p->was_warm = true;
+        else if (p->was_warm && in->temp_c < p->temp_cool_c && !p->cool_sent) {
+            p->cool_sent = true;
+            snprintf(m, sizeof(m), "Water has cooled to %s, below your %.0f \xC2\xB0" "C level.", t, p->temp_cool_c);
+            return emit(out, EV_TOO_COOL, 3, "Bath cooling down", "thermometer", m);
+        }
+    }
     return false;
 }
+
+void policy_set_cool(policy_t *p, float temp_cool_c) { p->temp_cool_c = temp_cool_c; }
 
 void policy_ack(policy_t *p) { p->acked = true; }

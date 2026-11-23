@@ -9,6 +9,7 @@ typedef enum {
     EV_NEARLY_FULL,    // ~2 min to the alarm level
     EV_ALARM,          // alarm level reached (repeats while still rising)
     EV_TOO_HOT,        // above the temperature limit
+    EV_TOO_COOL,       // cooled below the "too cool" level after being warm (optional)
     EV_SUBMERGED,      // every pad incl. REF wet at once: it fell into the bath
     EV_LOW_BATTERY,
 } policy_event_t;
@@ -17,9 +18,10 @@ typedef struct {
     // settings
     float alarm_mm;            // alarm level (top of the chosen pad)
     float temp_limit_c;
+    float temp_cool_c;         // 0 = off
     bool notify_filling;
     // session state
-    bool active, filling_sent, nearly_sent, hot_sent, submerged_sent, lowbat_sent, alarm_active;
+    bool active, filling_sent, nearly_sent, hot_sent, submerged_sent, lowbat_sent, alarm_active, was_warm, cool_sent;
     float alarm_first_s, alarm_last_s, last_wet_s, prev_level_mm;
     bool prev_wet;
     float ref_snap, ref_snap_t;  // above 60 mm the dry REF pad tells whether water is still rising
@@ -58,6 +60,7 @@ typedef struct {
 #define POLICY_LOW_BATT_PCT 20
 
 void policy_init(policy_t *p, float alarm_mm, float temp_limit_c, bool notify_filling);
+void policy_set_cool(policy_t *p, float temp_cool_c);   // 0 = off; kept across baths
 // returns true and fills `out` when a notification should be sent now (one per call)
 bool policy_step(policy_t *p, const policy_in_t *in, policy_out_t *out);
 // the user acknowledged the alarm on the device (double tap): stop the repeats for this bath

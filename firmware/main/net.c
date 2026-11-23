@@ -157,6 +157,32 @@ esp_err_t net_ntfy_click(const settings_t *s, const char *title, const char *msg
     return err;
 }
 
+// ntfy dead man's switch: a message scheduled `delay` ahead under a fixed sequence ID. Publishing again with the
+// same ID replaces the scheduled one (pushes it out); DELETE cancels it. ntfy.sh allows up to 3 days of delay.
+#define WATCHDOG_SEQ "brim-watchdog"
+int net_watchdog(const settings_t *s, const char *delay)
+{
+    char url[160];
+    snprintf(url, sizeof(url), "https://%s/%s/" WATCHDOG_SEQ, s->ntfy_host, s->topic);
+    esp_http_client_config_t cfg = {.url = url, .method = delay ? HTTP_METHOD_POST : HTTP_METHOD_DELETE,
+                                    .timeout_ms = 8000, .crt_bundle_attach = esp_crt_bundle_attach};
+    esp_http_client_handle_t c = esp_http_client_init(&cfg);
+    static const char *msg = "No word from brim for 3 days. Its battery may be flat, or it may have lost your Wi-Fi. "
+                             "Put it on its charger to check.";
+    if (delay) {
+        esp_http_client_set_header(c, "In", delay);
+        esp_http_client_set_header(c, "Title", "brim hasn't checked in");
+        esp_http_client_set_header(c, "Priority", "4");
+        esp_http_client_set_header(c, "Tags", "warning");
+        esp_http_client_set_post_field(c, msg, strlen(msg));
+    }
+    esp_err_t err = esp_http_client_perform(c);
+    int code = err == ESP_OK ? esp_http_client_get_status_code(c) : -1;
+    esp_http_client_cleanup(c);
+    ESP_LOGI(TAG, "watchdog %s -> %d", delay ? delay : "cancel", code);
+    return code;
+}
+
 // ---------------- web pages ----------------
 static esp_err_t page_redirect(httpd_req_t *req, httpd_err_code_t err);
 static const char *PAGE_HEAD;
@@ -203,12 +229,14 @@ static const char *PAGE_HEAD =
 static esp_err_t page_root(httpd_req_t *req)
 {
     if (!host_ok(req)) return page_redirect(req, HTTPD_404_NOT_FOUND);
-    static char buf[4096];   // static: the httpd task is single-threaded; keeps 4 kB off its stack
+    static char buf[5120];   // static: the httpd task is single-threaded; keeps it off its stack
     static char e_ssid[200], e_host[400], e_topic[200];
     const settings_t *s = s_settings;
     esc(s->ssid, e_ssid, sizeof(e_ssid));
     esc(s->ntfy_host, e_host, sizeof(e_host));
     esc(s->topic, e_topic, sizeof(e_topic));
+    char cool[12] = "";
+    if (s->temp_cool_c > 0) snprintf(cool, sizeof(cool), "%.1f", s->temp_cool_c);
     int n = snprintf(buf, sizeof(buf), "%s", PAGE_HEAD);
     if (!s_status && s->ssid[0] && !s->wifi_ok)
         n += snprintf(buf + n, sizeof(buf) - n,
@@ -231,8 +259,15 @@ static esp_err_t page_root(httpd_req_t *req)
         n += snprintf(buf + n, sizeof(buf) - n, "<option value=%d%s>%d%s</option>", p, p == s->alarm_pad ? " selected" : "",
                       p, p == 6 ? " (top, default)" : p == 1 ? " (bottom)" : "");
     n += snprintf(buf + n, sizeof(buf) - n,
-                  "</select></label><label>Hot-water warning above (&deg;C)<input name=tlim type=number step=0.5 min=30 "
-                  "max=50 value=%.1f></label><label><input name=fill type=checkbox style='width:auto'%s> Also tell me when "
+                  "</select></label><h3 style='margin:22px 0 0'>Water temperature</h3>"
+                  "<p style='font-size:13px;margin:4px 0 0'>Quick set: "
+                  "<a href=# onclick='tlim.value=38;return false'>babies &amp; toddlers 38</a> &middot; "
+                  "<a href=# onclick='tlim.value=40;return false'>older kids 40</a> &middot; "
+                  "<a href=# onclick='tlim.value=42;return false'>adults 42</a></p>"
+                  "<label>Alert if hotter than (&deg;C)<input id=tlim name=tlim type=number step=0.5 min=30 max=50 "
+                  "value=%.1f></label>"
+                  "<label>Alert if it cools below (&deg;C, leave empty for no alert)<input name=tcool type=number "
+                  "step=0.5 min=25 max=37 value='%s'></label><label><input name=fill type=checkbox style='width:auto'%s> Also tell me when "
                   "a bath starts filling</label><label>ntfy server<input name=host value='%s'></label>"
                   "<label>Level sensing<select name=sense><option value=0%s>Touch (ratiometric)</option>"
                   "<option value=1%s>FDC1004 (default)</option><option value=2%s>Compare: log both, alarm from touch</option>"
@@ -242,7 +277,7 @@ static esp_err_t page_root(httpd_req_t *req)
                   "<button type=button onclick=\"t.select();document.execCommand('copy');this.textContent='Copied'\">"
                   "Copy topic</button><br>"
                   "<button>Save</button></form>",
-                  s->temp_limit_c, s->notify_filling ? " checked" : "", e_host,
+                  s->temp_limit_c, cool, s->notify_filling ? " checked" : "", e_host,
                   s->sense_mode == SENSE_TOUCH ? " selected" : "", s->sense_mode == SENSE_FDC ? " selected" : "",
                   s->sense_mode == SENSE_COMPARE ? " selected" : "", e_topic);
     if (s_status)
@@ -280,6 +315,10 @@ static esp_err_t page_save(httpd_req_t *req)
     if (form_get(body, "host", v, sizeof(v)) && v[0] && host_name_ok(v)) strlcpy(s->ntfy_host, v, sizeof(s->ntfy_host));
     if (form_get(body, "pad", v, sizeof(v))) { int p = atoi(v); if (p >= 1 && p <= 6) s->alarm_pad = p; }
     if (form_get(body, "tlim", v, sizeof(v))) { float t = strtof(v, NULL); if (t >= 30 && t <= 50) s->temp_limit_c = t; }
+    if (form_get(body, "tcool", v, sizeof(v))) {                    // empty = off; must sit below the hot limit
+        float t = v[0] ? strtof(v, NULL) : 0;
+        if (t == 0 || (t >= 25 && t <= 37 && t < s->temp_limit_c - 1)) s->temp_cool_c = t;
+    }
     s->notify_filling = form_get(body, "fill", v, sizeof(v));
     if (form_get(body, "sense", v, sizeof(v))) { int m = atoi(v); if (m >= SENSE_TOUCH && m <= SENSE_COMPARE) s->sense_mode = m; }
     if (!s->topic[0]) settings_new_topic(s->topic, sizeof(s->topic));

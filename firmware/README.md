@@ -62,6 +62,12 @@ the phone is in another room or the Wi-Fi is down.
 | Orange double blink | brim is tilted / out of its bracket |
 | One 1 s flash (green / yellow / red) | Tapped or picked up while asleep: battery above 50 % / above 20 % / below |
 
+**Check-in.** Every 2 days brim wakes, joins Wi-Fi for a few seconds and re-schedules a "brim hasn't checked in"
+message 70 h ahead on the ntfy server (same sequence ID, so it replaces the previous one). If brim goes quiet (flat
+battery, Wi-Fi gone, broken), the server delivers it. Once a week it also sends a silent "brim OK · battery %".
+**Temperature:** "too hot" above 38 °C by default (quick-set 38 / 40 / 42 on the settings page) and an optional
+"cooling down" level, both changed over Wi-Fi on the settings page.
+
 | Gesture | Effect |
 |---|---|
 | **Double-tap the case** during an alarm | Acknowledge: no more repeats or beeps this bath (two green flashes + a chirp) |

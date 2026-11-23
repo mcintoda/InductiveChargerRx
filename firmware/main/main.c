@@ -106,6 +106,34 @@ static void calibrate_dry(float alpha)
     }
 }
 
+// ---------------- check-in: brim says it's alive, the ntfy server says when it isn't ----------------
+#define CHECKIN_S (48 * 3600.0)      // re-arm the watchdog every 2 days...
+#define WATCHDOG_DELAY "70h"         // ...which fires after ~3 days of silence (ntfy.sh's limit is 3 days)
+#define STATUS_S (7 * 24 * 3600.0)   // and a silent "brim OK" once a week
+#define RETRY_S (6 * 3600.0)
+static RTC_DATA_ATTR double s_next_checkin, s_next_status;
+
+static void checkin(bool online)
+{
+    double now = now_s();
+    if (!online && !net_wifi_connect(&s_set, 15000)) {
+        s_next_checkin = now + RETRY_S;
+        net_wifi_stop();
+        return;
+    }
+    int code = net_watchdog(&s_set, WATCHDOG_DELAY);
+    // 2xx: armed. 4xx: this server can't schedule (old or self-hosted ntfy): don't keep retrying every 6 h
+    s_next_checkin = now + ((code >= 200 && code < 300) || (code >= 400 && code < 500) ? CHECKIN_S : RETRY_S);
+    if (now >= s_next_status) {
+        int mv = power_battery_mv();
+        char m[160];
+        snprintf(m, sizeof(m), "Battery %d %%. brim checks in every 2 days, and you'll get an alert if it goes quiet "
+                 "for 3.", mv > 0 ? power_battery_pct(mv) : 0);
+        if (net_ntfy(&s_set, "brim OK", m, 1, "white_check_mark") == ESP_OK) s_next_status = now + STATUS_S;
+    }
+    if (!online) net_wifi_stop();
+}
+
 static void sleep_now(bool pad1_wet, uint64_t timer_s)
 {
     // deep sleep turns the USB port off: stay awake while a computer is attached so esptool can
@@ -123,6 +151,11 @@ static void sleep_now(bool pad1_wet, uint64_t timer_s)
     if (!power_on_charger()) ext1 |= 1ULL << PIN_QI_DET_N;
     if (s_acc_fitted && accel_arm_wake() == ESP_OK) ext1 |= 1ULL << PIN_ACC_INT;
     if (ext1) esp_sleep_enable_ext1_wakeup(ext1, ESP_EXT1_WAKEUP_ANY_LOW);
+    if (s_next_checkin > 0) {                        // never sleep through a check-in
+        double dt = s_next_checkin - now_s();
+        uint64_t c = dt < 60 ? 60 : (uint64_t)dt;
+        if (!timer_s || c < timer_s) timer_s = c;
+    }
     if (timer_s) esp_sleep_enable_timer_wakeup(timer_s * 1000000ULL);
     ESP_LOGI(TAG, "deep sleep (pad1 %s, timer %llus)", pad1_wet ? "wet" : "dry", timer_s);
     esp_deep_sleep_start();
@@ -171,6 +204,10 @@ static void charger_mode(void)
 {
     if (factory_reset_gesture()) {
         ESP_LOGW(TAG, "factory reset");
+        // cancel the pending "hasn't checked in" alert so the old topic doesn't get it in 3 days
+        if (s_set.topic[0] && net_wifi_connect(&s_set, 8000)) net_watchdog(&s_set, NULL);
+        net_wifi_stop();
+        s_next_checkin = s_next_status = 0;
         status_flash(255, 0, 0, 10, 80);
         settings_erase();
         memset(s_placed_at, 0, sizeof(s_placed_at));
@@ -186,6 +223,7 @@ static void charger_mode(void)
         snprintf(url, sizeof(url), "http://%s/", net_ip());
         snprintf(msg, sizeof(msg), "Tap for settings (open for 10 min): %s", url);
         net_ntfy_click(&s_set, "brim is charging", msg, 1, "battery", url);   // priority 1: silent
+        checkin(true);
     }
     // changes need physical presence: a double-tap on the device (no accelerometer: the first 2 min on the pad)
     if (s_acc_fitted) { accel_awake(); accel_events(); }
@@ -217,6 +255,8 @@ static void bath_mode(void)
         s_policy_ready = true;
     }
     s_policy.alarm_mm = lvl_pad_top_mm(s_set.alarm_pad);
+    s_policy.temp_limit_c = s_set.temp_limit_c;          // settings may have changed on the charger
+    policy_set_cool(&s_policy, s_set.temp_cool_c);
 
     int mode = s_set.sense_mode;
     if (mode != SENSE_TOUCH && !(s_fdc_fitted && s_fdc.valid)) {
@@ -375,6 +415,8 @@ void app_main(void)
             settings_save(&s_set);
             net_ntfy(&s_set, "brim is connected",
                      "Alerts will arrive here. Put brim in its bracket with the arrows at your full line.", 3, "bathtub");
+            s_next_status = now_s() + STATUS_S;          // the first "brim OK" comes a week from now
+            checkin(true);
             net_wifi_stop();
             status_flash(0, 255, 0, 2, 300);
         } else {
@@ -394,6 +436,8 @@ void app_main(void)
         status_battery(mv > 0 ? power_battery_pct(mv) : 0);
         if (!power_on_charger() && !s_policy.active) sleep_now(false, 6 * 3600);
     }
+    // due, or never armed since power-up (RTC memory was cleared): check in now
+    if (!power_on_charger() && !s_policy.active && (s_next_checkin == 0 || now_s() >= s_next_checkin)) checkin(false);
     if (power_on_charger()) charger_mode();
     bath_mode();
 }
