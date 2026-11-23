@@ -30,6 +30,13 @@ attached. Then snap the tab off (pliers, bend once along the slots) and assemble
 The TP5/TP6 pads (D+/D−) still work for re-flashing a board without its tab. IO0 (TP4) is only for recovery.
 Later updates: put brim on its charger, open the settings page, upload `build/brim.bin`.
 
+## Release builds and production
+Three builds share one flash layout: development (`idf.py build`), **signed release** (`sdkconfig.release`: only
+signed images boot or upload) and **production** (`sdkconfig.production`: Secure Boot V2, flash and NVS encryption,
+JTAG off; irreversible). Each unit gets its setup-network password from `tools/provision.py`, which also prints the
+card and Wi-Fi QR code. Commands, the signing key and the per-unit steps: [`docs/security.md`](../docs/security.md).
+Boards flashed before 2026-11-23 need `idf.py erase-flash` once (the partition table moved to 0xC000).
+
 ## Host tests (no hardware)
 ```
 make -C test          # level estimation, film rejection, drift, fill rate, alarm policy

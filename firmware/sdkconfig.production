@@ -1,0 +1,21 @@
+# Release fragment 2: PRODUCTION LOCKDOWN. IRREVERSIBLE: the first boot burns eFuses.
+# Only for units that pass the functional test, after tools/provision.py has written the factory data.
+#   idf.py -B build-prod -D SDKCONFIG=build-prod/sdkconfig \
+#          -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.production" build
+# - Secure Boot V2 (RSA-3072): the ROM only boots our signed bootloader, which only boots our signed app.
+#   JTAG is disabled by the same eFuse step.
+# - Flash encryption, release mode: firmware and data on the flash chip are AES-XTS encrypted with a key that never
+#   leaves the chip; the USB download mode becomes "secure download" (no flash reads).
+# - NVS encryption with an HMAC key generated on the chip: the stored Wi-Fi password and ntfy topic are encrypted.
+CONFIG_SECURE_BOOT=y
+CONFIG_SECURE_BOOT_V2_ENABLED=y
+CONFIG_SECURE_SIGNED_APPS_RSA_SCHEME=y
+CONFIG_SECURE_BOOT_BUILD_SIGNED_BINARIES=y
+CONFIG_SECURE_BOOT_SIGNING_KEY="keys/brim_signing_key.pem"
+CONFIG_SECURE_FLASH_ENC_ENABLED=y
+CONFIG_SECURE_FLASH_ENCRYPTION_MODE_RELEASE=y
+CONFIG_SECURE_ENABLE_SECURE_ROM_DL_MODE=y
+CONFIG_NVS_ENCRYPTION=y
+CONFIG_NVS_SEC_KEY_PROTECT_USING_HMAC=y
+CONFIG_NVS_SEC_HMAC_EFUSE_KEY_ID=0
+CONFIG_LOG_DEFAULT_LEVEL_WARN=y

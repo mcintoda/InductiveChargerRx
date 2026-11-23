@@ -1,4 +1,7 @@
 build/
+build-*/
 sdkconfig
 sdkconfig.old
 test/test_logic
+keys/
+labels/

@@ -1,6 +1,7 @@
 #include "net.h"
 
 #include "brand_icon.h"
+#include "factory.h"
 
 #include <ctype.h>
 #include <math.h>
@@ -456,9 +457,22 @@ bool net_provision(settings_t *s, int timeout_ms)
     if (!s_ap) s_ap = esp_netif_create_default_wifi_ap();
     uint8_t mac[6];
     esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP);
-    wifi_config_t ap = {.ap = {.channel = 6, .max_connection = 2, .authmode = WIFI_AUTH_OPEN}};
+    wifi_config_t ap = {.ap = {.channel = 6, .max_connection = 2, .authmode = WIFI_AUTH_OPEN,
+                               .pmf_cfg = {.capable = true}}};
     int l = snprintf((char *)ap.ap.ssid, sizeof(ap.ap.ssid), "brim-setup-%02X%02X", mac[4], mac[5]);
     ap.ap.ssid_len = l;
+    // WPA2 with the per-unit password printed on the quick start card (tools/provision.py), so nobody in radio
+    // range can sniff the home Wi-Fi password from the setup form or configure the unit first
+    char pass[65];
+    if (factory_get("ap_pass", pass, sizeof(pass)) && strlen(pass) >= 8) {
+        strlcpy((char *)ap.ap.password, pass, sizeof(ap.ap.password));
+        ap.ap.authmode = WIFI_AUTH_WPA2_PSK;
+    } else if (BRIM_RELEASE) {
+        ESP_LOGE(TAG, "no factory setup password: refusing to open an unprotected setup network");
+        return false;
+    } else {
+        ESP_LOGW(TAG, "development build without factory data: setup network is OPEN (run tools/provision.py)");
+    }
     esp_wifi_set_mode(WIFI_MODE_AP);
     esp_wifi_set_config(WIFI_IF_AP, &ap);
     esp_wifi_start();
