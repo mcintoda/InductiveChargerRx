@@ -1,4 +1,4 @@
-# brim firmware (ESP-IDF 5.3, ESP32-S3)
+# brim firmware (ESP-IDF 5.3.6, ESP32-S3)
 
 | Module | What it does |
 |---|---|
@@ -14,7 +14,7 @@
 
 ## Build
 ```
-. $IDF_PATH/export.sh          # ESP-IDF v5.3.x
+. $IDF_PATH/export.sh          # ESP-IDF v5.3.6 (5.3.2 and older carry known Mbed TLS CVEs: docs/sbom/)
 idf.py set-target esp32s3
 idf.py build
 ```

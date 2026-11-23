@@ -49,6 +49,11 @@ amplification, and only on the setup network); factory reset needs the device in
 - **First setup** needs no tap: there is nothing to protect yet, and the device is in the owner's hand.
 - A page left open from an earlier session says "Stale page: reload it", because each session gets a new key.
 
+## SBOM and known vulnerabilities
+
+The firmware SBOM (SPDX and CycloneDX) and its NVD/OSV check are in [`docs/sbom/`](sbom/README.md). On 2026-11-23,
+ESP-IDF 5.3.2 carried 25 CVEs (mostly Mbed TLS 3.6.2); after moving to **ESP-IDF 5.3.6 (Mbed TLS 3.6.7) the check finds 0**.
+
 ## Builds
 
 | Build | Command | For |

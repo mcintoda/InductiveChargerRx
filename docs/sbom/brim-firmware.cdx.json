@@ -1,10 +1,10 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:5c8dc0b2-8482-47fa-82a5-8dd1a9533bc2",
+  "serialNumber": "urn:uuid:1a8ead17-8a90-4ea9-8932-c7c5d0813afb",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-11-23T03:55:28Z",
+    "timestamp": "2026-11-23T04:03:34Z",
     "tools": {
       "components": [
         {
@@ -42,12 +42,12 @@
       "type": "application",
       "bom-ref": "PROJECT-brim",
       "name": "project-brim",
-      "version": "4574602-dirty",
-      "purl": "pkg:github/mcintoda/InductiveChargerRx@4574602e8799741c61332463c08b9bfe036ad75b#firmware",
+      "version": "80d97f3",
+      "purl": "pkg:github/mcintoda/InductiveChargerRx@80d97f3251ced9e9fe997386e6115656b75b3e39#firmware",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/mcintoda/InductiveChargerRx@4574602e8799741c61332463c08b9bfe036ad75b#firmware"
+          "url": "https://github.com/mcintoda/InductiveChargerRx@80d97f3251ced9e9fe997386e6115656b75b3e39#firmware"
         }
       ]
     }
@@ -57,7 +57,7 @@
       "type": "framework",
       "bom-ref": "FRAMEWORK-esp-idf",
       "name": "esp-idf",
-      "version": "5.3.2",
+      "version": "5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
@@ -68,12 +68,12 @@
           "acknowledgement": "declared"
         }
       ],
-      "cpe": "cpe:2.3:a:espressif:esp-idf:5.3.2:*:*:*:*:*:*:*",
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f",
+      "cpe": "cpe:2.3:a:espressif:esp-idf:5.3.6:*:*:*:*:*:*:*",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce"
         }
       ],
       "evidence": {
@@ -84,7 +84,7 @@
           },
           {
             "field": "cpe",
-            "concludedValue": "cpe:2.3:o:espressif:esp32_firmware:5.3.2:*:*:*:*:*:*:*"
+            "concludedValue": "cpe:2.3:o:espressif:esp32_firmware:5.3.6:*:*:*:*:*:*:*"
           },
           {
             "field": "cpe",
@@ -97,16 +97,16 @@
       "type": "application",
       "bom-ref": "TOOLCHAIN-xtensa-esp-elf",
       "name": "toolchain-xtensa-esp-elf",
-      "version": "esp-13.2.0_20240530",
+      "version": "esp-13.2.0_20250707",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
       "description": "Toolchain for 32-bit Xtensa based on GCC",
-      "purl": "pkg:github/espressif/crosstool-NG@esp-13.2.0_20240530",
+      "purl": "pkg:github/espressif/crosstool-NG@esp-13.2.0_20250707",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "fcef03d87eac44c0dbee2bbee98443ed2fcf82720dcd8ebfe00640807b0f07c2"
+          "content": "d1f1378394baa3788bf78062e5d041cb14d4858bbb57f86d59e5b83fc9d5525f"
         }
       ],
       "externalReferences": [
@@ -116,7 +116,7 @@
         },
         {
           "type": "distribution",
-          "url": "https://github.com/espressif/crosstool-NG/releases/download/esp-13.2.0_20240530/xtensa-esp-elf-13.2.0_20240530-x86_64-linux-gnu.tar.xz"
+          "url": "https://github.com/espressif/crosstool-NG/releases/download/esp-13.2.0_20250707/xtensa-esp-elf-13.2.0_20250707-x86_64-linux-gnu.tar.xz"
         }
       ]
     },
@@ -124,15 +124,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-app-update",
       "name": "component-app_update",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/app_update",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/app_update",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/app_update"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/app_update"
         }
       ]
     },
@@ -140,15 +140,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-bootloader",
       "name": "component-bootloader",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/bootloader",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/bootloader",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/bootloader"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/bootloader"
         }
       ]
     },
@@ -178,15 +178,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-bootloader-support",
       "name": "component-bootloader_support",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/bootloader_support",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/bootloader_support",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/bootloader_support"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/bootloader_support"
         }
       ]
     },
@@ -194,15 +194,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-cxx",
       "name": "component-cxx",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/cxx",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/cxx",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/cxx"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/cxx"
         }
       ]
     },
@@ -210,15 +210,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-driver",
       "name": "component-driver",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/driver",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/driver",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/driver"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/driver"
         }
       ]
     },
@@ -226,15 +226,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-efuse",
       "name": "component-efuse",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/efuse",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/efuse",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/efuse"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/efuse"
         }
       ]
     },
@@ -242,15 +242,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-tls",
       "name": "component-esp-tls",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp-tls",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp-tls",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp-tls"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp-tls"
         }
       ]
     },
@@ -258,15 +258,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-adc",
       "name": "component-esp_adc",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_adc",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_adc",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_adc"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_adc"
         }
       ]
     },
@@ -274,15 +274,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-app-format",
       "name": "component-esp_app_format",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_app_format",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_app_format",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_app_format"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_app_format"
         }
       ]
     },
@@ -290,15 +290,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-coex",
       "name": "component-esp_coex",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_coex",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_coex",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_coex"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_coex"
         }
       ]
     },
@@ -306,15 +306,15 @@
       "type": "library",
       "bom-ref": "SUBMODULE-esp-coex-lib",
       "name": "submodule-esp_coex-lib",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-coex-lib@7953ba459a01d5c08f038cad8eaabb4e37d2505d",
+      "purl": "pkg:github/espressif/esp-coex-lib@7a43262c30e1ac53c1fbb365bb593bd51582d63c",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-coex-lib.git@7953ba459a01d5c08f038cad8eaabb4e37d2505d"
+          "url": "https://github.com/espressif/esp-coex-lib.git@7a43262c30e1ac53c1fbb365bb593bd51582d63c"
         }
       ]
     },
@@ -322,15 +322,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-common",
       "name": "component-esp_common",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_common",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_common",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_common"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_common"
         }
       ]
     },
@@ -338,15 +338,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-driver-ana-cmpr",
       "name": "component-esp_driver_ana_cmpr",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_ana_cmpr",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_ana_cmpr",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_ana_cmpr"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_ana_cmpr"
         }
       ]
     },
@@ -354,15 +354,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-driver-dac",
       "name": "component-esp_driver_dac",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_dac",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_dac",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_dac"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_dac"
         }
       ]
     },
@@ -370,15 +370,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-driver-gpio",
       "name": "component-esp_driver_gpio",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_gpio",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_gpio",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_gpio"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_gpio"
         }
       ]
     },
@@ -386,15 +386,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-driver-i2c",
       "name": "component-esp_driver_i2c",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_i2c",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_i2c",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_i2c"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_i2c"
         }
       ]
     },
@@ -402,15 +402,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-driver-ledc",
       "name": "component-esp_driver_ledc",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_ledc",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_ledc",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_ledc"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_ledc"
         }
       ]
     },
@@ -418,15 +418,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-driver-parlio",
       "name": "component-esp_driver_parlio",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_parlio",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_parlio",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_parlio"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_parlio"
         }
       ]
     },
@@ -434,15 +434,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-driver-sdio",
       "name": "component-esp_driver_sdio",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_sdio",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_sdio",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_sdio"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_sdio"
         }
       ]
     },
@@ -450,15 +450,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-driver-spi",
       "name": "component-esp_driver_spi",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_spi",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_spi",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_spi"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_spi"
         }
       ]
     },
@@ -466,15 +466,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-driver-usb-serial-jtag",
       "name": "component-esp_driver_usb_serial_jtag",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_usb_serial_jtag",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_usb_serial_jtag",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_driver_usb_serial_jtag"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_driver_usb_serial_jtag"
         }
       ]
     },
@@ -482,15 +482,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-event",
       "name": "component-esp_event",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_event",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_event",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_event"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_event"
         }
       ]
     },
@@ -498,15 +498,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-http-client",
       "name": "component-esp_http_client",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_http_client",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_http_client",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_http_client"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_http_client"
         }
       ]
     },
@@ -514,15 +514,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-http-server",
       "name": "component-esp_http_server",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_http_server",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_http_server",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_http_server"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_http_server"
         }
       ]
     },
@@ -530,15 +530,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-hw-support",
       "name": "component-esp_hw_support",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_hw_support",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_hw_support",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_hw_support"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_hw_support"
         }
       ]
     },
@@ -546,15 +546,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-mm",
       "name": "component-esp_mm",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_mm",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_mm",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_mm"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_mm"
         }
       ]
     },
@@ -562,15 +562,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-netif",
       "name": "component-esp_netif",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_netif",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_netif",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_netif"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_netif"
         }
       ]
     },
@@ -578,15 +578,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-netif-stack",
       "name": "component-esp_netif_stack",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_netif_stack",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_netif_stack",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_netif_stack"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_netif_stack"
         }
       ]
     },
@@ -594,15 +594,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-partition",
       "name": "component-esp_partition",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_partition",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_partition",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_partition"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_partition"
         }
       ]
     },
@@ -610,15 +610,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-phy",
       "name": "component-esp_phy",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_phy",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_phy",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_phy"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_phy"
         }
       ]
     },
@@ -626,15 +626,15 @@
       "type": "library",
       "bom-ref": "SUBMODULE-esp-phy-lib",
       "name": "submodule-esp_phy-lib",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-phy-lib@1f551c5367daa87a29e0c4f724d6cf809a1841ad",
+      "purl": "pkg:github/espressif/esp-phy-lib@5695f4f38108658bc4a33e4712c1ebcb34911434",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-phy-lib.git@1f551c5367daa87a29e0c4f724d6cf809a1841ad"
+          "url": "https://github.com/espressif/esp-phy-lib.git@5695f4f38108658bc4a33e4712c1ebcb34911434"
         }
       ]
     },
@@ -642,15 +642,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-pm",
       "name": "component-esp_pm",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_pm",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_pm",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_pm"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_pm"
         }
       ]
     },
@@ -658,15 +658,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-ringbuf",
       "name": "component-esp_ringbuf",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_ringbuf",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_ringbuf",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_ringbuf"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_ringbuf"
         }
       ]
     },
@@ -674,15 +674,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-rom",
       "name": "component-esp_rom",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_rom",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_rom",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_rom"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_rom"
         }
       ]
     },
@@ -690,15 +690,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-system",
       "name": "component-esp_system",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_system",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_system",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_system"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_system"
         }
       ]
     },
@@ -706,15 +706,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-timer",
       "name": "component-esp_timer",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_timer",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_timer",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_timer"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_timer"
         }
       ]
     },
@@ -722,15 +722,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-vfs-console",
       "name": "component-esp_vfs_console",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_vfs_console",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_vfs_console",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_vfs_console"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_vfs_console"
         }
       ]
     },
@@ -738,15 +738,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esp-wifi",
       "name": "component-esp_wifi",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_wifi",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_wifi",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esp_wifi"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esp_wifi"
         }
       ]
     },
@@ -754,15 +754,15 @@
       "type": "library",
       "bom-ref": "SUBMODULE-esp-wifi-lib",
       "name": "submodule-esp_wifi-lib",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp32-wifi-lib@75710820e86e573220002b3aab4f5e43ad10d4ec",
+      "purl": "pkg:github/espressif/esp32-wifi-lib@6e61cda9d848de51373984a90271f59732556400",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp32-wifi-lib.git@75710820e86e573220002b3aab4f5e43ad10d4ec"
+          "url": "https://github.com/espressif/esp32-wifi-lib.git@6e61cda9d848de51373984a90271f59732556400"
         }
       ]
     },
@@ -770,15 +770,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-esptool-py",
       "name": "component-esptool_py",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esptool_py",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esptool_py",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/esptool_py"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/esptool_py"
         }
       ]
     },
@@ -786,15 +786,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-freertos",
       "name": "component-freertos",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/freertos",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/freertos",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/freertos"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/freertos"
         }
       ]
     },
@@ -809,11 +809,11 @@
       "publisher": "Amazon Web Services",
       "description": "An open-source, real-time operating system (RTOS) with additional features and patches from Espressif.",
       "cpe": "cpe:2.3:o:amazon:freertos:10.5.1:*:*:*:*:*:*:*",
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/freertos/FreeRTOS-Kernel",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/freertos/FreeRTOS-Kernel",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/freertos/FreeRTOS-Kernel"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/freertos/FreeRTOS-Kernel"
         }
       ]
     },
@@ -821,15 +821,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-hal",
       "name": "component-hal",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/hal",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/hal",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/hal"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/hal"
         }
       ]
     },
@@ -837,15 +837,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-heap",
       "name": "component-heap",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/heap",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/heap",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/heap"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/heap"
         }
       ]
     },
@@ -853,7 +853,7 @@
       "type": "library",
       "bom-ref": "SUBMODULE-heap-tlsf",
       "name": "submodule-heap-tlsf",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
@@ -875,11 +875,11 @@
       },
       "publisher": "NGINX, Joyent, Inc. and other Node contributors",
       "description": "HTTP request/response parser for c.",
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/http_parser",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/http_parser",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/http_parser"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/http_parser"
         }
       ]
     },
@@ -887,15 +887,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-log",
       "name": "component-log",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/log",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/log",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/log"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/log"
         }
       ]
     },
@@ -903,15 +903,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-lwip",
       "name": "component-lwip",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/lwip",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/lwip",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/lwip"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/lwip"
         }
       ]
     },
@@ -926,11 +926,11 @@
       "publisher": "non-GNU software and documentation, lwIP Project <lwip-members@nongnu.org>",
       "description": "A Lightweight TCP/IP stack with additional features and patches from Espressif.",
       "cpe": "cpe:2.3:a:lwip_project:lwip:2.1.3:*:*:*:*:*:*:*",
-      "purl": "pkg:github/espressif/esp-lwip@0606eed9d8b98a797514fdf6eabb4daf1c8c8cd9",
+      "purl": "pkg:github/espressif/esp-lwip@392707e5c3a5d8e2531461db77843b9759cd5a43",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-lwip.git@0606eed9d8b98a797514fdf6eabb4daf1c8c8cd9"
+          "url": "https://github.com/espressif/esp-lwip.git@392707e5c3a5d8e2531461db77843b9759cd5a43"
         }
       ]
     },
@@ -938,12 +938,12 @@
       "type": "library",
       "bom-ref": "COMPONENT-main",
       "name": "component-main",
-      "version": "4574602-dirty",
-      "purl": "pkg:github/mcintoda/InductiveChargerRx@4574602e8799741c61332463c08b9bfe036ad75b#firmware/main",
+      "version": "80d97f3",
+      "purl": "pkg:github/mcintoda/InductiveChargerRx@80d97f3251ced9e9fe997386e6115656b75b3e39#firmware/main",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/mcintoda/InductiveChargerRx@4574602e8799741c61332463c08b9bfe036ad75b#firmware/main"
+          "url": "https://github.com/mcintoda/InductiveChargerRx@80d97f3251ced9e9fe997386e6115656b75b3e39#firmware/main"
         }
       ]
     },
@@ -951,15 +951,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-mbedtls",
       "name": "component-mbedtls",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/mbedtls",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/mbedtls",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/mbedtls"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/mbedtls"
         }
       ]
     },
@@ -967,28 +967,38 @@
       "type": "library",
       "bom-ref": "SUBMODULE-mbedtls-mbedtls",
       "name": "mbed_tls",
-      "version": "3.6.2",
+      "version": "3.6.7",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
       "publisher": "Trusted Firmware <mbed-tls-security@lists.trustedfirmware.org>",
       "description": "An open source, portable, easy to use, readable and flexible SSL library with additional features and patches from Espressif.",
-      "cpe": "cpe:2.3:a:arm:mbed_tls:3.6.2:*:*:*:*:*:*:*",
-      "purl": "pkg:github/espressif/mbedtls@98fcfd6d2cea90d306e8fde8e5bffd6087c9cda8",
+      "cpe": "cpe:2.3:a:arm:mbed_tls:3.6.7:*:*:*:*:*:*:*",
+      "purl": "pkg:github/espressif/mbedtls@2b96dd8eebe880f304c69976b3c2fa0c5100cbb6",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/mbedtls.git@98fcfd6d2cea90d306e8fde8e5bffd6087c9cda8"
+          "url": "https://github.com/espressif/mbedtls.git@2b96dd8eebe880f304c69976b3c2fa0c5100cbb6"
         }
       ],
       "evidence": {
         "identity": [
           {
             "field": "cpe",
-            "concludedValue": "cpe:2.3:a:trustedfirmware:mbed_tls:3.6.2:*:*:*:*:*:*:*"
+            "concludedValue": "cpe:2.3:a:trustedfirmware:mbed_tls:3.6.7:*:*:*:*:*:*:*"
           }
         ]
-      }
+      },
+      "properties": [
+        {
+          "name": "esp-idf-sbom:cve-keyword",
+          "value": "mbed tls"
+        },
+        {
+          "name": "esp-idf-sbom:cve-keyword",
+          "value": "mbedtls"
+        }
+      ]
     },
     {
       "type": "library",
@@ -1001,11 +1011,11 @@
       "publisher": "Red Hat Incorporated",
       "description": "An open-source C standard library implementation with additional features and patches from Espressif.",
       "cpe": "cpe:2.3:a:newlib_project:newlib:4.3.0:*:*:*:*:*:*:*",
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/newlib",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/newlib",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/newlib"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/newlib"
         }
       ]
     },
@@ -1013,15 +1023,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-nvs-flash",
       "name": "component-nvs_flash",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/nvs_flash",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/nvs_flash",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/nvs_flash"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/nvs_flash"
         }
       ]
     },
@@ -1029,15 +1039,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-partition-table",
       "name": "component-partition_table",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/partition_table",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/partition_table",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/partition_table"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/partition_table"
         }
       ]
     },
@@ -1045,15 +1055,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-pthread",
       "name": "component-pthread",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/pthread",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/pthread",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/pthread"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/pthread"
         }
       ]
     },
@@ -1061,15 +1071,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-soc",
       "name": "component-soc",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/soc",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/soc",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/soc"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/soc"
         }
       ]
     },
@@ -1077,15 +1087,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-spi-flash",
       "name": "component-spi_flash",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/spi_flash",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/spi_flash",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/spi_flash"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/spi_flash"
         }
       ]
     },
@@ -1093,15 +1103,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-tcp-transport",
       "name": "component-tcp_transport",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/tcp_transport",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/tcp_transport",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/tcp_transport"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/tcp_transport"
         }
       ]
     },
@@ -1109,15 +1119,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-vfs",
       "name": "component-vfs",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/vfs",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/vfs",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/vfs"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/vfs"
         }
       ]
     },
@@ -1132,11 +1142,11 @@
       "publisher": "Jouni Malinen",
       "description": "Espressif fork of wpa_supplicant - an open-source WPA/WPA2/WPA3/IEEE 802.1X Supplicant.",
       "cpe": "cpe:2.3:a:w1.fi:wpa_supplicant:2.10:*:*:*:*:*:*:*",
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/wpa_supplicant",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/wpa_supplicant",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/wpa_supplicant"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/wpa_supplicant"
         }
       ]
     },
@@ -1144,15 +1154,15 @@
       "type": "library",
       "bom-ref": "COMPONENT-xtensa",
       "name": "component-xtensa",
-      "version": "v5.3.2",
+      "version": "v5.3.6",
       "supplier": {
         "name": "Espressif Systems (Shanghai) CO LTD"
       },
-      "purl": "pkg:github/espressif/esp-idf@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/xtensa",
+      "purl": "pkg:github/espressif/esp-idf@79e3454c68248bd7d881721c9b2e94561378a8ce#components/xtensa",
       "externalReferences": [
         {
           "type": "vcs",
-          "url": "https://github.com/espressif/esp-idf.git@9d7f2d69f50d1288526d4f1027108e314e8c879f#components/xtensa"
+          "url": "https://github.com/espressif/esp-idf.git@79e3454c68248bd7d881721c9b2e94561378a8ce#components/xtensa"
         }
       ]
     }
@@ -1576,6 +1586,27 @@
   ],
   "vulnerabilities": [
     {
+      "bom-ref": "vex-FRAMEWORK-esp-idf-CVE-2026-81507",
+      "id": "CVE-2026-81507",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-81507"
+      },
+      "analysis": {
+        "state": "not_affected",
+        "justification": "code_not_present",
+        "response": [
+          "will_not_fix"
+        ],
+        "detail": "Out-of-bounds read in the BlueDroid L2CAP configuration option parsing (components/bt/host/bluedroid/stack/l2cap/l2c_main.c and l2c_utils.c). Fixed in 5.2.8, 5.3.6, 5.5.5, 6.0.3 and 6.1-rc1. release/v5.4 has the fix (5731c63ece12), so the next 5.4 release, 5.4.5, has it too. The v6.1-beta1 pre-release also reports 6.1.0, but does not have the fix. https://github.com/espressif/esp-idf/security/advisories/GHSA-v335-fxwc-rc44"
+      },
+      "affects": [
+        {
+          "ref": "FRAMEWORK-esp-idf"
+        }
+      ]
+    },
+    {
       "bom-ref": "vex-FRAMEWORK-esp-idf-CVE-2025-27840",
       "id": "CVE-2025-27840",
       "source": {
@@ -1785,6 +1816,148 @@
       ]
     },
     {
+      "bom-ref": "vex-SUBMODULE-mbedtls-mbedtls-CVE-2026-25832",
+      "id": "CVE-2026-25832",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-25832"
+      },
+      "analysis": {
+        "state": "not_affected",
+        "justification": "code_not_present",
+        "response": [
+          "will_not_fix"
+        ],
+        "detail": "TLS 1.3 client accepts a HelloRetryRequest that selects a group it did not advertise. The flawed check was added in 3.5.0. Fixed in 3.6.7 by 55ccd932658b and in 4.1.1 by cec2cef6b5ce, the 4.1.x fix commit named in the advisory. The 4.1.1 ChangeLog lists CVE-2026-25832. The advisory and the CVE record name 4.1.2 as the first fixed 4.x release, but the fix is already in the mbedtls-4.1.1 tag."
+      },
+      "affects": [
+        {
+          "ref": "SUBMODULE-mbedtls-mbedtls"
+        }
+      ]
+    },
+    {
+      "bom-ref": "vex-SUBMODULE-mbedtls-mbedtls-CVE-2026-73064",
+      "id": "CVE-2026-73064",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-73064"
+      },
+      "analysis": {
+        "state": "not_affected",
+        "justification": "code_not_present",
+        "response": [
+          "will_not_fix"
+        ],
+        "detail": "Mbed TLS TLS 1.3 server flaw in 3.2.0 through 3.6.6 and 4.0.0 through 4.1.0. Fixed in 3.6.7 and 4.1.1"
+      },
+      "affects": [
+        {
+          "ref": "SUBMODULE-mbedtls-mbedtls"
+        }
+      ]
+    },
+    {
+      "bom-ref": "vex-SUBMODULE-mbedtls-mbedtls-CVE-2025-54764",
+      "id": "CVE-2025-54764",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-54764"
+      },
+      "analysis": {
+        "state": "not_affected",
+        "response": [
+          "will_not_fix"
+        ],
+        "detail": "Fixed in 3.6.5"
+      },
+      "affects": [
+        {
+          "ref": "SUBMODULE-mbedtls-mbedtls"
+        }
+      ]
+    },
+    {
+      "bom-ref": "vex-SUBMODULE-mbedtls-mbedtls-CVE-2025-59438",
+      "id": "CVE-2025-59438",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-59438"
+      },
+      "analysis": {
+        "state": "not_affected",
+        "response": [
+          "will_not_fix"
+        ],
+        "detail": "Fixed in 3.6.5"
+      },
+      "affects": [
+        {
+          "ref": "SUBMODULE-mbedtls-mbedtls"
+        }
+      ]
+    },
+    {
+      "bom-ref": "vex-SUBMODULE-mbedtls-mbedtls-CVE-2025-52496",
+      "id": "CVE-2025-52496",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-52496"
+      },
+      "analysis": {
+        "state": "not_affected",
+        "response": [
+          "will_not_fix"
+        ],
+        "detail": "Fixed in 3.6.4"
+      },
+      "affects": [
+        {
+          "ref": "SUBMODULE-mbedtls-mbedtls"
+        }
+      ]
+    },
+    {
+      "bom-ref": "vex-SUBMODULE-mbedtls-mbedtls-CVE-2025-27810",
+      "id": "CVE-2025-27810",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-27810"
+      },
+      "analysis": {
+        "state": "not_affected",
+        "response": [
+          "will_not_fix"
+        ],
+        "detail": "Fixed in 3.6.3"
+      },
+      "affects": [
+        {
+          "ref": "SUBMODULE-mbedtls-mbedtls"
+        }
+      ]
+    },
+    {
+      "bom-ref": "vex-SUBMODULE-mbedtls-mbedtls-CVE-2025-66442",
+      "id": "CVE-2025-66442",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-66442"
+      },
+      "analysis": {
+        "state": "not_affected",
+        "response": [
+          "will_not_fix"
+        ],
+        "detail": "Applicable only with Clang with select-optimize feature. ESP-IDF uses gcc as the default compiler and uses -Os as the default optimisation flag"
+      },
+      "affects": [
+        {
+          "ref": "SUBMODULE-mbedtls-mbedtls"
+        }
+      ]
+    },
+    {
       "bom-ref": "vex-COMPONENT-newlib-CVE-2024-30949",
       "id": "CVE-2024-30949",
       "source": {
@@ -1801,6 +1974,26 @@
       "affects": [
         {
           "ref": "COMPONENT-newlib"
+        }
+      ]
+    },
+    {
+      "bom-ref": "vex-COMPONENT-wpa-supplicant-CVE-2023-52160",
+      "id": "CVE-2023-52160",
+      "source": {
+        "name": "NVD",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-52160"
+      },
+      "analysis": {
+        "state": "not_affected",
+        "response": [
+          "will_not_fix"
+        ],
+        "detail": "The relevant fix has been patched with https://github.com/espressif/esp-idf/commit/59a62f2af65945f92d475089f9ce66fce56cc737"
+      },
+      "affects": [
+        {
+          "ref": "COMPONENT-wpa-supplicant"
         }
       ]
     }

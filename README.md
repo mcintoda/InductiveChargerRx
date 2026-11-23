@@ -21,7 +21,7 @@ overflows, and reports the water temperature.
 - [`docs/bring-up.md`](docs/bring-up.md): bench test plan for the first boards
 - [`firmware/`](firmware/): ESP-IDF firmware (ESP32-S3) with host unit tests
 - **Product website (marketing page):** [`docs/site/index.html`](docs/site/index.html)
-- **Security review (Wi-Fi, web, OTA):** [`docs/security.md`](docs/security.md)
+- **Security review (Wi-Fi, web, OTA):** [`docs/security.md`](docs/security.md); firmware SBOM and CVE check: [`docs/sbom/`](docs/sbom/README.md)
 - **Quick start guide for users:** [`docs/quick-start.html`](docs/quick-start.html) (setup, mounting, alerts, charging, light legend)
 - [`docs/enclosure.md`](docs/enclosure.md): watertight enclosure (O-ring, no epoxy) with CAD in [`hardware/mech/`](hardware/mech/)
 - **Parts JLC does not supply:** [`docs/bom-hand-parts.md`](docs/bom-hand-parts.md) (one BOM, all suppliers; CSV: [`hardware/bom_hand_parts.csv`](hardware/bom_hand_parts.csv))
