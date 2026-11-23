@@ -58,7 +58,7 @@ nav .btn { padding: 10px 16px; font-size: 14px; }
 /* hero: the tub */
 .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
 .hero .in { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 32px; align-items: end; padding-block: 72px 0; position: relative; z-index: 2; }
-.hero h1 { font-size: clamp(46px, 7.4vw, 96px); font-weight: 700; }
+.hero h1 { font-size: clamp(42px, 6.2vw, 82px); font-weight: 700; }
 .hero h1 em { font-style: normal; color: var(--slate); }
 .hero .copy { display: grid; gap: 22px; padding-bottom: 236px; }
 .hero .lede { font-size: 19px; color: var(--muted); max-width: 34em; }
@@ -102,13 +102,13 @@ nav .btn { padding: 10px 16px; font-size: 14px; }
 @keyframes blink { 50% { opacity: .15; } }
 @keyframes ring { from { opacity: .8; transform: scale(.6); } to { opacity: 0; transform: scale(1.6); } }
 #beep { transform-box: fill-box; transform-origin: center; }
-.note { position: absolute; right: 12px; top: 12px; width: min(250px, 62%); background: var(--mist); border: 1px solid var(--line); border-radius: 14px;
+.simnote { position: absolute; right: 12px; top: 12px; width: min(250px, 62%); background: var(--mist); border: 1px solid var(--line); border-radius: 14px;
   padding: 10px 12px; font-size: 13px; display: grid; gap: 2px; box-shadow: 0 10px 24px rgba(20,40,50,.14); transition: border-color .3s; }
-.note b { font-size: 14px; }
-.note span { color: var(--muted); }
-.note.full { border-color: var(--alarm); }
-.note.full b { color: var(--alarm); }
-.note.pop { animation: pop .4s cubic-bezier(.2,1.4,.4,1) both; }
+.simnote b { font-size: 14px; }
+.simnote span { color: var(--muted); }
+.simnote.full { border-color: var(--alarm); }
+.simnote.full b { color: var(--alarm); }
+.simnote.pop { animation: pop .4s cubic-bezier(.2,1.4,.4,1) both; }
 .readout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .readout div { background: var(--foam); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; }
 .readout span { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
@@ -131,7 +131,7 @@ nav .btn { padding: 10px 16px; font-size: 14px; }
 .steps li:hover { transform: translateY(-3px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .water, .toast, .wave, .note.pop, #led, #beep.on { animation: none !important; }
+  .water, .toast, .wave, .simnote.pop, #led, #beep.on { animation: none !important; }
   .lift { transform: none; }
 }
 
@@ -141,13 +141,26 @@ section { padding-block: 88px; }
 .head h2 { font-size: clamp(32px, 4.4vw, 52px); font-weight: 600; }
 .head p { color: var(--muted); font-size: 18px; }
 
-.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; counter-reset: s; }
+.steps { margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; counter-reset: s; }
 .steps li { list-style: none; display: grid; gap: 10px; align-content: start; }
 .steps li::before { counter-increment: s; content: counter(s); font: 600 64px/1 var(--display); color: var(--glass); }
 .steps h3 { font-size: 24px; font-weight: 600; }
 .steps p { color: var(--muted); }
 .steps ol { margin: 0; padding: 0; display: contents; }
 
+.pledge { font-size: 14px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+.pledge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--glass); flex: none; }
+.parents { padding-top: 0; }
+.pcards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.pcards div { background: var(--foam); border: 1px solid var(--line); border-radius: 18px; padding: 22px; display: grid; gap: 8px; align-content: start; transition: transform .25s; }
+.pcards div:hover { transform: translateY(-3px); }
+.pcards h3 { font-size: 20px; font-weight: 600; }
+.pcards p { color: var(--muted); font-size: 15px; }
+.pcards .k { font: 500 12px var(--mono); color: var(--slate); letter-spacing: .04em; }
+.promise { margin-top: 28px; border-radius: 18px; padding: 22px 24px; display: grid; gap: 6px;
+  background: color-mix(in srgb, var(--alarm) 9%, var(--foam)); border: 1.5px solid color-mix(in srgb, var(--alarm) 45%, var(--line)); }
+.promise b { font: 600 20px/1.3 var(--display); }
+.promise p { color: var(--muted); max-width: 70ch; }
 .slab { background: var(--deep); color: var(--on-slate); }
 .slab .eyebrow { color: var(--glass); }
 .slab .head p { color: color-mix(in srgb, var(--on-slate) 75%, transparent); }
@@ -205,7 +218,8 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
   .readout span { font-size: 10px; }
   .hero .copy { padding-bottom: 0; }
   .toast { left: 0; top: 0; }
-  .steps, .feat { grid-template-columns: 1fr; }
+  .steps, .feat, .pcards { grid-template-columns: 1fr; }
+  .pcards { gap: 10px; }
   section { padding-block: 64px; }
 }
 </style>
@@ -216,7 +230,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
       <svg viewBox="0 0 32 32" aria-hidden="true"><g fill="var(--slate)"><path fill-rule="evenodd" d="M21.41 22.96L23.02 22.63L23.86 22.26L28.87 19.34L28.16 23.98L27.82 24.56L27.38 24.89L22.75 27.56L22.19 27.81L21.41 27.99Z"/><path fill-rule="evenodd" d="M19.46 27.81L18.89 27.56L4.38 19.17L4.03 18.81L3.84 18.41L3.13 13.77L17.79 22.26L18.73 22.67L20.24 22.96L20.24 27.99Z"/><path fill-rule="evenodd" d="M28.73 16.31L28.97 16.83L28.97 17.36L28.73 17.88L28.52 18.12L27.96 18.54L23.33 21.21L22.60 21.54L21.74 21.74L20.82 21.81L19.47 21.66L18.32 21.21L4.04 12.97L3.48 12.55L3.12 12.05L3.03 11.79L3.03 11.26L3.27 10.74L3.73 10.28L6.41 8.71L6.42 4.59L6.53 4.33L6.74 4.13L7.00 4.03L7.28 4.03L10.05 5.60L10.24 5.80L10.34 6.06L10.31 6.41L10.17 6.65L9.89 6.85L9.61 6.89L9.28 6.80L7.84 5.97L7.84 7.88L9.02 7.23L10.26 6.87L11.64 6.82L12.53 6.96L13.34 7.23L27.96 15.65ZM11.93 8.10L10.98 7.99L10.12 8.24L7.84 9.55L7.76 9.97L7.46 10.26L7.06 10.34L6.70 10.21L5.36 11.00L5.06 11.41L5.10 11.75L5.49 12.14L19.76 20.38L20.25 20.57L21.02 20.63L21.74 20.45L26.51 17.71L26.84 17.42L26.94 16.98L26.84 16.76L26.51 16.48Z"/><path d="M10.84 9.27L11.25 9.21L11.56 9.30L25.15 17.14L21.26 19.38L20.82 19.46L20.44 19.41L6.85 11.57L7.62 11.45L8.06 11.26L8.50 10.92L8.83 10.43Z"/></g></svg>
       brim
     </a>
-    <ul><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#specs">Specs</a></li><li><a href="#faq">FAQ</a></li></ul>
+    <ul><li><a href="#parents">For parents</a></li><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#specs">Specs</a></li><li><a href="#faq">FAQ</a></li></ul>
     <a class="btn" href="#join">Join the waitlist</a>
   </div>
 </nav>
@@ -224,10 +238,11 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
 <header class="hero" id="top">
   <div class="in">
     <div class="copy">
-      <span class="eyebrow">Bath level monitor</span>
+      <span class="eyebrow">For family bath time</span>
       <h1>Has this ever <em>happened to you?</em></h1>
-      <p class="lede">The bath's running, the phone rings or the kids need you, and you come back to water lapping over the rim. brim sits on your tub wall and taps your phone a couple of minutes before the bath is full, then again when it gets there. It also warns you if the water's too hot.</p>
+      <p class="lede">The bath is running, one child is half undressed, the other needs pyjamas, and by the time you look back the water is at the rim. brim watches the tub while it fills. It taps your phone a couple of minutes before it’s full, again when it gets there, and if the water is too hot for little ones.</p>
       <div class="ctas"><a class="btn" href="#join">Join the waitlist</a><a class="btn ghost" href="#how">See how it works</a></div>
+      <p class="pledge">brim watches the water while it fills. Once the kids are in, you watch them.</p>
     </div>
     <div class="stage">
       <svg class="device" viewBox="0 0 176 480" role="img" aria-label="brim, a slim rounded device, in its bracket on the tub wall">
@@ -244,7 +259,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
       <div class="toast" role="img" aria-label="Phone notification: Bath nearly full, about 2 minutes to go">
         <svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="var(--slate)"/><path d="M8 15 l9 5 l9 -5 l-9 -5z" fill="var(--on-slate)" opacity=".9"/><path d="M8 16 v4 l9 5 v-4z M26 16 v4 l-9 5 v-4z" fill="var(--on-slate)" opacity=".6"/></svg>
         <b id="tt">Bath nearly full</b>
-        <span id="tm">About 2 min to go. Water 39.5&nbsp;°C.</span>
+        <span id="tm">About 2 min to go. Water 37.5&nbsp;°C.</span>
       </div>
     </div>
   </div>
@@ -261,8 +276,24 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
     <ol class="steps">
       <li><h3>Stick it at your full line</h3><p>Two suction cups hold the bracket on the inside of the tub. Put its top a few millimetres below the level you like. brim slides in from the top.</p></li>
       <li><h3>Join your Wi-Fi</h3><p>Your phone joins brim's setup network and a page opens by itself. Pick your Wi-Fi, subscribe in the free ntfy app, and you'll get a “brim is connected” alert.</p></li>
-      <li><h3>Run baths as usual</h3><p>brim wakes when the water reaches it and watches the level rise. If something pulls your attention away, your phone reminds you to turn off the tap.</p></li>
+      <li><h3>Get the kids ready</h3><p>brim wakes when the water reaches it and watches the level rise while you sort out towels and pyjamas. Your phone tells you when to turn off the tap.</p></li>
     </ol>
+  </div>
+</section>
+
+<section class="parents" id="parents">
+  <div class="in">
+    <div class="head"><span class="eyebrow">Made for bath time with little ones</span><h2>The tub fills on its own schedule. Bedtime doesn’t wait.</h2><p>Bath night with young kids is a juggling act. brim takes one ball out of the air: the water.</p></div>
+    <div class="pcards">
+      <div><span class="k">nearly full · full</span><h3>Fill while you wrangle</h3><p>Undress the toddler, find the bath toys, change the baby. brim tells you two minutes before the tub is full, then again at your line.</p></div>
+      <div><span class="k">your limit</span><h3>Not too hot</h3><p>If the water is warmer than the limit you set, your phone gets an alert and brim breathes magenta. Check with your elbow or a thermometer before anyone gets in.</p></div>
+      <div><span class="k">sealed</span><h3>Nothing to fiddle with</h3><p>No buttons, ports or switches. Rounded edges, a screwed-shut case, and a light kids can read: green good, red stop.</p></div>
+      <div><span class="k">tilt alert</span><h3>Pulled off? You’ll know</h3><p>Little hands will lift it out of its bracket. That’s fine: brim is waterproof, and if it ends up somewhere it shouldn’t be, your phone says so.</p></div>
+    </div>
+    <div class="promise">
+      <b>Our one rule: brim watches the water, never your child.</b>
+      <p>It’s for the few minutes while the tub fills, when no one is in it. A child can slip under silently in seconds, in very little water. Once they’re in the bath, stay within arm’s reach, every time.</p>
+    </div>
   </div>
 </section>
 
@@ -271,7 +302,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
     <div class="head"><span class="eyebrow">What's inside</span><h2>Sealed shut. Senses straight through the wall.</h2><p>No holes, no buttons, no ports. Everything happens through 1.2 mm of plastic.</p></div>
     <div class="feat">
       <div><span class="k">6 levels · 60 mm</span><h3>Measures, doesn't guess</h3><p>Six capacitive pads read the water through the case, plus a dry reference pad that cancels drift. Suds and splashes don't fool it.</p></div>
-      <div><span class="k">±0.1 °C sensor</span><h3>Too-hot warning</h3><p>A medical-grade temperature sensor reads the water through a thin thermal window. Pick your limit, 42 °C by default.</p></div>
+      <div><span class="k">±0.1 °C sensor</span><h3>Too-hot warning</h3><p>A precision temperature sensor reads the water through a thin window in the case. Set the limit lower for little ones: 37–38 °C is a common target for babies.</p></div>
       <div><span class="k">Qi</span><h3>Charges like a phone</h3><p>Lay it on any flat Qi pad. One charge lasts about four months of daily baths.</p></div>
       <div><span class="k">ntfy</span><h3>Alerts without an account</h3><p>Notifications go through ntfy, a free open-source app. No brim account, no subscription, and you can run your own server.</p></div>
       <div><span class="k">light + beeper</span><h3>Works when Wi-Fi doesn't</h3><p>brim also flashes and beeps on its own, so a full bath gets noticed even if your phone is in another room.</p></div>
@@ -297,7 +328,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
           <path d="M150 96 l10 -6 v12z M270 96 l-10 -6 v12z" fill="var(--alarm)"/>
           <text x="10" y="88" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--alarm)">FULL LINE</text>
         </svg>
-        <div class="note" id="note" aria-live="polite"><b id="nt">Waiting for a bath</b><span id="nm">brim is asleep, drawing almost nothing.</span></div>
+        <div class="simnote" id="note" aria-live="polite"><b id="nt">Waiting for a bath</b><span id="nm">brim is asleep, drawing almost nothing.</span></div>
       </div>
       <div class="readout">
         <div><span>To full line</span><b id="rl">--</b></div>
@@ -363,7 +394,9 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
       <details><summary>What if my Wi-Fi goes down mid-bath?</summary><p>brim still flashes red and beeps at your full line, so you'll hear it if you're nearby. The phone alerts resume when Wi-Fi comes back.</p></details>
       <details><summary>Can someone else change its settings?</summary><p>Changes need a double-tap on brim itself while it sits on its charger. Nobody on your network can change where alerts go or update it without touching it.</p></details>
       <details><summary>Does it work with bubble bath and bath oils?</summary><p>Yes. It reads the water's capacitance through the wall, and a reference pad above the water line cancels film and temperature drift.</p></details>
-      <details><summary>Is it a safety device?</summary><p>No. brim is a reminder to turn off the tap. Never leave a child, or anyone who needs supervision, alone in the bath.</p></details>
+      <details open><summary>Can I leave my child in the bath while brim watches?</summary><p>No. brim only knows about the water, and it’s meant for while the tub fills, with no one in it. Children can slip under silently in seconds. Once they’re in the bath, stay within arm’s reach and keep your eyes on them, every time. brim is not a safety or monitoring device.</p></details>
+      <details><summary>What if my kids pull it off the wall?</summary><p>It slides out of its bracket by design, and the sealed case doesn’t mind being dunked or dropped. If it’s tilted or out of the bracket while the bath fills, your phone gets “brim is tilted”. As with any gadget that has a battery inside, don’t let little ones chew on it or take it to bed.</p></details>
+      <details><summary>What temperature should I set?</summary><p>That’s your call, and it’s easy to change. Many parents aim for about 37–38 °C for babies and young children. brim’s alert is a backup: always test the water yourself before anyone gets in.</p></details>
     </div>
   </div>
 </section>
@@ -372,7 +405,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
   <div class="in">
     <div style="display:grid;gap:14px">
       <span class="eyebrow">First batch</span>
-      <h2>Never mop up an overflow again.</h2>
+      <h2>Bath night, minus the overflow.</h2>
       <p class="note">brim is being built in a small first batch. Leave your email to hear when it's ready.</p>
     </div>
     <form id="wait" novalidate>
@@ -385,7 +418,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
 
 <footer>
   <div class="in">
-    <p class="safety"><b>brim reminds; it doesn't supervise.</b> Never leave anyone at risk alone in the bath. Keep the Qi pad, a mains device, away from water.</p>
+    <p class="safety"><b>brim watches the water, never your child.</b> Never leave a child alone in the bath, even for a moment. Keep the Qi pad, a mains device, away from water.</p>
     <span>brim · bath level monitor</span>
   </div>
 </footer>
@@ -396,7 +429,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
   var $ = function (id) { return document.getElementById(id); };
 
   // hero: the notification moves from "nearly full" to "BATH FULL" and back
-  var heroMsgs = [["Bath nearly full", "About 2 min to go. Water 39.5\u00a0°C.", false],
+  var heroMsgs = [["Bath nearly full", "About 2 min to go. Water 37.5\u00a0°C.", false],
                   ["BATH FULL", "At your line. Turn off the tap.", true]];
   var hi = 0;
   if (!reduce) setInterval(function () {
@@ -414,7 +447,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
   function note(k, title, msg) {
     var n = $('note');
     $('nt').textContent = title; $('nm').textContent = msg;
-    n.className = 'note' + (k === 3 ? ' full' : '');
+    n.className = 'simnote' + (k === 3 ? ' full' : '');
     if (!reduce) { void n.offsetWidth; n.classList.add('pop'); }
   }
   function render(t) {
@@ -433,7 +466,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
       $('beep').setAttribute('class', k === 3 ? 'on' : '');
       if (k === 0) note(0, 'Waiting for a bath', 'brim is asleep, drawing almost nothing.');
       if (k === 1) note(1, 'brim is watching', 'On the device: a dim blue blip every 4 s. No alert yet.');
-      if (k === 2) note(2, 'Bath nearly full', 'About 2 min to go. Water 39.5 °C.');
+      if (k === 2) note(2, 'Bath nearly full', 'About 2 min to go. Water 37.5 °C.');
       if (k === 3) note(3, 'BATH FULL', 'At your line. Turn off the tap. Double-tap brim to silence.');
       $('tl').classList.add('live');
       for (var j = 0; j < tl.length; j++) tl[j].classList.toggle('on', j === k - 1 || (k === 1 && j === 0));
@@ -463,7 +496,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
 
   // entrance: blocks below the fold settle up 18 px as they arrive (never hidden)
   if (!reduce && 'IntersectionObserver' in window) {
-    var els = document.querySelectorAll('.head, .steps li, .feat div, .timeline, .specs > *, details, .join .in > *');
+    var els = document.querySelectorAll('.head, .steps li, .pcards > div, .promise, .feat div, .timeline, .specs > *, details, .join .in > *');
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.remove('lift'); io.unobserve(e.target); } });
     }, { threshold: 0.15 });
