@@ -106,7 +106,7 @@ Full study, simulation and figures: **[placement-and-electrodes.md](placement-an
 | Item | Choice |
 |------|--------|
 | Cell | 1S Li-ion pouch, **320 mAh (300 min), 25.5 × 36 × 4.3 mm**, **with integrated protection module (PCM)**, 2 wires (temperature from the PCB NTC) |
-| Regulator | **XC6220B331MR** LDO (1 A, Iq ≈ 8 µA), with RT9080-33 (600 mA, 2 µA) as a drop-in alternative footprint. It must cover the ESP32 Wi-Fi TX peaks of ~350 mA |
+| Regulator | **RT9080-33GJ5** LDO (600 mA, Iq ≈ 2 µA, JLC C841192), same SOT-23-5 pinout as the XC6220 it replaced (8 µA). It must cover the ESP32 Wi-Fi TX peaks of ~350 mA |
 | Battery monitor | 1 M / 1 M divider + 100 nF into ADC1 (≈2 µA) |
 | Sensor rail | TMP117 and its I²C pull-ups are powered from a GPIO, switched on only during measurement |
 | Cut-off | Firmware stops at 3.4 V and sends a low-battery notification at 20 % |
@@ -115,14 +115,29 @@ Why not a buck converter: from a 3.6–4.2 V battery to 3.3 V, an LDO is 80–90
 
 ### 3.6 Power budget (estimates, to be confirmed on hardware)
 
+**Where the sleep current goes** (dry, off the pad; rev C as designed vs with the 2026-11-23 changes):
+
+| Sleep load | Before | Now | Notes |
+|---|---|---|---|
+| ESP32-S3 deep sleep (RTC domain, slow clock) | ~8 µA | ~8 µA | Datasheet floor for deep sleep with RTC timer |
+| Touch wake on pad 1 (incl. driving the shield plane) | ~15–25 µA | ~1–2 µA | `sleep_cycle` 3000 meant a check every ~22 ms, not 200 ms; now 65535 = ~0.48 s |
+| LDO quiescent | 8 µA | 2 µA | XC6220 → RT9080 |
+| Battery divider 1M/1M | ~2 µA | ~2 µA | Next: 4.7M/4.7M (~0.4 µA) or a switched divider, rev D |
+| BQ51050B leakage from BAT with no Qi field | ~1 µA | ~1 µA | Check the datasheet figure on the bench |
+| LIS2DW12 wake-up mode, 12.5 Hz | ~1 µA | ~1 µA | |
+| Cell protection board (inside the battery) | ~3–5 µA | ~3–5 µA | Set by the cell; a low-Iq PCM (<2 µA) helps |
+| TMP117, FDC1004, AW2013, pull-ups | 0 | 0 | On the switched sensor rail |
+| **Total** | **~38–50 µA** | **~18–21 µA** | |
+
 | State | Current | Time per day | mAh/day |
 |-------|---------|--------------|---------|
-| Deep sleep, touch wake on T1 | ~40 µA | 24 h | ~1.0 |
+| Deep sleep, touch wake on pad 1 | ~20 µA | 24 h | ~0.5 |
 | Bath active, light sleep, sampling every 2 s | ~2 mA | 25 min | ~0.8 |
 | Wi-Fi bursts (~5 events × ~3 s × ~120 mA) | — | — | ~0.5 |
-| **Total (one bath per day)** | | | **~2.3** |
+| **Total (one bath per day)** | | | **~1.8** |
 
-With 320 mAh, that's about **4 months between charges** at one bath per day. Even at 3× worse in practice, it's still about 6 weeks.
+With 320 mAh, that's about **6 months between charges** at one bath per day (it was ~4 months at ~2.3 mAh/day).
+Even at 2× worse in practice, it's still about 3 months. Measure on the bench with a PPK2 (bring-up §6) before quoting it.
 
 ---
 
@@ -295,6 +310,7 @@ With 320 mAh, that's about **4 months between charges** at one bath per day. Eve
 | 2026-11-22 | Kept the compact size (not iPhone-sized: would look like a dropped phone, double the tub footprint, add only empty volume). Phone-like feel instead: front edge round 2.5 → 3 mm, "charges flat like a phone" in the docs |
 | 2026-11-22 | User walkthrough fixes: captive portal (DNS + redirect), copy button for the ntfy topic, Wi-Fi verified after setup with a "brim is connected" alert (bad password re-opens setup), silent "brim is charging" alert linking to the settings page, test-alert button. Quick start guide (docs/quick-start.html) |
 | 2026-11-22 | Security review (docs/security.md): settings and OTA on the home network now need a per-page key, a Host check and a double-tap on the device; values HTML-escaped; topic made with the radio on; ntfy host validated; form size bugs and the OTA-rollback bug fixed. Open before shipping to others: signed images, flash/NVS encryption, WPA2 setup network |
+| 2026-11-23 | Sleep current: touch wake sampled every ~22 ms by mistake (sleep_cycle counts ~136 kHz ticks), now ~0.48 s; U4 XC6220 → RT9080-33GJ5 (2 µA). Estimated sleep ~40 → ~20 µA, ~6 months per charge. Charger: Anker 313 pad for prototypes, OEM 5 W pad quote for a bundled "brim nest". Phones with Samsung Wireless PowerShare / Pixel Battery Share can charge brim |
 | 2026-11-19 | Branding: working name "brim", drop-to-the-brim mark, foam/tide/deep/aqua palette, Inter type. Debossed logo + wordmark on the dry front band, alarm-level chevrons, Qi target over the coil on the back (docs/branding.md) |
 | 2026-11-19 | Brand rev B: ripple (pebble-in-water) mark, muted palette (mist / slate / ink / sea glass), unpainted deboss. Case: 2.5 mm front round, graduated level scale with pad numbers, alarm chevron, waterline groove on the sides, Qi coil outline on the back |
 | 2026-11-19 | Markings simplified: level horizontal scale on the left margin only (ticks + pad numbers in one column), alarm chevron on the right; Qi outline is one plain ring (no dashes or alignment ticks) |

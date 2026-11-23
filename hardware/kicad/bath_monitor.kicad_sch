@@ -8887,7 +8887,7 @@
         )
       )
     )
-    (property "Value" "XC6220B331MR"
+    (property "Value" "RT9080-33GJ5"
       (at 193.04 53.34 0)
       (effects
         (font
@@ -8913,7 +8913,7 @@
         hide
       )
     )
-    (property "Note" "1 A, 8 uA Iq. Alt: RT9080-33GJ5"
+    (property "Note" "RT9080-33GJ5: 600 mA, 2 uA Iq (was XC6220, 8 uA). Same pinout VIN/GND/EN/NC/VOUT; XC6220 symbol reused"
       (at 193.04 60.96 0)
       (effects
         (font

@@ -65,9 +65,9 @@ a spray bottle, salt, a vacuum jar or hand vacuum pump.
 ## 6. Power budget
 | Check | Pass |
 |---|---|
-| Deep sleep, dry | ≤ 60 µA |
+| Deep sleep, dry (target ~20 µA: touch wake every ~0.48 s, RT9080 LDO) | ≤ 30 µA |
 | Charge used by a 25 min simulated bath (PPK2) | ≤ 5 mAh |
-| Projected life on 320 mAh at one bath per day | ≥ 2 months |
+| Projected life on 320 mAh at one bath per day | ≥ 4 months (estimate ~6) |
 
 ## 7. Enclosure (print one cup + plug first)
 | Check | Pass | Tunable |

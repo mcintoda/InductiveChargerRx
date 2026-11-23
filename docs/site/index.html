@@ -303,7 +303,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
     <div class="feat">
       <div><span class="k">6 levels · 60 mm</span><h3>Measures, doesn't guess</h3><p>Six capacitive pads read the water through the case, plus a dry reference pad that cancels drift. Suds and splashes don't fool it.</p></div>
       <div><span class="k">±0.1 °C sensor</span><h3>Too-hot warning</h3><p>A precision temperature sensor reads the water through a thin window in the case. Set the limit lower for little ones: 37–38 °C is a common target for babies.</p></div>
-      <div><span class="k">Qi</span><h3>Charges like a phone</h3><p>Lay it on any flat Qi pad. One charge lasts about four months of daily baths.</p></div>
+      <div><span class="k">Qi</span><h3>Charges like a phone</h3><p>Lay it on any flat Qi pad, or on the back of many Samsung Galaxy and Google Pixel phones. One charge lasts about six months of daily baths.</p></div>
       <div><span class="k">ntfy</span><h3>Alerts without an account</h3><p>Notifications go through ntfy, a free open-source app. No brim account, no subscription, and you can run your own server.</p></div>
       <div><span class="k">light + beeper</span><h3>Works when Wi-Fi doesn't</h3><p>brim also flashes and beeps on its own, so a full bath gets noticed even if your phone is in another room.</p></div>
       <div><span class="k">double-tap</span><h3>One gesture</h3><p>Double-tap the case to silence an alarm. Tap a sleeping brim to see its battery colour.</p></div>
@@ -364,8 +364,8 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
           <tr><th scope="row">Temperature</th><td>TMP117, ±0.1 °C</td></tr>
           <tr><th scope="row">Sealing</th><td>O-ring sealed, designed for IP68</td></tr>
           <tr><th scope="row">Battery</th><td>Li-ion 3.7 V, 320 mAh, protected</td></tr>
-          <tr><th scope="row">Battery life</th><td>About 4 months at one bath a day</td></tr>
-          <tr><th scope="row">Charging</th><td>Any Qi pad, about 2½ hours</td></tr>
+          <tr><th scope="row">Battery life</th><td>About 6 months at one bath a day</td></tr>
+          <tr><th scope="row">Charging</th><td>Any Qi pad, about 2½ hours. Or phone-to-brim with Samsung Wireless PowerShare or Pixel Battery Share</td></tr>
           <tr><th scope="row">Wireless</th><td>Wi-Fi 2.4 GHz (ESP32-S3)</td></tr>
           <tr><th scope="row">On the device</th><td>RGB status light, piezo beeper, motion sensor</td></tr>
           <tr><th scope="row">Alerts</th><td>ntfy for iPhone and Android, or your own server</td></tr>
@@ -379,7 +379,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
           <li><span class="q">2 ×</span>40 mm suction cups</li>
           <li><span class="q">1 ×</span>Quick start card</li>
         </ul>
-        <p class="note">Qi charging pad not included. Most phone pads work: lay brim flat on its back.</p>
+        <p class="note">Any flat Qi phone charging pad works: lay brim on its back. No pad? See below for phones that can charge it.</p>
       </div>
     </div>
   </div>
@@ -389,6 +389,7 @@ footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap
   <div class="in">
     <div class="head"><span class="eyebrow">Questions</span><h2>Good to know.</h2></div>
     <div class="faq">
+      <details><summary>I don’t have a wireless charger. Can my phone charge it?</summary><p>Probably, if it’s a recent Samsung or Pixel. Turn on <b>Wireless PowerShare</b> (Samsung Galaxy S10 and later S series, Galaxy Z Fold and Z Flip) or <b>Battery Share</b> (Google Pixel 5, 6, 7, 8 and 9 series, including Pro models), then lay brim back to back with the phone, its “Qi” ring over the middle of the phone. Samsung stops sharing below 30 % battery, and sharing is slower than a pad, so a full top-up takes a few hours. iPhones can’t share power with other devices. Any flat Qi pad works too, and you’ll only need it about twice a year.</p></details>
       <details><summary>Will it work on my tub?</summary><p>brim needs a smooth, flat-ish wall for the suction cups: acrylic, enamel, steel or glazed tile. Textured surfaces and grout lines don't hold suction well.</p></details>
       <details><summary>Do I need to make an account?</summary><p>No. Alerts go through the free ntfy app using a private random topic that brim creates for you. There's no brim cloud and no subscription.</p></details>
       <details><summary>What if my Wi-Fi goes down mid-bath?</summary><p>brim still flashes red and beeps at your full line, so you'll hear it if you're nearby. The phone alerts resume when Wi-Fi comes back.</p></details>

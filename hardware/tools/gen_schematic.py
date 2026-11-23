@@ -297,8 +297,8 @@ W(pin("Q1", "3"), pin("R6", "2"), (190.5, 101.6)); LBL("QI_DET_N", 190.5, 101.6,
 # C. 3.3 V LDO
 # ===========================================================================
 _block("C")
-P("U4", "Regulator_Linear:XC6220B331MR", "XC6220B331MR", "Package_TO_SOT_SMD:SOT-23-5", 193.04, BAT_Y + 2.54, 0,
-  {"1": "VBAT", "3": "VBAT", "2": "GND", "5": "+3V3"}, text=((0, -10.16, None), (0, -7.62, None)), Note="1 A, 8 uA Iq. Alt: RT9080-33GJ5")
+P("U4", "Regulator_Linear:XC6220B331MR", "RT9080-33GJ5", "Package_TO_SOT_SMD:SOT-23-5", 193.04, BAT_Y + 2.54, 0,
+  {"1": "VBAT", "3": "VBAT", "2": "GND", "5": "+3V3"}, text=((0, -10.16, None), (0, -7.62, None)), Note="RT9080-33GJ5: 600 mA, 2 uA Iq (was XC6220, 8 uA). Same pinout VIN/GND/EN/NC/VOUT; XC6220 symbol reused")
 W(pin("U2", "4"), pin("U4", "1"))
 W(pin("U4", "3"), (177.8, pin("U4", "3")[1]), (177.8, BAT_Y))
 C("C14", C1U, 172.72, BAT_Y + 3.81, 0, "VBAT", "GND", text="l"); GND(*pin("C14", "2"))

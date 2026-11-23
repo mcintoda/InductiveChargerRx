@@ -3623,7 +3623,7 @@
         (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
       (tstamp 3982e9c7-ce06-471c-a3a2-8d683ffd9ad5)
     )
-    (fp_text value "XC6220B331MR" (at 0 -2.4) (layer "B.Fab")
+    (fp_text value "RT9080-33GJ5" (at 0 -2.4) (layer "B.Fab")
         (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
       (tstamp 37ff2937-c54e-4d99-b6eb-70905b416728)
     )

@@ -63,7 +63,8 @@ esp_err_t sense_arm_wake(int pad, uint32_t delta_counts)
     touch_pad_t ch = SENSE_CH[(pad >= 1 && pad <= N_LEVEL_PADS) ? pad - 1 : 0];
     ESP_RETURN_ON_ERROR(touch_pad_sleep_channel_enable(ch, true), TAG, "sleep ch");
     ESP_RETURN_ON_ERROR(touch_pad_sleep_set_threshold(ch, delta_counts), TAG, "sleep thr");
-    // sample the wake pad every ~200 ms in deep sleep: low current, fast enough for a filling bath
-    ESP_RETURN_ON_ERROR(touch_pad_sleep_channel_set_work_time(3000, 500), TAG, "sleep work");
+    // sleep_cycle counts RTC slow-clock ticks (~136 kHz): 3000 was one check every ~22 ms. 65535 (the
+    // maximum) is ~0.48 s, ~20x less touch + shield-drive energy; a filling bath rises ~0.15 mm in that time
+    ESP_RETURN_ON_ERROR(touch_pad_sleep_channel_set_work_time(65535, 500), TAG, "sleep work");
     return esp_sleep_enable_touchpad_wakeup();
 }

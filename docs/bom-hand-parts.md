@@ -17,8 +17,15 @@ rows to Digi-Key's BOM Manager, which matches on the manufacturer part number).
 | 8 | 1 | Screw, flat head, thread-forming for plastic, 18-8 stainless, Torx drive, M2 x 6 mm (pack of 50; 4 per device) | McMaster-Carr 95893A165 | McMaster-Carr | [95893A165](https://www.mcmaster.com/95893A165/) | 13.33 | Side walls into the plug, 4 per device. Fits the existing M2 holes (2.3 mm clearance, 1.6 mm pilot). The tip reaches 1.5 mm past the plug skirt, 0.9 mm clear of the coil: checked in fit_and_render.py |
 | 9 | 1 | Quick-recovery urethane foam (PORON-type), 1/16 in, 12 × 12 in, 18 psi (medium) | McMaster-Carr 86375K132 | McMaster-Carr | [86375K132](https://www.mcmaster.com/86375K132/) | 17 | Cut 30 mm discs: between the coil and the plug. Also the battery-swelling buffer |
 | 10 | 1 | Suction cups 40 mm, clear PVC, mushroom head (pack of 12; leave the hooks off) | Flintronic | Amazon | [search](https://www.amazon.com/s?k=Flintronic+suction+cups+40mm+mushroom+head) | 10 | Bracket keyholes, 2 per device (docs/enclosure.md 2.7) |
+| 11 | 3 | Qi wireless charging pad, 10 W (brim takes 5 W), USB powered. Needs a 5 V / 2 A USB charger, not included | Anker 313 Wireless Charger (Pad) A2503 | Amazon | [search](https://www.amazon.com/s?k=Anker+313+Wireless+Charger+Pad) | 15 | One per prototype. Any Qi pad works; avoid vertical stands |
 
-**Three suppliers only:** Amazon (items 1, 7, 10), Digi-Key (items 2–6) and McMaster-Carr (items 8, 9). Approximate total: **about US$126** plus shipping. Prices are search snapshots: check them in the cart.
+**Three suppliers only:** Amazon (items 1, 7, 10, 11), Digi-Key (items 2–6) and McMaster-Carr (items 8, 9). Approximate total: **about US$171** plus shipping. Prices are search snapshots: check them in the cart.
+
+**Bundling a charger in production:** a plain 5 W Qi pad is a commodity part. OEM factories quote it per 1,000 units
+(Alibaba / Global Sources listings for higher-power Qi2 pads sit around US$4.6–5.8 at 100–1,000 MOQ, so a basic 5 W pad
+should land lower; get quotes, with FCC/CE/RoHS and Qi certification). A branded "brim nest" sized to the coil ring
+makes alignment foolproof. Phones with Samsung Wireless PowerShare (Galaxy S10 and later S series, Z Fold / Z Flip) or
+Google Pixel Battery Share (Pixel 5 to 9 series) can also charge brim back-to-back.
 
 ## Before ordering
 - **Battery:** marketplace cells vary. On arrival check thickness (≤ 4.4 mm), that a protection board sits under the tape, and polarity (red to J1 pin 1). Cut the connector off and solder the wires to J1, so the listing's connector model, size and polarity warnings don't apply, as long as red goes to pin 1. The case is sized for 25.5 × 36 × 4.3 mm, with room for +10 % swelling (see enclosure.md).

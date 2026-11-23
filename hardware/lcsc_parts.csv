@@ -2,6 +2,7 @@ comment,lcsc,status,note
 ESP32-S3-MINI-1-N8,C2913206,confirmed,JLC extended; 8 MB flash no PSRAM
 BQ51050BRHLR,C133307,confirmed,JLC extended
 TMP117AIDRVR,C699536,confirmed,JLC extended
+RT9080-33GJ5,C841192,confirmed,Richtek RT9080-33GJ5 TSOT-23-5 2 uA Iq 600 mA; JLC extended, 24.8k stock
 XC6220B331MR,C86534,confirmed,XC6220B331MR-G; JLC extended
 10k B3380,C77131,confirmed,Murata NCP15XH103F03RC; Arrow lists NRND - alternate NCP15XH103F03RC equivalents exist
 TDK WR303050-12F5-ID,C6357742,confirmed,Qi Rx coil; hand-soldered (not placed by JLC)
