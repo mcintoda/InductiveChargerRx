@@ -20,6 +20,7 @@ overflows, and reports the water temperature.
 - [`docs/pcb-routing.md`](docs/pcb-routing.md): routing pipeline and JLC order settings
 - [`docs/bring-up.md`](docs/bring-up.md): bench test plan for the first boards
 - [`firmware/`](firmware/): ESP-IDF firmware (ESP32-S3) with host unit tests
+- **Product requirements (system, hardware, software):** [`docs/requirements.md`](docs/requirements.md)
 - **Product website (marketing page):** [`docs/site/index.html`](docs/site/index.html)
 - **Security review (Wi-Fi, web, OTA):** [`docs/security.md`](docs/security.md); firmware SBOM and CVE check: [`docs/sbom/`](docs/sbom/README.md)
 - **Quick start guide for users:** [`docs/quick-start.html`](docs/quick-start.html) (setup, mounting, alerts, charging, light legend)

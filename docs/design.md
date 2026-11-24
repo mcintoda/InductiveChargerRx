@@ -9,6 +9,8 @@ alert to an iPhone over Wi-Fi before the tub overflows.
 
 ## 1. Requirements
 
+The full, traceable requirements are in [requirements.md](requirements.md); this table is the original summary.
+
 | # | Requirement | Design response |
 |---|-------------|-----------------|
 | R1 | Detect water reaching a user-chosen level | 6-segment capacitive ladder behind the front wall. Any segment can be the alarm level, and the lower segments give an early warning and a fill-rate estimate |
