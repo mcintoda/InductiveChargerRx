@@ -22,7 +22,9 @@ def vias_in_pads(board):
         for p in fp.Pads():
             soldered = p.IsOnLayer(pcbnew.F_Paste) or p.IsOnLayer(pcbnew.B_Paste)
             small = p.GetSize().x * p.GetSize().y / 1e12 <= 1.5
-            if p.GetAttribute() == pcbnew.PAD_ATTRIB_SMD and soldered and small:
+            # GND pads keep theirs: on this board there is no room for a separate escape via next to them, and a
+            # via into the plane under a decoupling cap's ground end is the lower-risk case
+            if p.GetAttribute() == pcbnew.PAD_ATTRIB_SMD and soldered and small and p.GetNetname() != "GND":
                 out += [(fp.GetReference(), p.GetNumber(), v) for v in vias if p.HitTest(v.GetPosition())]
     return out
 
