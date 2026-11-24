@@ -266,7 +266,7 @@ GND(*pin("R3", "2"))
 TP("TP8", "RECT", 157.48, 99.06, 270, text=((3.0, 2.54, "left"), (0, 0, None)))
 
 # battery (with NTC) and VBAT rail
-P("J1", "Connector_Generic:Conn_01x02", "500mAh", "Connector_Wire:SolderWire-0.1sqmm_1x02_P3.6mm_D0.4mm_OD1mm",
+P("J1", "Connector_Generic:Conn_01x02", "Battery 320mAh", "Connector_Wire:SolderWire-0.1sqmm_1x02_P3.6mm_D0.4mm_OD1mm",
   154.94, pin("U2", "13")[1] - 2.54, 0, {"1": "VBAT", "2": "GND"},
   Note="1S Li-ion pouch 500 mAh, 403040 (4.0 x 30 x 40 mm), with protection PCM, 2 wires")
 W((147.32, BAT_Y), (147.32, pin("J1", "1")[1]), pin("J1", "1"))

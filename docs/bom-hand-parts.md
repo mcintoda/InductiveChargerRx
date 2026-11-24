@@ -18,8 +18,10 @@ rows to Digi-Key's BOM Manager, which matches on the manufacturer part number).
 | 9 | 1 | Quick-recovery urethane foam (PORON-type), 1/16 in, 12 × 12 in, 18 psi (medium) | McMaster-Carr 86375K132 | McMaster-Carr | [86375K132](https://www.mcmaster.com/86375K132/) | 17 | Cut 30 mm discs: between the coil and the plug. Also the battery-swelling buffer |
 | 10 | 1 | Suction cups 40 mm, clear PVC, mushroom head (pack of 12; leave the hooks off) | Flintronic | Amazon | [search](https://www.amazon.com/s?k=Flintronic+suction+cups+40mm+mushroom+head) | 10 | Bracket keyholes, 2 per device (docs/enclosure.md 2.7) |
 | 11 | 3 | Qi wireless charging pad, 10 W (brim takes 5 W), USB powered. Needs a 5 V / 2 A USB charger, not included | Anker 313 Wireless Charger (Pad) A2503 | Amazon | [search](https://www.amazon.com/s?k=Anker+313+Wireless+Charger+Pad) | 15 | One per prototype. Any Qi pad works; avoid vertical stands |
+| 12 | 1 | 0603 ceramic capacitor assortment incl. C0G 1–10 nF and X7R 10–220 nF | any | Amazon | [search](https://www.amazon.com/s?k=0603+ceramic+capacitor+assortment+C0G) | 12 | Qi tuning spares: C_d = C4 3.3 nF (try 2.7 / 3.9 nF); C_s = 3 × 100 nF + C23 10 nF (swap C23 for 22–47 nF) |
+| 13 | 1 | 0402 resistor assortment, 1 % | any | Amazon | [search](https://www.amazon.com/s?k=0402+resistor+assortment+1%25) | 10 | FOD tuning spares: R2 = 196R (try 150–249R) |
 
-**Three suppliers only:** Amazon (items 1, 7, 10, 11), Digi-Key (items 2–6) and McMaster-Carr (items 8, 9). Approximate total: **about US$171** plus shipping. Prices are search snapshots: check them in the cart.
+**Three suppliers only:** Amazon (items 1, 7, 10–13), Digi-Key (items 2–6) and McMaster-Carr (items 8, 9). Approximate total: **about US$193** plus shipping. Prices are search snapshots: check them in the cart.
 
 **Bundling a charger in production:** a plain 5 W Qi pad is a commodity part. OEM factories quote it per 1,000 units
 (Alibaba / Global Sources listings for higher-power Qi2 pads sit around US$4.6–5.8 at 100–1,000 MOQ, so a basic 5 W pad

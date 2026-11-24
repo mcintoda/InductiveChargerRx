@@ -1,4 +1,4 @@
-# Bring-up and bench test plan (rev B hardware)
+# Bring-up and bench test plan (rev C hardware)
 
 Work through these in order on the first boards. Each step lists what to measure, the pass criterion and,
 where the design has a tunable, which constant or part to change. The firmware logs every sample over the
@@ -6,7 +6,35 @@ USB test pads (`idf.py monitor`), so most steps need only the log.
 
 **Equipment:** bench supply with current limit, multimeter, LCR meter (100 kHz), µA power analyser (e.g. Nordic PPK2),
 a calibrated reference thermometer (±0.1 °C), 2–3 different Qi chargers, a clear container about 15 cm deep, a ruler,
-a spray bottle, salt, a vacuum jar or hand vacuum pump.
+a spray bottle, salt, a vacuum jar or hand vacuum pump, the spare 0603 capacitors and 0402 resistors (hand-parts items 12–13).
+
+## 0. Bench setup
+- **Build to flash for bring-up: the bench build.** It never deep-sleeps; where it would sleep it waits awake for
+  the same wake conditions and restarts like a wake. The USB console stays up the whole time.
+  ```
+  idf.py -B build-bench -D SDKCONFIG=build-bench/sdkconfig -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.bench" flash monitor
+  ```
+  Flash the normal build (`idf.py flash`) for anything that measures sleep current or battery life.
+- **USB console** (`brim>` prompt in `idf.py monitor`; also in the normal build whenever a computer is attached):
+
+  | Command | Does |
+  |---|---|
+  | `info` | Firmware version, unexpected restarts, settings (no password), which parts answered, bath state |
+  | `sensors` | One reading of everything: touch raw counts and level, last FDC1004 pF, water °C, battery mV / %, charger, gravity |
+  | `fake <mm>` / `fake off` | Pretend the water is at that level: drives the real alert rules, phone and sounder, with no water |
+  | `alert nearly`, `full`, `hot`, `battery` or `test` | Send one alert now (phone + light + sounder) |
+  | `led <state>`, `beep`, `beep chirp` | Check every light pattern and the sounder |
+  | `log` | Print the last bath as CSV (also on the settings page: *Last bath log*) |
+  | `recal` | Replace the dry calibration (device dry) and save it |
+- **Current measurement.** The battery is soldered to J1 with wires: put the PPK2 (ampere-meter mode) in series with
+  the red lead. Test pads: TP7 VBAT, TP1 3V3, TP8 RECT (Qi rectifier), TP2 GND.
+- **Level rig.** A clear container, a 1.2 mm plastic sheet (or an open cup, no plug) clamped flat against the board's
+  electrode side with no air gap, a ruler taped beside it. Pour in 5 mm steps and log `sensors` or the bath log.
+  Calibration is kept in flash, so re-soldering the battery doesn't make brim re-learn from scratch.
+- **Real baths with a sealed unit:** put it on the charger afterwards, tap "brim is charging", and download
+  *Last bath log (CSV)* from the settings page: 2 s samples of level, temperature, top pad, wet, alarm.
+- **Record results** per board against the **Bench** requirements (docs/requirements.md) in the Bring-up tab of the
+  cost-model spreadsheet.
 
 ## 1. Power-up (board only, no battery)
 | Check | Pass | If not |
@@ -15,7 +43,7 @@ a spray bottle, salt, a vacuum jar or hand vacuum pump.
 | 3.7 V at J1 from a bench supply, 100 mA limit | 3V3 = 3.30 V ± 2 % | Check U4 orientation |
 | Flash through the USB-C flash tab (no battery needed, no buttons) | `idf.py flash monitor` boots; the 3V3 rail reads 3.30 V from USB | Check J2 solder joints, the CC resistors (R27–R30) and U6 |
 | Snap off the flash tab (no filing) | Stub ≤ 0.6 mm; no copper burr bridging the 4 cut inner-layer traces (look at the edge with a loupe) | Trim a burr with a knife; only file if the stub is over 0.6 mm |
-| Idle current in deep sleep, dry, off the charger | **≤ 60 µA** (budget 40 µA) | Check that GPIO12 is low (TMP117 rail off) and nothing back-feeds through SDA/SCL |
+| Idle current in deep sleep, dry, off the charger (normal build) | **≤ 30 µA** (target 20 µA) | Check that GPIO12 is low (TMP117 rail off) and nothing back-feeds through SDA/SCL |
 
 ## 2. Touch electrodes (in the closed enclosure)
 | Check | Pass | Tunable |
@@ -39,7 +67,7 @@ a spray bottle, salt, a vacuum jar or hand vacuum pump.
 | Coil inductance with the plug's back wall on a Qi transmitter (Ls′) and in free air (Ls) | Ls′ ≈ 8.2 µH | C_s = 1 / ((2π·100 kHz)² · Ls′): today 3 × 100 nF + 10 nF. C_d = 1 / ((2π·1 MHz)² · Ls − 1/C_s): today 3.3 nF |
 | Charges on 3 different Qi pads (LED on, CHG_N low) | Starts within 5 s on each | Re-tune C_s, C_d. Check that the coil is centred under the Qi ring |
 | Charge current (ammeter in series with the battery) | 120–170 mA (set 143 mA); terminates near 60 mA | R1 (ILIM, 2k). Below the characterised range: TI E2E says accuracy is reduced |
-| **Charge termination** at 4.2 V | Current tapers, CHG_N goes high, transmitter stops. Never ends on the 10 h timer | R3 (TERM, 10k → ~109 mA). If it fails to terminate: 4.7k (≈ 52 mA) or wire TERM to the firmware |
+| **Charge termination** at 4.2 V | Current tapers, CHG_N goes high, transmitter stops. Never ends on the 10 h timer | R3 (TERM, 10k → ~60 mA at 143 mA). If it fails to terminate: 4.7k (≈ 28 mA, just under TI’s 30 mA guidance) or wire TERM to the firmware |
 | Coil and battery temperature while charging (sealed enclosure, 25 °C room) | < 45 °C | Lower the charge current (raise R1) |
 | Foreign-object detection | No false FOD trips on any pad | R_FOD (R2, 196R) per TI's FOD calibration procedure |
 

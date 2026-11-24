@@ -7872,7 +7872,7 @@
         (justify left)
       )
     )
-    (property "Value" "500mAh"
+    (property "Value" "Battery 320mAh"
       (at 157.48 69.85 0)
       (effects
         (font

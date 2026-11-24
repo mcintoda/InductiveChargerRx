@@ -37,6 +37,16 @@ JTAG off; irreversible). Each unit gets its setup-network password from `tools/p
 card and Wi-Fi QR code. Commands, the signing key and the per-unit steps: [`docs/security.md`](../docs/security.md).
 Boards flashed before 2026-11-23 need `idf.py erase-flash` once (the partition table moved to 0xC000).
 
+## Bring-up builds and tools
+- **Bench build** (`sdkconfig.bench`, `CONFIG_BRIM_BENCH`): never deep-sleeps, USB console always on.
+  `idf.py -B build-bench -D SDKCONFIG=build-bench/sdkconfig -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.bench" flash monitor`
+- **USB console** (`brim>`; any build while a computer is attached): `info`, `sensors`, `fake <mm>|off`,
+  `alert nearly|full|hot|battery|test`, `led <state>`, `beep [chirp]`, `log`, `recal`. See docs/bring-up.md §0.
+- **Last bath log:** 2 s samples (up to 512) saved to flash before each sleep; *Last bath log (CSV)* on the settings
+  page, or `log` on the console.
+- **Calibration** (pads and FDC1004) is saved to flash when it changes and reloaded after a power loss; a factory
+  reset keeps it. **Firmware version and unexpected restarts** show on the settings page and in the weekly "brim OK".
+
 ## Host tests (no hardware)
 ```
 make -C test          # level estimation, film rejection, drift, fill rate, alarm policy

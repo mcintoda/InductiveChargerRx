@@ -2594,7 +2594,7 @@
         (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
       (tstamp 054df834-aa89-4e49-9aed-4b592afe12ed)
     )
-    (fp_text value "500mAh" (at 1.8 -2) (layer "B.Fab")
+    (fp_text value "Battery 320mAh" (at 1.8 -2) (layer "B.Fab")
         (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
       (tstamp 9b109312-b8dc-45d6-a84e-f17891499cd1)
     )
