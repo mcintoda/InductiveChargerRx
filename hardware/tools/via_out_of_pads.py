@@ -29,34 +29,32 @@ def vias_in_pads(board):
     return out
 
 
-def main():
+def move(found_one):
+    """Remove one via (and its stubs), reroute; True and keep the board if DRC stays at 0 unconnected."""
     backup = F.PCB + ".before-via-move"
     shutil.copy(F.PCB, backup)
     board = pcbnew.LoadBoard(F.PCB)
-    found = vias_in_pads(board)
-    print("vias in soldered pads:", ", ".join(f"{r}.{n}" for r, n, _ in found) or "none")
+    ref, num, _ = found_one
+    v = next(v for r, n, v in vias_in_pads(board) if (r, n) == (ref, num))
     tracks = [t for t in board.GetTracks() if t.GetClass() != "PCB_VIA"]   # list once: pcbnew's own list breaks after Remove
-    doomed = []
-    for _, _, v in found:
-        pos, net = v.GetPosition(), v.GetNetCode()
-        doomed += [t for t in tracks if t.GetNetCode() == net and (t.GetStart() == pos or t.GetEnd() == pos)]
-        doomed.append(v)
-    seen = set()
-    for item in doomed:
-        key = item.m_Uuid.AsString()
-        if key not in seen:
-            seen.add(key)
-            board.Remove(item)
+    pos, net = v.GetPosition(), v.GetNetCode()
+    for t in [t for t in tracks if t.GetNetCode() == net and (t.GetStart() == pos or t.GetEnd() == pos)] + [v]:
+        board.Remove(t)
     board.Save(F.PCB)
-    F.main()                                            # reroutes the opened connections, saves the board
-    board = pcbnew.LoadBoard(F.PCB)
-    left, rep = vias_in_pads(board), F.drc(board)
-    if F.score(rep) or left:
+    F.main()                                            # reroutes the opened connection, saves the board
+    ok = F.score(F.drc(pcbnew.LoadBoard(F.PCB))) == 0
+    if not ok:
         shutil.copy(backup, F.PCB)
-        print("NOT kept:", F.score(rep), "unconnected,", len(left), "vias still in pads; board restored")
-    else:
-        print("kept: 0 unconnected, no vias in soldered pads")
     os.remove(backup)
+    return ok
+
+
+def main():
+    # one via at a time: each move is kept only if the whole board still routes with 0 unconnected items
+    for item in vias_in_pads(pcbnew.LoadBoard(F.PCB)):
+        print(f"{item[0]}.{item[1]}:", "moved" if move(item) else "kept in pad (no clean reroute)", flush=True)
+    left = vias_in_pads(pcbnew.LoadBoard(F.PCB))
+    print("still in soldered pads:", ", ".join(f"{r}.{n}" for r, n, _ in left) or "none")
 
 
 if __name__ == "__main__":
