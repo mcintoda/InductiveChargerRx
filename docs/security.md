@@ -30,7 +30,7 @@ firmware) so the owner trusts a device that no longer warns.
 | 6 | **ntfy host not validated.** `user@`, `/path` or other characters could reshape the alert URL. | Low | **Fixed:** host name characters and optional port only |
 | 7 | **Form parsing truncation.** A 512-byte body and 96-byte field buffer dropped long or special-character Wi-Fi passwords (URL encoding triples them) without telling the user. | Low (functional) | **Fixed:** whole body read (1 kB cap, rejected above), 200-byte field buffer |
 | 8 | **Every firmware update would have been rolled back.** Rollback is enabled but the app never marked itself valid, so the first deep-sleep reset after an update returned to the old image. | Functional | **Fixed:** `esp_ota_mark_app_valid_cancel_rollback()` once startup succeeds |
-| 9 | **Home Wi-Fi password travelled over an open setup network.** Someone in radio range during setup could sniff it, or configure the unit first. | Medium | **Fixed:** the setup network is WPA2 (with PMF) using a per-unit password from `tools/provision.py`, stored in its own `fctry` flash partition (a factory reset can't erase it) and printed on the quick start card with a Wi-Fi QR code. Release builds refuse to open a setup network without it; dev builds without factory data stay open and log a warning |
+| 9 | **Home Wi-Fi password travelled over an open setup network.** Someone in radio range during setup could sniff it, or configure the unit first. | Medium | **Fixed:** the setup network is WPA2 (with PMF) using a per-unit password from `tools/flash_unit.py`, stored in its own `fctry` flash partition (a factory reset can't erase it) and printed on the quick start card with a Wi-Fi QR code. Release builds refuse to open a setup network without it; dev builds without factory data stay open and log a warning |
 | 10 | **Firmware images weren't signed.** | Medium | **Fixed (release builds):** `sdkconfig.release` requires RSA-3072-signed images at boot and on every upload; the running image's key checks the new one, so an unsigned or foreign upload is rejected. Burns no eFuses. Production adds Secure Boot V2 (below). Verified: the signed build verifies with the key, the unsigned one fails |
 | 11 | **Secrets in plain flash; JTAG enabled.** | Low–Medium (physical) | **Fixed (production builds):** `sdkconfig.production` turns on flash encryption (release mode, secure download mode), NVS encryption with an on-chip HMAC key (Wi-Fi password, ntfy topic) and Secure Boot V2, which also disables JTAG. Irreversible eFuse step at first boot: production units only. The setup password in `fctry` stays readable to someone with the opened unit and a flash reader; it is also printed on the card, so that is accepted |
 | 12 | **The settings page is plain HTTP on the home network.** Retyping the Wi-Fi password on it is visible to a LAN sniffer. | Low | Accepted (needs a LAN attacker; HTTPS with a self-signed cert would just teach users to click through warnings) |
@@ -76,9 +76,11 @@ signed with it, so **losing it means those units can never be updated**, and any
 
 ## Production line, per unit
 
-1. Flash the development image through the USB tab, run the functional test (bring-up checklist).
-2. `python3 tools/provision.py --port <port> --serial <S/N>`: writes the setup password and serial to `fctry`,
-   prints the card text and saves a Wi-Fi QR code (`labels/`). Print the card; delete the label files.
-3. Flash the production image (`build-prod`: bootloader, partition table, app). Its first boot burns the eFuses,
-   encrypts the flash in place and generates the NVS key. From then on, updates are signed OTA uploads only.
+1. **One flash:** `python3 tools/flash_unit.py --port <port> --serial <S/N> --build build-prod` writes the signed
+   production bootloader, partition table, app and the unit's factory data (setup password, serial) in a single pass,
+   and prints the card text and Wi-Fi QR code (`labels/`). Print the card; delete the label files.
+2. First boot burns the eFuses, encrypts the flash in place and generates the NVS key. From then on, updates are
+   signed OTA uploads only.
+3. Functional test on that same image over the USB console (`info`, `sensors`, `led`, `beep`, `fake`, `alert`),
+   still through the tab: no test firmware to load and remove.
 4. Snap off the USB tab, assemble, leak test.

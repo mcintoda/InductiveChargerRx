@@ -1,4 +1,4 @@
-// Per-unit factory data written once at production (tools/provision.py), in its own small flash partition
+// Per-unit factory data written once at production (tools/flash_unit.py), in its own small flash partition
 // "fctry" so a factory reset (which erases the settings NVS) never removes it.
 // Format: text, first line "brim-fctry-1", then key=value lines (ap_pass=..., serial=...).
 #pragma once

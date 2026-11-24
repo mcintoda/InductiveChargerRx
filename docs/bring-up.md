@@ -9,13 +9,21 @@ a calibrated reference thermometer (±0.1 °C), 2–3 different Qi chargers, a c
 a spray bottle, salt, a vacuum jar or hand vacuum pump, the spare 0603 capacitors and 0402 resistors (hand-parts items 12–13).
 
 ## 0. Bench setup
-- **Build to flash for bring-up: the bench build.** It never deep-sleeps; where it would sleep it waits awake for
-  the same wake conditions and restarts like a wake. The USB console stays up the whole time.
+- **Flash each board once.** One command writes everything (bootloader, partition table, firmware, the unit's
+  setup password and serial) in a single pass, and prints its quick start card:
   ```
-  idf.py -B build-bench -D SDKCONFIG=build-bench/sdkconfig -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.bench" flash monitor
+  cd firmware && idf.py build                                         # once, for all boards
+  python3 tools/flash_unit.py --port /dev/ttyACM0 --serial A1         # per board, through the USB-C flash tab
+  idf.py -p /dev/ttyACM0 monitor                                      # console + log
   ```
-  Flash the normal build (`idf.py flash`) for anything that measures sleep current or battery life.
-- **USB console** (`brim>` prompt in `idf.py monitor`; also in the normal build whenever a computer is attached):
+  That one image is used for the whole of bring-up: there is no separate bench or test build.
+  - **USB attached** (tab or test pads): brim never deep-sleeps. Where it would sleep, it waits awake for the same
+    wake conditions (water, charger, tap, timer) and restarts like a wake, so the console and log stay up.
+  - **USB unplugged:** it deep-sleeps for real, so sleep current and battery life are measured on the same image.
+  - **Firmware changes during bring-up:** `idf.py -p <port> app-flash monitor` while the tab is on (app only, seconds);
+    after the tab is snapped off, upload from the settings page (double-tap brim on its charger first).
+  - Factory data again without reflashing the firmware: `flash_unit.py ... --factory-only`.
+- **USB console** (`brim>` prompt in `idf.py monitor`, whenever a computer is attached):
 
   | Command | Does |
   |---|---|
@@ -41,7 +49,7 @@ a spray bottle, salt, a vacuum jar or hand vacuum pump, the spare 0603 capacitor
 |---|---|---|
 | Resistance VBAT–GND and 3V3–GND before power | > 10 kΩ | Look for solder bridges at U2 (QFN) and U1 |
 | 3.7 V at J1 from a bench supply, 100 mA limit | 3V3 = 3.30 V ± 2 % | Check U4 orientation |
-| Flash through the USB-C flash tab (no battery needed, no buttons) | `idf.py flash monitor` boots; the 3V3 rail reads 3.30 V from USB | Check J2 solder joints, the CC resistors (R27–R30) and U6 |
+| Flash through the USB-C flash tab (no battery needed, no buttons): `tools/flash_unit.py` (§0) | Boots to the `brim>` console; `info` shows the firmware; the 3V3 rail reads 3.30 V from USB | Check J2 solder joints, the CC resistors (R27–R30) and U6 |
 | Snap off the flash tab (no filing) | Stub ≤ 0.6 mm; no copper burr bridging the 4 cut inner-layer traces (look at the edge with a loupe) | Trim a burr with a knife; only file if the stub is over 0.6 mm |
 | Idle current in deep sleep, dry, off the charger (normal build) | **≤ 30 µA** (target 20 µA) | Check that GPIO12 is low (TMP117 rail off) and nothing back-feeds through SDA/SCL |
 

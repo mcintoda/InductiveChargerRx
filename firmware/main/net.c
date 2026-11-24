@@ -499,7 +499,7 @@ bool net_provision(settings_t *s, int timeout_ms)
                                .pmf_cfg = {.capable = true}}};
     int l = snprintf((char *)ap.ap.ssid, sizeof(ap.ap.ssid), "brim-setup-%02X%02X", mac[4], mac[5]);
     ap.ap.ssid_len = l;
-    // WPA2 with the per-unit password printed on the quick start card (tools/provision.py), so nobody in radio
+    // WPA2 with the per-unit password printed on the quick start card (tools/flash_unit.py), so nobody in radio
     // range can sniff the home Wi-Fi password from the setup form or configure the unit first
     char pass[65];
     if (factory_get("ap_pass", pass, sizeof(pass)) && strlen(pass) >= 8) {
@@ -509,7 +509,7 @@ bool net_provision(settings_t *s, int timeout_ms)
         ESP_LOGE(TAG, "no factory setup password: refusing to open an unprotected setup network");
         return false;
     } else {
-        ESP_LOGW(TAG, "development build without factory data: setup network is OPEN (run tools/provision.py)");
+        ESP_LOGW(TAG, "development build without factory data: setup network is OPEN (run tools/flash_unit.py)");
     }
     esp_wifi_set_mode(WIFI_MODE_AP);
     esp_wifi_set_config(WIFI_IF_AP, &ap);

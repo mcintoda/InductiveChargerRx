@@ -42,5 +42,6 @@ Items 12–13 are spare capacitors and resistors for tuning the Qi receiver (C4,
 
 ## 4. Before the boards arrive
 - Install ESP-IDF **v5.3.6** (older versions carry known Mbed TLS CVEs).
-- Read docs/bring-up.md: first flash through the USB tab, then charging, sensing and leak tests. Flash the
-  **bench build** (`sdkconfig.bench`) for bring-up: it never deep-sleeps and keeps the USB console up.
+- Read docs/bring-up.md §0: each board is flashed **once** (`firmware/tools/flash_unit.py`: firmware + setup
+  password in one pass), then all of bring-up runs on that image over the USB console. Keep the flash tab on until
+  the electronics checks are done; after that, firmware updates go over Wi-Fi.

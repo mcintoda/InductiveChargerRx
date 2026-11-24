@@ -1,2 +1,0 @@
-# Bench build for bring-up: never deep-sleeps, USB console always on (main/Kconfig.projbuild)
-CONFIG_BRIM_BENCH=y

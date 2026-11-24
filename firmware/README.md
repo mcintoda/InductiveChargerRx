@@ -33,13 +33,15 @@ Later updates: put brim on its charger, open the settings page, upload `build/br
 ## Release builds and production
 Three builds share one flash layout: development (`idf.py build`), **signed release** (`sdkconfig.release`: only
 signed images boot or upload) and **production** (`sdkconfig.production`: Secure Boot V2, flash and NVS encryption,
-JTAG off; irreversible). Each unit gets its setup-network password from `tools/provision.py`, which also prints the
-card and Wi-Fi QR code. Commands, the signing key and the per-unit steps: [`docs/security.md`](../docs/security.md).
+JTAG off; irreversible). Each unit is flashed once with `tools/flash_unit.py`: firmware and its setup-network password in
+one pass, plus the card and Wi-Fi QR code. Commands, the signing key and the per-unit steps: [`docs/security.md`](../docs/security.md).
 Boards flashed before 2026-11-23 need `idf.py erase-flash` once (the partition table moved to 0xC000).
 
 ## Bring-up builds and tools
-- **Bench build** (`sdkconfig.bench`, `CONFIG_BRIM_BENCH`): never deep-sleeps, USB console always on.
-  `idf.py -B build-bench -D SDKCONFIG=build-bench/sdkconfig -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.bench" flash monitor`
+- **One flash per board:** `idf.py build`, then `python3 tools/flash_unit.py --port <port> --serial A1` (bootloader,
+  partitions, app and factory data in one write). The same image does all of bring-up: with USB attached it never
+  deep-sleeps (it waits awake for the wake conditions and restarts like a wake); unplugged it sleeps normally.
+  Code changes: `idf.py app-flash` while the tab is on, the settings page's upload after.
 - **USB console** (`brim>`; any build while a computer is attached): `info`, `sensors`, `fake <mm>|off`,
   `alert nearly|full|hot|battery|test`, `led <state>`, `beep [chirp]`, `log`, `recal`. See docs/bring-up.md §0.
 - **Last bath log:** 2 s samples (up to 512) saved to flash before each sleep; *Last bath log (CSV)* on the settings

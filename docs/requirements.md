@@ -178,7 +178,7 @@ Controlling taps or drains; detecting a person in the water; a phone app of our 
 ### 3.7 Manufacturing (HW-MFG)
 | ID | Requirement | Parent | Verify | Status |
 |---|---|---|---|---|
-| HW-MFG-01 | Each unit gets a per-unit setup password and serial in a factory partition, printed with a Wi-Fi QR code on its card. | SYS-SEC-03 | D: `provision.py` | Met |
+| HW-MFG-01 | Each unit is flashed once: firmware plus a per-unit setup password and serial in a factory partition, in one pass, printed with a Wi-Fi QR code on its card. | SYS-SEC-03 | D: `flash_unit.py` | Met |
 | HW-MFG-02 | Each unit passes a functional test and a leak test before packing. | SYS-EN-01 | D | Open (fixture) |
 
 ---

@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Write a unit's factory data (setup-network password, serial number) and make its label.
+"""Flash a unit in one pass: firmware and its factory data (setup-network password, serial number), and make its card.
 
-    python3 tools/provision.py --port /dev/ttyACM0 --serial B0001          # real unit on the USB tab
-    python3 tools/provision.py --mac 7c:df:a1:00:12:34 --serial B0001 --dry-run
+    python3 tools/flash_unit.py --port /dev/ttyACM0 --serial A1            # everything, one write (normal case)
+    python3 tools/flash_unit.py --port /dev/ttyACM0 --serial A1 --factory-only   # re-provision a flashed unit
+    python3 tools/flash_unit.py --mac 7c:df:a1:00:12:34 --serial A1 --dry-run    # card + image only
 
-Writes a 4 KB 'fctry' image to 0x16000 (see partitions.csv). Run it BEFORE the first boot of a production
-(secure boot / flash encryption) image: after that the chip only accepts signed, encrypted writes.
-The password is never stored anywhere else: it lives on the unit and on its printed card. Labels go to labels/.
+One esptool write covers the bootloader, partition table, OTA data, app (from --build, default build/: run
+`idf.py build` first, or point it at build-prod for production) and the 4 KB 'fctry' image at 0x16000. After that a
+unit needs no more cable flashing: bring-up runs over the USB console on the same image, and later firmware goes
+over the air (or `idf.py app-flash` while the flash tab is still on).
+The password lives only on the unit and its printed card. Labels go to labels/.
 """
 import argparse, os, re, secrets, subprocess, sys
 
@@ -41,6 +44,8 @@ def main():
     ap.add_argument("--mac", help="base (station) MAC, if not reading it from --port")
     ap.add_argument("--serial", required=True)
     ap.add_argument("--dry-run", action="store_true", help="make the image and label, don't flash")
+    ap.add_argument("--build", default="build", help="ESP-IDF build directory whose firmware goes in the same write")
+    ap.add_argument("--factory-only", action="store_true", help="write only the factory data (unit already flashed)")
     a = ap.parse_args()
     if not re.fullmatch(r"[A-Za-z0-9-]{1,16}", a.serial):
         sys.exit("serial: letters, digits and '-' only, up to 16")
@@ -66,9 +71,27 @@ def main():
     if a.dry_run:
         print(f"dry run: image {binp} not flashed")
         return
-    subprocess.run([sys.executable, "-m", "esptool", "--port", a.port, "write_flash", hex(FCTRY_OFFSET), binp], check=True)
+    images = [hex(FCTRY_OFFSET), binp]
+    opts = []
+    if not a.factory_only:
+        args_file = os.path.join(a.build, "flash_args")
+        if not os.path.exists(args_file):
+            sys.exit(f"{args_file} not found: run `idf.py build` (or pass --build / --factory-only)")
+        lines = open(args_file).read().split("\n")
+        opts = lines[0].split()                       # --flash_mode dio --flash_freq 80m --flash_size 8MB
+        for line in lines[1:]:
+            if line.strip():
+                off, path = line.split(None, 1)
+                images[:0] = [off, os.path.join(a.build, path.strip())]
+        # secure-boot builds leave the bootloader out of flash_args (ESP-IDF flashes it separately): add the signed
+        # one here so production is still a single write
+        boot = os.path.join(a.build, "bootloader", "bootloader.bin")
+        if "0x0" not in images[::2] and os.path.exists(boot):
+            images[:0] = ["0x0", boot]
+    subprocess.run([sys.executable, "-m", "esptool", "--chip", "esp32s3", "--port", a.port, "write_flash", *opts, *images],
+                   check=True)
     os.remove(binp)                                   # the card is the only other copy
-    print("written. Print the card; keep labels/*.txt only until it is printed.")
+    print("written in one pass. Print the card; keep labels/*.txt only until it is printed.")
 
 
 if __name__ == "__main__":

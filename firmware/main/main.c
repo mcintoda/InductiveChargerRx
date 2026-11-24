@@ -48,10 +48,6 @@
 #include "tilt.h"
 #include "tmp117.h"
 
-#ifndef CONFIG_BRIM_BENCH
-#define CONFIG_BRIM_BENCH 0              // main/Kconfig.projbuild; undefined when off
-#endif
-
 static const char *TAG = "brim";
 
 // survives deep sleep
@@ -169,39 +165,34 @@ static void checkin(bool online)
     if (!online) net_wifi_stop();
 }
 
-#if CONFIG_BRIM_BENCH
-// bench build: wait awake for what would have woken it, then restart (a software restart keeps RTC memory,
-// like a wake from deep sleep), so the console and the log stay up the whole time
-static void bench_wait(bool pad1_wet, uint64_t timer_s)
+static void bench_console_start(void);
+
+// A computer on the USB port (the flash tab, or the test pads) means bench work: deep sleep would turn the port off,
+// so wait awake for whatever would have woken brim, then restart (a software restart keeps RTC memory, like a wake).
+// The console, the log and esptool's automatic reset into the bootloader keep working. Unplug: real deep sleep.
+// Returns only when the computer was unplugged.
+static void usb_wait(bool pad1_wet, uint64_t timer_s)
 {
-    ESP_LOGW(TAG, "bench: not sleeping (pad1 %s, timer %llus)", pad1_wet ? "wet" : "dry", timer_s);
+    ESP_LOGW(TAG, "USB attached: staying awake (pad1 %s, timer %llus)", pad1_wet ? "wet" : "dry", timer_s);
+    bench_console_start();
     bool charger = power_on_charger();
     double t0 = now_s();
-    for (;;) {
+    while (usb_serial_jtag_is_connected()) {
         vTaskDelay(pdMS_TO_TICKS(1000));
-        if (power_on_charger() != charger) break;
-        if (timer_s && now_s() - t0 >= timer_s) break;
-        if (s_acc_fitted && accel_events()) break;
-        if (!pad1_wet) {
+        bool wake = power_on_charger() != charger || (timer_s && now_s() - t0 >= timer_s) ||
+                    (s_acc_fitted && accel_events());
+        if (!wake && !pad1_wet) {
             uint32_t raw[LVL_CH];
             lvl_cal_t c = s_cal;
-            if ((!isnan(s_fake_mm) && s_fake_mm > 0) || (sense_read(raw, 2) == ESP_OK && lvl_compute(&c, raw).wet)) break;
+            wake = (!isnan(s_fake_mm) && s_fake_mm > 0) || (sense_read(raw, 2) == ESP_OK && lvl_compute(&c, raw).wet);
         }
+        if (wake) esp_restart();
     }
-    esp_restart();
+    ESP_LOGI(TAG, "USB unplugged: sleeping");
 }
-#endif
 
 static void sleep_now(bool pad1_wet, uint64_t timer_s)
 {
-#if !CONFIG_BRIM_BENCH
-    // deep sleep turns the USB port off: stay awake while a computer is attached so esptool can
-    // reset the chip into the bootloader by itself (no IO0 / EN buttons needed)
-    if (usb_serial_jtag_is_connected()) {
-        ESP_LOGI(TAG, "USB host attached: staying awake");
-        while (usb_serial_jtag_is_connected()) vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-#endif
     net_wifi_stop();
     status_led(LED_OFF);
     hold_rail(false);
@@ -219,10 +210,7 @@ static void sleep_now(bool pad1_wet, uint64_t timer_s)
         if (!timer_s || c < timer_s) timer_s = c;
     }
     if (timer_s) esp_sleep_enable_timer_wakeup(timer_s * 1000000ULL);
-#if CONFIG_BRIM_BENCH
-    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
-    bench_wait(pad1_wet, timer_s);
-#endif
+    if (usb_serial_jtag_is_connected()) usb_wait(pad1_wet, timer_s);
     ESP_LOGI(TAG, "deep sleep (pad1 %s, timer %llus)", pad1_wet ? "wet" : "dry", timer_s);
     esp_deep_sleep_start();
 }
@@ -258,7 +246,7 @@ static void notify_text(const char *title, const char *msg, int prio, const char
     if (settings_provisioned(&s_set)) send(&o);
 }
 
-// ---------------- bench console (USB, when a computer is attached or in the bench build) ----------------
+// ---------------- bench console (USB, whenever a computer is attached) ----------------
 static int cmd_info(int argc, char **argv)
 {
     printf("firmware %s, unexpected restarts %d (last: %s)\n", sysinfo_version(), sysinfo_crashes(), sysinfo_last_crash());
@@ -362,6 +350,9 @@ static int cmd_recal(int argc, char **argv)
 
 static void bench_console_start(void)
 {
+    static bool started;
+    if (started) return;
+    started = true;
     static const esp_console_cmd_t cmds[] = {
         {.command = "info", .help = "firmware, settings, detected parts, state", .func = cmd_info},
         {.command = "sensors", .help = "read every sensor once", .func = cmd_sensors},
@@ -629,7 +620,7 @@ void app_main(void)
     esp_ota_mark_app_valid_cancel_rollback();
     ESP_LOGI(TAG, "wake cause %d, on charger %d, provisioned %d", cause, power_on_charger(), settings_provisioned(&s_set));
 
-    if (CONFIG_BRIM_BENCH || usb_serial_jtag_is_connected()) bench_console_start();
+    if (usb_serial_jtag_is_connected()) bench_console_start();
     if (!s_fdc_probed) {                                  // which board variant is this?
         s_fdc_fitted = fdc_present();
         s_fdc_probed = true;
