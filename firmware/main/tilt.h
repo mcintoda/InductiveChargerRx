@@ -6,7 +6,7 @@
 typedef struct {
     bool ref_valid;
     float ref[3];             // unit gravity vector when mounted
-    float tilted_since;       // s, < 0 = upright
+    double tilted_since;      // s, < 0 = upright
     bool sent;
 } tilt_t;
 
@@ -16,5 +16,5 @@ typedef struct {
 float tilt_angle_deg(const float a[3], const float b[3]);
 void tilt_learn(tilt_t *t, const float g[3]);
 // returns true once when the device has been tilted past the limit for TILT_CONFIRM_S
-bool tilt_update(tilt_t *t, const float g[3], float now_s);
+bool tilt_update(tilt_t *t, const float g[3], double now_s);
 bool tilt_is_tilted(const tilt_t *t);

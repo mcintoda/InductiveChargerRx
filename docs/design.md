@@ -228,7 +228,7 @@ Even at 2× worse in practice, it's still about 3 months. Measure on the bench w
 2. The form asks for the Wi-Fi network, the alarm pad and the temperature limit, and shows the generated ntfy topic with a **Copy** button.
 3. After saving, brim joins the Wi-Fi and sends **"brim is connected"**. If it can't join, setup re-opens (cyan blink) with "couldn't join … check the password / 2.4 GHz".
 4. Afterwards, each time it is put on a Qi pad it sends a silent **"brim is charging"** notification; tapping it opens the settings page (open for 10 min), which also has **Send a test alert**.
-5. **Factory reset with no buttons:** put it on the pad and lift it off 3 times within 20 s.
+5. **Factory reset with no buttons:** put it on the pad and lift it off 3 times within 20 s, then double-tap it within 10 s while it flashes red to confirm.
 
 **Calibration**
 - A dry-air baseline is captured automatically on each charger placement.
@@ -320,6 +320,7 @@ Even at 2× worse in practice, it's still about 3 months. Measure on the bench w
 | 2026-11-23 | Check-in: brim re-arms an ntfy dead-man's-switch alert ("brim hasn't checked in", 70 h) every 2 days and sends a silent weekly "brim OK · battery". Hot limit default 42 → 38 °C with 38/40/42 quick-set; optional "cooling down" alert; both set on the settings page |
 | 2026-11-23 | Security items closed: WPA2 setup network with a per-unit password and QR card (tools/provision.py, `fctry` partition); signed-image release build; production build with Secure Boot V2, flash + NVS encryption, JTAG off. Partition table moved to 0xC000 for the 40 KB production bootloader |
 | 2026-11-23 | SBOM (SPDX + CycloneDX) from the production build; build limited to used components. NVD found 25 CVEs in ESP-IDF 5.3.2 / Mbed TLS 3.6.2 / wpa_supplicant 2.10; moved to ESP-IDF 5.3.6 (Mbed TLS 3.6.7): 0 CVEs. Website comparison with overflow alarms, leak sensors, bath thermometers and smart fillers |
+| 2026-11-24 | Firmware review: policy/tilt time was a float of ~1.7e9 s (128 s steps, no SNTP) → double; Wi-Fi reused/stopped per alert (second alert of a bath could fail, radio stayed on); no repeated "charging" alerts, charger keeps the light on until lifted; factory reset needs a double-tap; top-ups after BATH FULL re-alarm ("filling again"), 1 min checks near the line; low battery at check-ins, 3.45 V empty cut-off |
 | 2026-11-19 | Branding: working name "brim", drop-to-the-brim mark, foam/tide/deep/aqua palette, Inter type. Debossed logo + wordmark on the dry front band, alarm-level chevrons, Qi target over the coil on the back (docs/branding.md) |
 | 2026-11-19 | Brand rev B: ripple (pebble-in-water) mark, muted palette (mist / slate / ink / sea glass), unpainted deboss. Case: 2.5 mm front round, graduated level scale with pad numbers, alarm chevron, waterline groove on the sides, Qi coil outline on the back |
 | 2026-11-19 | Markings simplified: level horizontal scale on the left margin only (ticks + pad numbers in one column), alarm chevron on the right; Qi outline is one plain ring (no dashes or alignment ticks) |

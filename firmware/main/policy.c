@@ -88,6 +88,19 @@ bool policy_step(policy_t *p, const policy_in_t *in, policy_out_t *out)
             snprintf(m, sizeof(m), "Bath at the target level - turn off the tap. Water %s.", t);
             return emit(out, EV_ALARM, 5, "BATH FULL", "rotating_light,bathtub", m);
         }
+        // a top-up after the water had stopped: a new alarm, even if the last one was silenced on the device
+        bool fresh = saturated ? p->ref_rising : (in->rate_ok && in->rate_mm_min > POLICY_REFILL_MM_MIN);
+        if (!rising) {
+            if (p->still_since == 0) p->still_since = in->now_s;
+        } else if (fresh && p->still_since > 0 && in->now_s - p->still_since >= POLICY_REFILL_STILL_S) {
+            p->still_since = 0;
+            p->acked = false;
+            p->alarm_first_s = p->alarm_last_s = in->now_s;
+            snprintf(m, sizeof(m), "The water is rising again, %.0f mm above your line. Turn off the tap.",
+                     in->level_mm - p->alarm_mm < 0 ? 0 : in->level_mm - p->alarm_mm);
+            return emit(out, EV_ALARM, 5, "BATH FILLING AGAIN", "rotating_light,bathtub", m);
+        }
+        if (rising) p->still_since = 0;
         if (rising && !p->acked && in->now_s - p->alarm_last_s >= POLICY_REPEAT_S &&
             in->now_s - p->alarm_first_s <= POLICY_REPEAT_MAX_S) {
             p->alarm_last_s = in->now_s;

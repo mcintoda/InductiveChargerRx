@@ -112,6 +112,8 @@ static void calibrate_dry(float alpha)
 #define STATUS_S (7 * 24 * 3600.0)   // and a silent "brim OK" once a week
 #define RETRY_S (6 * 3600.0)
 static RTC_DATA_ATTR double s_next_checkin, s_next_status;
+static RTC_DATA_ATTR bool s_empty_sent;
+#define BATT_EMPTY_MV 3450           // RT9080 needs ~3.5 V for 3.3 V at Wi-Fi peaks; the cell's PCM cuts at ~2.5-3 V
 
 static void checkin(bool online)
 {
@@ -124,11 +126,19 @@ static void checkin(bool online)
     int code = net_watchdog(&s_set, WATCHDOG_DELAY);
     // 2xx: armed. 4xx: this server can't schedule (old or self-hosted ntfy): don't keep retrying every 6 h
     s_next_checkin = now + ((code >= 200 && code < 300) || (code >= 400 && code < 500) ? CHECKIN_S : RETRY_S);
+    int mv0 = power_battery_mv(), pct0 = mv0 > 0 ? power_battery_pct(mv0) : -1;
+    if (!power_on_charger() && pct0 >= 0 && pct0 < POLICY_LOW_BATT_PCT && !s_policy.lowbat_sent) {
+        char m[96];
+        snprintf(m, sizeof(m), "Battery at %d %%. Put brim on a Qi charger soon.", pct0);
+        if (net_ntfy(&s_set, "brim battery low", m, 3, "battery") == ESP_OK) s_policy.lowbat_sent = true;
+    }
     if (now >= s_next_status) {
         int mv = power_battery_mv();
         char m[160];
-        snprintf(m, sizeof(m), "Battery %d %%. brim checks in every 2 days, and you'll get an alert if it goes quiet "
-                 "for 3.", mv > 0 ? power_battery_pct(mv) : 0);
+        if (power_on_charger()) snprintf(m, sizeof(m), "On the charger. brim checks in every 2 days, and you'll get an "
+                                         "alert if it goes quiet for 3.");
+        else snprintf(m, sizeof(m), "Battery %d %%. brim checks in every 2 days, and you'll get an alert if it goes "
+                      "quiet for 3.", mv > 0 ? power_battery_pct(mv) : 0);
         if (net_ntfy(&s_set, "brim OK", m, 1, "white_check_mark") == ESP_OK) s_next_status = now + STATUS_S;
     }
     if (!online) net_wifi_stop();
@@ -164,11 +174,13 @@ static void sleep_now(bool pad1_wet, uint64_t timer_s)
 static bool send(const policy_out_t *o)
 {
     if (!net_wifi_connect(&s_set, 10000)) { ESP_LOGW(TAG, "no Wi-Fi: '%s' not sent", o->title); return false; }
-    for (int i = 0; i < 3; i++) {
-        if (net_ntfy(&s_set, o->title, o->msg, o->priority, o->tags) == ESP_OK) return true;
-        vTaskDelay(pdMS_TO_TICKS(2000));
+    bool ok = false;
+    for (int i = 0; i < 3 && !ok; i++) {
+        ok = net_ntfy(&s_set, o->title, o->msg, o->priority, o->tags) == ESP_OK;
+        if (!ok) vTaskDelay(pdMS_TO_TICKS(2000));
     }
-    return false;
+    net_wifi_stop();          // the radio is the biggest load: off between alerts (reconnecting takes ~2 s)
+    return ok;
 }
 
 // phone notification plus the local signal on the device: the sounder covers "bath full" even when the
@@ -200,9 +212,25 @@ static bool factory_reset_gesture(void)
     return s_placed_at[0] > 0 && s_placed_at[2] - s_placed_at[0] < 20.0;
 }
 
-static void charger_mode(void)
+// 3 placements in 20 s can also be a pad that keeps dropping the connection: with the accelerometer fitted, ask
+// for a double-tap within 10 s (fast red flashing) before erasing anything
+static bool confirm_reset(void)
 {
-    if (factory_reset_gesture()) {
+    if (!s_acc_fitted) return true;
+    accel_awake();
+    accel_events();
+    for (int i = 0; i < 25; i++) {                        // ~10 s
+        status_flash(255, 0, 0, 1, 200);
+        if (accel_events() & ACC_EV_DOUBLE_TAP) return true;
+    }
+    ESP_LOGI(TAG, "factory reset not confirmed");
+    memset(s_placed_at, 0, sizeof(s_placed_at));
+    return false;
+}
+
+static void charger_mode(bool placed)
+{
+    if (placed && factory_reset_gesture() && confirm_reset()) {
         ESP_LOGW(TAG, "factory reset");
         // cancel the pending "hasn't checked in" alert so the old topic doesn't get it in 3 days
         if (s_set.topic[0] && net_wifi_connect(&s_set, 8000)) net_watchdog(&s_set, NULL);
@@ -222,7 +250,7 @@ static void charger_mode(void)
         char url[40], msg[96];
         snprintf(url, sizeof(url), "http://%s/", net_ip());
         snprintf(msg, sizeof(msg), "Tap for settings (open for 10 min): %s", url);
-        net_ntfy_click(&s_set, "brim is charging", msg, 1, "battery", url);   // priority 1: silent
+        if (placed) net_ntfy_click(&s_set, "brim is charging", msg, 1, "battery", url);   // priority 1: silent
         checkin(true);
     }
     // changes need physical presence: a double-tap on the device (no accelerometer: the first 2 min on the pad)
@@ -243,8 +271,17 @@ static void charger_mode(void)
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
     net_web_stop();
-    // still on the pad: check again in 10 min (no ext1 wake while QI_DET_N is low)
-    sleep_now(false, power_on_charger() ? 10 * 60 : 0);
+    net_wifi_stop();
+    // stay with it while it charges (the pad powers it): keep the charging light on and notice the lift-off.
+    // Light sleep between checks; Wi-Fi only for a due check-in
+    esp_pm_config_t pm = {.max_freq_mhz = 80, .min_freq_mhz = 40, .light_sleep_enable = true};
+    esp_pm_configure(&pm);
+    while (power_on_charger()) {
+        status_led(power_charging() ? LED_CHARGING : LED_CHARGED);
+        if (now_s() >= s_next_checkin) checkin(false);
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+    sleep_now(false, 0);
 }
 
 // ---------------- bath ----------------
@@ -328,7 +365,7 @@ static void bath_mode(void)
         }
         if (r.wet) rate_add(&rate, (float)(t - t_start), r.level_mm);
 
-        policy_in_t in = {.now_s = (float)(t - 1.7e9), .wet = r.wet, .all_wet = r.all_wet, .level_mm = r.level_mm,
+        policy_in_t in = {.now_s = t, .wet = r.wet, .all_wet = r.all_wet, .level_mm = r.level_mm,
                           .ref_frac = r.raw_frac[LVL_REF], .at_alarm = r.top_full >= alarm_pad,
                           .temp_c = temp, .battery_pct = batt};
         in.rate_ok = rate_mm_per_min(&rate, &in.rate_mm_min);
@@ -345,7 +382,7 @@ static void bath_mode(void)
                 ESP_LOGI(TAG, "alarm acknowledged on the device");
             }
             float g[3];
-            if (r.wet && accel_gravity(g) == ESP_OK && tilt_update(&s_tilt, g, (float)(t - 1.7e9)))
+            if (r.wet && accel_gravity(g) == ESP_OK && tilt_update(&s_tilt, g, t))
                 notify_text("brim is tilted", "brim is no longer upright - it may have slipped out of its bracket. "
                             "Level readings are unreliable until it is back in place.", 4, "warning,bathtub");
         }
@@ -373,7 +410,10 @@ static void bath_mode(void)
             if (t_steady == 0) t_steady = t;
             // someone is in the bath: check every 5 min. In FDC mode below 40 mm the level is not seen
             // moving, so check every 2 min (20 mm at a fast 10 mm/min fill: still short of the alarm)
-            if (t - t_steady > 180) sleep_now(true, (mode == SENSE_FDC && !fdc_window) ? 2 * 60 : 5 * 60);
+            // at or near the line (someone may top up): check every minute
+            bool near = s_policy.alarm_active || s_policy.nearly_sent || r.level_mm >= s_policy.alarm_mm - 15.0f;
+            if (t - t_steady > 180)
+                sleep_now(true, near ? 60 : (mode == SENSE_FDC && !fdc_window) ? 2 * 60 : 5 * 60);
         } else t_steady = 0;
 
         vTaskDelay(pdMS_TO_TICKS(2000));
@@ -436,8 +476,23 @@ void app_main(void)
         status_battery(mv > 0 ? power_battery_pct(mv) : 0);
         if (!power_on_charger() && !s_policy.active) sleep_now(false, 6 * 3600);
     }
+    // empty: say so once, then sleep until it is put on a charger (protects the cell, no brown-out loops)
+    if (!power_on_charger()) {
+        int mv = power_battery_mv();
+        if (mv > 0 && mv < BATT_EMPTY_MV) {
+            if (!s_empty_sent) {
+                notify_text("brim battery empty", "brim has stopped watching baths. Put it on a Qi charger.", 4,
+                            "battery,warning");
+                s_empty_sent = true;
+            }
+            esp_sleep_enable_ext1_wakeup(1ULL << PIN_QI_DET_N, ESP_EXT1_WAKEUP_ANY_LOW);
+            ESP_LOGW(TAG, "battery empty (%d mV): sleeping until charged", mv);
+            esp_deep_sleep_start();
+        }
+    } else s_empty_sent = false;
     // due, or never armed since power-up (RTC memory was cleared): check in now
     if (!power_on_charger() && !s_policy.active && (s_next_checkin == 0 || now_s() >= s_next_checkin)) checkin(false);
-    if (power_on_charger()) charger_mode();
+    // a real placement (woken by the pad, or powered up / restarted on it), not a timer wake while it sat there
+    if (power_on_charger()) charger_mode(cause != ESP_SLEEP_WAKEUP_TIMER);
     bath_mode();
 }

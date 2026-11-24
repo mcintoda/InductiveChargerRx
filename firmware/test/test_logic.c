@@ -180,6 +180,30 @@ static int run_bath(policy_t *p, int alarm_pad, float fill_mm_min, float stop_at
     return n;
 }
 
+static void test_refill(void)
+{
+    // alarm at the top of pad 4, silenced on the device, water still for 3 min, then a hot top-up
+    policy_t p; policy_out_t o; int alarms = 0, again = 0;
+    policy_init(&p, lvl_pad_top_mm(4), 38, false);
+    double t0 = 1.7e9;                                   // wall-clock scale: the device's real time base
+    float level = 30;
+    for (int s = 0; s <= 900; s += 2) {
+        float rate = s < 120 ? 10 : (s < 420 ? 0 : 10);   // fill, stop (ack + still), top up
+        if (s > 0) level += rate * 2 / 60.0f;
+        policy_in_t in = {.now_s = t0 + s, .wet = true, .level_mm = level, .rate_ok = s >= 60, .rate_mm_min = rate,
+                          .eta_s = -1, .temp_c = 37, .battery_pct = 80};
+        if (policy_step(&p, &in, &o) && o.ev == EV_ALARM) {
+            alarms++;
+            if (!strcmp(o.title, "BATH FILLING AGAIN")) again++;
+        }
+        if (s == 130) policy_ack(&p);                   // double-tap right after the first alarm
+    }
+    printf("  refill: %d alarm(s), %d 'filling again'\n", alarms, again);
+    CHECK(again == 1, "top-up after a silenced alarm: %d 'filling again' alerts", again);
+    // wall-clock time base keeps 1 s resolution (a float of ~1.7e9 s would step in 128 s)
+    CHECK(p.alarm_first_s - t0 >= 420 && p.alarm_first_s - t0 < 420 + POLICY_REFILL_STILL_S + 120, "re-arm time %.0f", p.alarm_first_s - t0);
+}
+
 static void test_cool(void)
 {
     policy_t p; policy_out_t o; int n = 0;
@@ -269,7 +293,7 @@ int main(void)
     printf("return path\n"); test_return_path();
     printf("fdc1004\n"); test_fdc();
     printf("rate\n"); test_rate();
-    printf("policy\n"); test_policy(); test_policy_ack(); test_cool();
+    printf("policy\n"); test_policy(); test_policy_ack(); test_cool(); test_refill();
     printf("tilt\n"); test_tilt();
     printf("%d/%d checks passed\n", checks - fails, checks);
     return fails ? 1 : 0;

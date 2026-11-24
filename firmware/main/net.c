@@ -89,6 +89,7 @@ static bool host_name_ok(const char *h)
 
 static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
 {
+    if (base == WIFI_EVENT && id == WIFI_EVENT_STA_DISCONNECTED) xEventGroupClearBits(s_ev, EV_GOT_IP);
     if (base == IP_EVENT && id == IP_EVENT_STA_GOT_IP) {
         const ip_event_got_ip_t *e = data;
         snprintf(s_ip, sizeof(s_ip), IPSTR, IP2STR(&e->ip_info.ip));
@@ -102,6 +103,7 @@ esp_err_t net_init(void)
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_event, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, on_event, NULL));
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     return esp_wifi_init(&cfg);
 }
@@ -116,6 +118,7 @@ bool net_wifi_connect(const settings_t *s, int timeout_ms)
     esp_wifi_set_mode(WIFI_MODE_STA);
     esp_wifi_set_config(WIFI_IF_STA, &wc);
     esp_wifi_set_ps(WIFI_PS_MIN_MODEM);       // modem sleep between DTIM beacons
+    if (s_wifi_started && (xEventGroupGetBits(s_ev) & EV_GOT_IP)) return true;   // still connected: reuse it
     xEventGroupClearBits(s_ev, EV_GOT_IP);
     if (!s_wifi_started) { esp_wifi_start(); s_wifi_started = true; }
     esp_wifi_connect();
@@ -127,6 +130,7 @@ bool net_wifi_connect(const settings_t *s, int timeout_ms)
 void net_wifi_stop(void)
 {
     if (s_wifi_started) { esp_wifi_disconnect(); esp_wifi_stop(); s_wifi_started = false; }
+    xEventGroupClearBits(s_ev, EV_GOT_IP);
 }
 
 const char *net_ip(void) { return s_ip; }

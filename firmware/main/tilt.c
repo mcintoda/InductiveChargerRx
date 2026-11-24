@@ -21,7 +21,7 @@ void tilt_learn(tilt_t *t, const float g[3])
     t->sent = false;
 }
 
-bool tilt_update(tilt_t *t, const float g[3], float now_s)
+bool tilt_update(tilt_t *t, const float g[3], double now_s)
 {
     if (!t->ref_valid) { tilt_learn(t, g); return false; }
     float n = sqrtf(g[0] * g[0] + g[1] * g[1] + g[2] * g[2]);

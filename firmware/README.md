@@ -49,7 +49,14 @@ make -C test          # level estimation, film rejection, drift, fill rate, alar
 2. On the Qi charger it sends a silent **"brim is charging"** alert; tap it for the settings page (10 minutes),
    which also has **Send a test alert** and the firmware upload. Saving or uploading there needs a **double-tap on
    brim** first (unlocks for 2 min; physical presence), see [`docs/security.md`](../docs/security.md).
-3. Factory reset: put it on the charger 3 times within 20 s.
+3. Factory reset: put it on the charger 3 times within 20 s; it flashes red fast, then **double-tap it within 10 s**
+   to confirm (a pad that keeps dropping the connection can't erase it by accident). No accelerometer: no confirmation.
+4. On the charger brim stays awake (the pad powers it): charging light the whole time, settings page for the first
+   10 min, one silent "brim is charging" per placement, check-ins on schedule. Lifted off: back to watching.
+5. After BATH FULL, a top-up (the water rising again after it had stopped for 2 min) sends **BATH FILLING AGAIN**,
+   even if the first alarm was silenced. Near the line brim checks every minute while someone is in the bath.
+6. Battery: "battery low" below 20 % (during a bath or at a check-in); below 3.45 V it sends "battery empty" once and
+   sleeps until it is put on a charger.
 4. Level sensing (settings page): `FDC1004` (default; falls back to touch on boards without U5), `Touch` (ratiometric) or `Compare`.
    Compare logs `CMP,...` lines on the USB console for the bench protocol in `docs/sensing-options.md`.
 

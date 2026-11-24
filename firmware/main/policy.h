@@ -22,15 +22,18 @@ typedef struct {
     bool notify_filling;
     // session state
     bool active, filling_sent, nearly_sent, hot_sent, submerged_sent, lowbat_sent, alarm_active, was_warm, cool_sent;
-    float alarm_first_s, alarm_last_s, last_wet_s, prev_level_mm;
+    double alarm_first_s, alarm_last_s, last_wet_s;   // s (double: wall-clock seconds keep 1 s resolution)
+    float prev_level_mm;
     bool prev_wet;
-    float ref_snap, ref_snap_t;  // above 60 mm the dry REF pad tells whether water is still rising
+    float ref_snap;              // above 60 mm the dry REF pad tells whether water is still rising
+    double ref_snap_t;
+    double still_since;          // alarm reached and the water stopped rising at this time (0 = not still)
     bool ref_rising;
     bool acked;                // double-tap on the case: no more repeats (or local beeps) this bath
 } policy_t;
 
 typedef struct {
-    float now_s;
+    double now_s;
     bool wet;                  // PAD1 wet
     bool all_wet;
     float level_mm;
@@ -58,6 +61,8 @@ typedef struct {
 #define POLICY_NEARLY_S 120.0f
 #define POLICY_SESSION_END_S (10 * 60.0f)  // all dry this long: the bath was drained
 #define POLICY_LOW_BATT_PCT 20
+#define POLICY_REFILL_MM_MIN 1.0f     // after the alarm, a fresh rise this fast (a top-up) re-arms it
+#define POLICY_REFILL_STILL_S 120.0   // ...once the water had stopped rising for this long
 
 void policy_init(policy_t *p, float alarm_mm, float temp_limit_c, bool notify_filling);
 void policy_set_cool(policy_t *p, float temp_cool_c);   // 0 = off; kept across baths
