@@ -1,0 +1,12 @@
+menu "brim"
+
+config BRIM_BENCH
+    bool "Bench build: never deep-sleep, USB console always on"
+    default n
+    help
+        For bring-up on the bench. Wherever brim would deep-sleep it stays awake instead, keeps the USB console
+        and logging running, and restarts itself (the equivalent of a wake-up) when water reaches the wake pad,
+        it is put on or lifted off the charger, it is tapped, or the sleep timer runs out.
+        Uses a lot more battery: never ship it. Build: sdkconfig.bench (see firmware/README.md).
+
+endmenu

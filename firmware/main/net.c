@@ -1,7 +1,9 @@
 #include "net.h"
 
 #include "brand_icon.h"
+#include "bathlog.h"
 #include "factory.h"
+#include "sysinfo.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -302,6 +304,15 @@ static esp_err_t page_root(httpd_req_t *req)
                       "onsubmit=\"event.preventDefault();fetch('/update',{method:'POST',headers:{'X-Brim-Key':'%s'},"
                       "body:this.f.files[0]}).then(r=>r.text()).then(t=>document.body.innerHTML+='<p>'+t+'</p>')\">"
                       "<input name=f type=file accept=.bin><button>Upload</button></form>", s_key, s_key);
+    if (s_status) {
+        n += snprintf(buf + n, sizeof(buf) - n,
+                      "<p style='font-size:13px'><a href=/bath.csv>Last bath log (CSV)</a> &middot; firmware %s",
+                      sysinfo_version());
+        if (sysinfo_crashes())
+            n += snprintf(buf + n, sizeof(buf) - n, " &middot; %d unexpected restart(s), last: %s", sysinfo_crashes(),
+                          sysinfo_last_crash());
+        n += snprintf(buf + n, sizeof(buf) - n, "</p>");
+    }
     if (n >= (int)sizeof(buf)) n = sizeof(buf) - 1;   // never send past the end if a field grows
     httpd_resp_set_type(req, "text/html");
     return httpd_resp_send(req, buf, n);
@@ -435,6 +446,17 @@ static esp_err_t page_update(httpd_req_t *req)
     return httpd_resp_sendstr(req, "Update written. brim restarts in a moment.");
 }
 
+static void csv_chunk(const char *text, size_t len, void *ctx) { httpd_resp_send_chunk(ctx, text, len); }
+
+static esp_err_t page_bathlog(httpd_req_t *req)
+{
+    if (!host_ok(req)) return httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Wrong host");
+    httpd_resp_set_type(req, "text/csv");
+    httpd_resp_set_hdr(req, "Content-Disposition", "attachment; filename=brim-bath.csv");
+    bathlog_csv(csv_chunk, req);
+    return httpd_resp_send_chunk(req, NULL, 0);
+}
+
 static esp_err_t page_icon(httpd_req_t *req)
 {
     httpd_resp_set_type(req, "image/svg+xml");
@@ -458,6 +480,8 @@ static esp_err_t start_httpd(void)
         httpd_register_uri_handler(s_httpd, &upd);
         httpd_uri_t test = {.uri = "/test", .method = HTTP_POST, .handler = page_test};
         httpd_register_uri_handler(s_httpd, &test);
+        httpd_uri_t log = {.uri = "/bath.csv", .method = HTTP_GET, .handler = page_bathlog};
+        httpd_register_uri_handler(s_httpd, &log);
     } else {
         httpd_register_err_handler(s_httpd, HTTPD_404_NOT_FOUND, page_redirect);
     }

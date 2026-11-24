@@ -20,9 +20,11 @@
 #include <sys/time.h>
 
 #include "accel.h"
+#include "bathlog.h"
 #include "board.h"
 #include "buzzer.h"
 #include "driver/usb_serial_jtag.h"
+#include "esp_console.h"
 #include "esp_log.h"
 #include "esp_ota_ops.h"
 #include "fdc1004.h"
@@ -42,8 +44,13 @@
 #include "sense_touch.h"
 #include "settings.h"
 #include "status.h"
+#include "sysinfo.h"
 #include "tilt.h"
 #include "tmp117.h"
+
+#ifndef CONFIG_BRIM_BENCH
+#define CONFIG_BRIM_BENCH 0              // main/Kconfig.projbuild; undefined when off
+#endif
 
 static const char *TAG = "brim";
 
@@ -57,7 +64,20 @@ static RTC_DATA_ATTR fdc_state_t s_fdc_st;      // CAPDAC per channel
 static RTC_DATA_ATTR bool s_fdc_probed, s_fdc_fitted;
 static RTC_DATA_ATTR bool s_acc_probed, s_acc_fitted;
 static RTC_DATA_ATTR tilt_t s_tilt;
+static RTC_DATA_ATTR lvl_cal_t s_cal_saved;     // what is in flash, to write only when the calibration changed
+static RTC_DATA_ATTR fdc_cal_t s_fdc_saved;
+
+// calibration survives deep sleep in RTC memory, and a power loss (battery re-soldered, ran flat) in flash
+static void cal_save(void)
+{
+    if (s_cal.valid && memcmp(&s_cal, &s_cal_saved, sizeof(s_cal)) && store_save("cal", &s_cal, sizeof(s_cal)) == ESP_OK)
+        s_cal_saved = s_cal;
+    if (s_fdc.valid && memcmp(&s_fdc, &s_fdc_saved, sizeof(s_fdc)) && store_save("fdccal", &s_fdc, sizeof(s_fdc)) == ESP_OK)
+        s_fdc_saved = s_fdc;
+}
 static bool s_rail_held;                       // sensor rail kept on while awake (FDC fitted)
+static RTC_DATA_ATTR float s_fake_mm = NAN;    // bench console: pretend the water is at this level (NAN = off)
+static float s_last_pf[FDC_CH];                // last FDC1004 reading, for the console
 
 static settings_t s_set;
 
@@ -85,6 +105,7 @@ static bool fdc_sample(float pf[FDC_CH])
     sense_pause();                                    // the touch FSM must not drive the pads meanwhile
     status_quiet(true);                               // and the LED current must not move the shared rail
     esp_err_t err = fdc_read_all(&s_fdc_st, pf);
+    if (err == ESP_OK) memcpy(s_last_pf, pf, sizeof(s_last_pf));
     status_quiet(false);
     sense_resume();
     if (err != ESP_OK) ESP_LOGW(TAG, "FDC1004 read failed: %s", esp_err_to_name(err));
@@ -133,27 +154,59 @@ static void checkin(bool online)
         if (net_ntfy(&s_set, "brim battery low", m, 3, "battery") == ESP_OK) s_policy.lowbat_sent = true;
     }
     if (now >= s_next_status) {
-        char m[160];
+        char m[256];
         if (power_on_charger()) snprintf(m, sizeof(m), "On the charger. brim checks in every 2 days, and you'll get an "
                                          "alert if it goes quiet for 3.");
         else snprintf(m, sizeof(m), "Battery %d %%. brim checks in every 2 days, and you'll get an alert if it goes "
                       "quiet for 3.", pct < 0 ? 0 : pct);
+        size_t l = strlen(m);
+        snprintf(m + l, sizeof(m) - l, " Firmware %s.", sysinfo_version());
+        l = strlen(m);
+        if (sysinfo_crashes())
+            snprintf(m + l, sizeof(m) - l, " %d unexpected restart(s), last: %s.", sysinfo_crashes(), sysinfo_last_crash());
         if (net_ntfy(&s_set, "brim OK", m, 1, "white_check_mark") == ESP_OK) s_next_status = now + STATUS_S;
     }
     if (!online) net_wifi_stop();
 }
 
+#if CONFIG_BRIM_BENCH
+// bench build: wait awake for what would have woken it, then restart (a software restart keeps RTC memory,
+// like a wake from deep sleep), so the console and the log stay up the whole time
+static void bench_wait(bool pad1_wet, uint64_t timer_s)
+{
+    ESP_LOGW(TAG, "bench: not sleeping (pad1 %s, timer %llus)", pad1_wet ? "wet" : "dry", timer_s);
+    bool charger = power_on_charger();
+    double t0 = now_s();
+    for (;;) {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        if (power_on_charger() != charger) break;
+        if (timer_s && now_s() - t0 >= timer_s) break;
+        if (s_acc_fitted && accel_events()) break;
+        if (!pad1_wet) {
+            uint32_t raw[LVL_CH];
+            lvl_cal_t c = s_cal;
+            if ((!isnan(s_fake_mm) && s_fake_mm > 0) || (sense_read(raw, 2) == ESP_OK && lvl_compute(&c, raw).wet)) break;
+        }
+    }
+    esp_restart();
+}
+#endif
+
 static void sleep_now(bool pad1_wet, uint64_t timer_s)
 {
+#if !CONFIG_BRIM_BENCH
     // deep sleep turns the USB port off: stay awake while a computer is attached so esptool can
     // reset the chip into the bootloader by itself (no IO0 / EN buttons needed)
     if (usb_serial_jtag_is_connected()) {
         ESP_LOGI(TAG, "USB host attached: staying awake");
         while (usb_serial_jtag_is_connected()) vTaskDelay(pdMS_TO_TICKS(1000));
     }
+#endif
     net_wifi_stop();
     status_led(LED_OFF);
     hold_rail(false);
+    cal_save();
+    bathlog_save();
     if (!pad1_wet) sense_arm_wake(wake_pad(), lvl_wake_threshold(&s_cal, wake_pad()));   // wake when the bath arrives
     // ext1, any low: put on a Qi pad (QI_DET_N) or moved / tapped (LIS2DW12 INT1, active low)
     uint64_t ext1 = 0;
@@ -166,6 +219,10 @@ static void sleep_now(bool pad1_wet, uint64_t timer_s)
         if (!timer_s || c < timer_s) timer_s = c;
     }
     if (timer_s) esp_sleep_enable_timer_wakeup(timer_s * 1000000ULL);
+#if CONFIG_BRIM_BENCH
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+    bench_wait(pad1_wet, timer_s);
+#endif
     ESP_LOGI(TAG, "deep sleep (pad1 %s, timer %llus)", pad1_wet ? "wet" : "dry", timer_s);
     esp_deep_sleep_start();
 }
@@ -199,6 +256,131 @@ static void notify_text(const char *title, const char *msg, int prio, const char
     snprintf(o.msg, sizeof(o.msg), "%s", msg);
     snprintf(o.tags, sizeof(o.tags), "%s", tags);
     if (settings_provisioned(&s_set)) send(&o);
+}
+
+// ---------------- bench console (USB, when a computer is attached or in the bench build) ----------------
+static int cmd_info(int argc, char **argv)
+{
+    printf("firmware %s, unexpected restarts %d (last: %s)\n", sysinfo_version(), sysinfo_crashes(), sysinfo_last_crash());
+    printf("Wi-Fi '%s' %s, topic %s, server %s\n", s_set.ssid, s_set.wifi_ok ? "verified" : "not verified", s_set.topic,
+           s_set.ntfy_host);
+    printf("alarm pad %d, hot > %.1f C, cool < %.1f C (0 = off), sensing %d (0 touch, 1 FDC, 2 compare)\n",
+           s_set.alarm_pad, s_set.temp_limit_c, s_set.temp_cool_c, s_set.sense_mode);
+    printf("FDC1004 %s, LIS2DW12 %s, calibration %s, bath %s, fake level %s\n", s_fdc_fitted ? "fitted" : "absent",
+           s_acc_fitted ? "fitted" : "absent", s_cal.valid ? "valid" : "none", s_policy.active ? "active" : "none",
+           isnan(s_fake_mm) ? "off" : "on");
+    printf("next check-in in %.0f s\n", s_next_checkin - now_s());
+    return 0;
+}
+
+static int cmd_sensors(int argc, char **argv)
+{
+    uint32_t raw[LVL_CH];
+    if (sense_read(raw, 4) == ESP_OK) {
+        lvl_cal_t c = s_cal;                                  // a copy: reading must not teach the calibration
+        lvl_result_t r = lvl_compute(&c, raw);
+        printf("touch raw:");
+        for (int i = 0; i < LVL_CH; i++) printf(" %lu", (unsigned long)raw[i]);
+        printf("\nlevel %.1f mm, top pad %d, wet %d, REF %.2f\n", r.level_mm, r.top_full, r.wet, r.raw_frac[LVL_REF]);
+    }
+    if (s_fdc_fitted) printf("FDC pF (last bath sample): %.3f %.3f %.3f %.3f\n", s_last_pf[0], s_last_pf[1], s_last_pf[2],
+                             s_last_pf[3]);
+    float c;
+    if (tmp117_read(&c) == ESP_OK) printf("water %.2f C\n", c);
+    int mv = power_battery_mv();
+    printf("battery %d mV (%d %%), on charger %d, charging %d\n", mv, power_battery_level(), power_on_charger(),
+           power_charging());
+    float g[3];
+    if (s_acc_fitted && accel_gravity(g) == ESP_OK) printf("gravity %.2f %.2f %.2f g\n", g[0], g[1], g[2]);
+    return 0;
+}
+
+static int cmd_led(int argc, char **argv)
+{
+    static const char *names[] = {"off", "setup", "charging", "charged", "monitor", "nearly", "alarm", "hot",
+                                  "attention", "ok"};
+    static const led_state_t states[] = {LED_OFF, LED_SETUP, LED_CHARGING, LED_CHARGED, LED_MONITOR, LED_NEARLY,
+                                         LED_ALARM, LED_HOT, LED_ATTENTION, LED_OK};
+    for (int i = 0; argc > 1 && i < (int)(sizeof(names) / sizeof(names[0])); i++)
+        if (!strcmp(argv[1], names[i])) { status_led(states[i]); return 0; }
+    printf("led off|setup|charging|charged|monitor|nearly|alarm|hot|attention|ok\n");
+    return 1;
+}
+
+static int cmd_beep(int argc, char **argv)
+{
+    if (argc > 1 && !strcmp(argv[1], "chirp")) buzzer_chirp();
+    else buzzer_alarm();
+    return 0;
+}
+
+static int cmd_fake(int argc, char **argv)
+{
+    if (argc < 2) { printf("fake <mm above the bottom of pad 1> | fake off\n"); return 1; }
+    s_fake_mm = strcmp(argv[1], "off") ? strtof(argv[1], NULL) : NAN;
+    printf(isnan(s_fake_mm) ? "fake level off\n" : "pretending the water is at %.1f mm\n", s_fake_mm);
+    return 0;
+}
+
+static int cmd_alert(int argc, char **argv)
+{
+    static const struct { const char *name; policy_event_t ev; int prio; const char *title, *msg; } A[] = {
+        {"nearly", EV_NEARLY_FULL, 4, "Bath nearly full", "Bench test: about 2 min to go."},
+        {"full", EV_ALARM, 5, "BATH FULL", "Bench test: at the target level."},
+        {"hot", EV_TOO_HOT, 4, "Bath too hot", "Bench test: above your limit."},
+        {"battery", EV_LOW_BATTERY, 3, "brim battery low", "Bench test: battery low."},
+        {"test", EV_NONE, 3, "brim bench test", "Bench test alert."},
+    };
+    for (int i = 0; argc > 1 && i < (int)(sizeof(A) / sizeof(A[0])); i++)
+        if (!strcmp(argv[1], A[i].name)) {
+            policy_out_t o = {.ev = A[i].ev, .priority = A[i].prio};
+            snprintf(o.title, sizeof(o.title), "%s", A[i].title);
+            snprintf(o.msg, sizeof(o.msg), "%s", A[i].msg);
+            snprintf(o.tags, sizeof(o.tags), "bathtub");
+            notify(&o);                                       // phone + the device's own light and sounder
+            return 0;
+        }
+    printf("alert nearly|full|hot|battery|test\n");
+    return 1;
+}
+
+static void print_chunk(const char *text, size_t len, void *ctx) { fwrite(text, 1, len, stdout); }
+static int cmd_log(int argc, char **argv)
+{
+    bathlog_save();
+    printf("%d samples\n", bathlog_csv(print_chunk, NULL));
+    return 0;
+}
+
+static int cmd_recal(int argc, char **argv)
+{
+    calibrate_dry(1);
+    cal_save();
+    printf("dry calibration replaced and saved (keep the device dry)\n");
+    return 0;
+}
+
+static void bench_console_start(void)
+{
+    static const esp_console_cmd_t cmds[] = {
+        {.command = "info", .help = "firmware, settings, detected parts, state", .func = cmd_info},
+        {.command = "sensors", .help = "read every sensor once", .func = cmd_sensors},
+        {.command = "led", .help = "led <state>: show a light pattern", .func = cmd_led},
+        {.command = "beep", .help = "beep [chirp]: the full-alarm sound, or one chirp", .func = cmd_beep},
+        {.command = "fake", .help = "fake <mm>|off: pretend the water is at a level (drives the real alerts)",
+         .func = cmd_fake},
+        {.command = "alert", .help = "alert nearly|full|hot|battery|test: send one alert now", .func = cmd_alert},
+        {.command = "log", .help = "print the last bath log as CSV", .func = cmd_log},
+        {.command = "recal", .help = "replace the dry calibration (device must be dry)", .func = cmd_recal},
+    };
+    esp_console_repl_t *repl = NULL;
+    esp_console_repl_config_t rc = ESP_CONSOLE_REPL_CONFIG_DEFAULT();
+    rc.prompt = "brim>";
+    esp_console_dev_usb_serial_jtag_config_t dev = ESP_CONSOLE_DEV_USB_SERIAL_JTAG_CONFIG_DEFAULT();
+    if (esp_console_new_repl_usb_serial_jtag(&dev, &rc, &repl) != ESP_OK) return;
+    esp_console_register_help_command();
+    for (int i = 0; i < (int)(sizeof(cmds) / sizeof(cmds[0])); i++) esp_console_cmd_register(&cmds[i]);
+    esp_console_start_repl(repl);
 }
 
 
@@ -235,6 +417,7 @@ static void charger_mode(bool placed)
         if (s_set.topic[0] && net_wifi_connect(&s_set, 8000)) net_watchdog(&s_set, NULL);
         net_wifi_stop();
         s_next_checkin = s_next_status = 0;
+        sysinfo_clear();
         status_flash(255, 0, 0, 10, 80);
         settings_erase();
         memset(s_placed_at, 0, sizeof(s_placed_at));
@@ -310,6 +493,8 @@ static void bath_mode(void)
     }
     hold_rail(true);
     if (s_acc_fitted) accel_awake();
+    bool log_open = s_policy.active;                  // a bath in progress (woken from an in-bath sleep): keep its log
+    if (log_open) bathlog_begin(false, now_s());
 
     rate_t rate;
     rate_init(&rate, 60);
@@ -351,6 +536,14 @@ static void bath_mode(void)
             r.raw_frac[LVL_REF] = fr.ref_frac;
             r.all_wet = fr.ref_wet && fr.top_full == 6;
         }
+        if (!isnan(s_fake_mm)) {                          // bench console "fake": pretend the water is at s_fake_mm
+            r.wet = s_fake_mm > 0;
+            r.level_mm = fminf(fmaxf(s_fake_mm, 0), LVL_RANGE_MM);
+            r.top_full = 0;
+            for (int k = 1; k <= LVL_PADS; k++) if (s_fake_mm >= lvl_pad_top_mm(k)) r.top_full = k;
+            r.all_wet = false;
+            r.raw_frac[LVL_REF] = 0;
+        }
         if (r.wet && (t - t_temp > 10 || isnan(temp))) {  // the TMP117 tab is underwater before PAD1
             float c;
             if (tmp117_read(&c) == ESP_OK) temp = c;
@@ -367,6 +560,8 @@ static void bath_mode(void)
                           .temp_c = temp, .battery_pct = batt};
         in.rate_ok = rate_mm_per_min(&rate, &in.rate_mm_min);
         in.eta_s = rate_eta_s(&rate, r.level_mm, s_policy.alarm_mm - 1.0f);
+        if (r.wet && !log_open) { bathlog_begin(true, t); log_open = true; }   // first wet sample: a new bath
+        if (log_open) bathlog_add(t, r.level_mm, temp, r.top_full, r.wet, s_policy.alarm_active);
         policy_out_t out;
         if (policy_step(&s_policy, &in, &out)) notify(&out);
         // the device itself: double tap = "I know", tilt / fall check, LED
@@ -424,6 +619,7 @@ void app_main(void)
         nvs_flash_erase();
         nvs_flash_init();
     }
+    sysinfo_boot();
     settings_load(&s_set);
     power_init();
     net_init();
@@ -433,6 +629,7 @@ void app_main(void)
     esp_ota_mark_app_valid_cancel_rollback();
     ESP_LOGI(TAG, "wake cause %d, on charger %d, provisioned %d", cause, power_on_charger(), settings_provisioned(&s_set));
 
+    if (CONFIG_BRIM_BENCH || usb_serial_jtag_is_connected()) bench_console_start();
     if (!s_fdc_probed) {                                  // which board variant is this?
         s_fdc_fitted = fdc_present();
         s_fdc_probed = true;
@@ -443,7 +640,9 @@ void app_main(void)
         s_acc_probed = true;
         ESP_LOGI(TAG, "LIS2DW12 %s", s_acc_fitted ? "fitted" : "not answering");
     }
-    if (!s_cal.valid) calibrate_dry(1);                   // first power-up: assume dry
+    if (!s_cal.valid && store_load("cal", &s_cal, sizeof(s_cal))) s_cal_saved = s_cal;     // power was lost
+    if (!s_fdc.valid && store_load("fdccal", &s_fdc, sizeof(s_fdc))) s_fdc_saved = s_fdc;
+    if (!s_cal.valid) calibrate_dry(1);                   // first power-up ever: assume dry
     net_set_fdc_fitted(s_fdc_fitted);
     // first boot after setup (or new Wi-Fi details): prove they work before relying on them
     if (s_set.ssid[0] && s_set.topic[0] && !s_set.wifi_ok) {

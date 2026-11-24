@@ -1,6 +1,7 @@
 // User settings in NVS.
 #pragma once
 #include <stdbool.h>
+#include <stddef.h>
 
 #include "esp_err.h"
 
@@ -24,3 +25,9 @@ esp_err_t settings_save(const settings_t *s);
 esp_err_t settings_erase(void);
 bool settings_provisioned(const settings_t *s);
 void settings_new_topic(char *out, int len);
+
+// Device data that is not a user setting (calibration, bath log, restart record): its own NVS namespace, so a
+// factory reset (settings_erase) keeps the board's calibration. A blob only loads if its size matches exactly,
+// so a firmware change that resizes a struct starts that item fresh instead of misreading it.
+esp_err_t store_save(const char *key, const void *data, size_t len);
+bool store_load(const char *key, void *data, size_t len);

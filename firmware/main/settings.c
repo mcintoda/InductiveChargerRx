@@ -80,3 +80,26 @@ esp_err_t settings_erase(void)
 }
 
 bool settings_provisioned(const settings_t *s) { return s->ssid[0] && s->topic[0]; }
+
+#define NS_DATA "brimdata"
+
+esp_err_t store_save(const char *key, const void *data, size_t len)
+{
+    nvs_handle_t h;
+    esp_err_t err = nvs_open(NS_DATA, NVS_READWRITE, &h);
+    if (err != ESP_OK) return err;
+    err = nvs_set_blob(h, key, data, len);
+    if (err == ESP_OK) err = nvs_commit(h);
+    nvs_close(h);
+    return err;
+}
+
+bool store_load(const char *key, void *data, size_t len)
+{
+    nvs_handle_t h;
+    if (nvs_open(NS_DATA, NVS_READONLY, &h) != ESP_OK) return false;
+    size_t n = 0;
+    bool ok = nvs_get_blob(h, key, NULL, &n) == ESP_OK && n == len && nvs_get_blob(h, key, data, &n) == ESP_OK;
+    nvs_close(h);
+    return ok;
+}
