@@ -157,6 +157,16 @@ def via_map(board, g, net):
     m = build_obstacles(board, g, net, VIA_D / 2 + CLR + MARGIN, keepouts=False)
     # In1 copper that is not a pour (the GND strap) also blocks vias of other nets
     blocked = m[pcbnew.F_Cu] | m[pcbnew.In2_Cu] | m[pcbnew.B_Cu] | m[pcbnew.In1_Cu]
+    # no via in a soldered pad, whatever its net: an open via wicks the solder away from the joint
+    # (exposed thermal pads keep their deliberate vias; they are not routed through here)
+    sp = Image.fromarray(np.zeros_like(blocked))
+    d = ImageDraw.Draw(sp)
+    for fp in board.GetFootprints():
+        for p in fp.Pads():
+            if p.GetAttribute() == pcbnew.PAD_ATTRIB_SMD and (p.IsOnLayer(pcbnew.F_Paste) or p.IsOnLayer(pcbnew.B_Paste)):
+                lay = pcbnew.F_Cu if p.IsOnLayer(pcbnew.F_Cu) else pcbnew.B_Cu
+                draw_item(g, d, p, lay, VIA_D / 2 + MARGIN)
+    blocked = blocked | np.array(sp, dtype=bool)
     im = Image.fromarray(blocked)
     d = ImageDraw.Draw(im)
     for (x0, y0, x1, y1) in VIA_KEEPOUTS:

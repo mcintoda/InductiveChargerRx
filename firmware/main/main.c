@@ -85,6 +85,10 @@ static double now_s(void)
 }
 
 
+// battery for alerts and status: unknown (-1) while USB powers the board, where VBAT may only be the ~2.7 V that
+// leaks back through U4 with no cell fitted (the console's "sensors" still shows the raw reading)
+static int batt_level(void) { return usb_serial_jtag_is_connected() ? -1 : power_battery_level(); }
+
 // PAD1 cannot wake the chip when the FDC1004 links are fitted: with the rail off its ESD diodes clamp the pad
 static int wake_pad(void) { return s_fdc_fitted ? 2 : 1; }
 
@@ -143,7 +147,7 @@ static void checkin(bool online)
     int code = net_watchdog(&s_set, WATCHDOG_DELAY);
     // 2xx: armed. 4xx: this server can't schedule (old or self-hosted ntfy): don't keep retrying every 6 h
     s_next_checkin = now + ((code >= 200 && code < 300) || (code >= 400 && code < 500) ? CHECKIN_S : RETRY_S);
-    int pct = power_battery_level();
+    int pct = batt_level();
     if (!power_on_charger() && pct >= 0 && pct < POLICY_LOW_BATT_PCT && !s_policy.lowbat_sent) {
         char m[96];
         snprintf(m, sizeof(m), "Battery at %d %%. Put brim on a Qi charger soon.", pct);
@@ -166,6 +170,7 @@ static void checkin(bool online)
 }
 
 static void bench_console_start(void);
+
 
 // A computer on the USB port (the flash tab, or the test pads) means bench work: deep sleep would turn the port off,
 // so wait awake for whatever would have woken brim, then restart (a software restart keeps RTC memory, like a wake).
@@ -435,7 +440,7 @@ static void charger_mode(bool placed)
             net_unlock(120);
             status_flash(0, 255, 0, 2, 150);
         }
-        st.battery_pct = power_battery_level();
+        st.battery_pct = batt_level();
         st.charging = power_charging();
         status_led(st.charging ? LED_CHARGING : LED_CHARGED);
         if (net_ota_done()) { vTaskDelay(pdMS_TO_TICKS(1500)); esp_restart(); }
@@ -541,7 +546,7 @@ static void bath_mode(void)
             t_temp = t;
         }
         if (t - t_batt > 60 || batt < 0) {
-            batt = power_battery_level();
+            batt = batt_level();
             t_batt = t;
         }
         if (r.wet) rate_add(&rate, (float)(t - t_start), r.level_mm);
@@ -660,12 +665,14 @@ void app_main(void)
     // moved or tapped while asleep: show the battery, then straight back to sleep unless a bath is running
     if (cause == ESP_SLEEP_WAKEUP_EXT1 && s_acc_fitted && (esp_sleep_get_ext1_wakeup_status() & (1ULL << PIN_ACC_INT))) {
         accel_events();
-        int pct = power_battery_level();
+        int pct = batt_level();
         status_battery(pct < 0 ? 0 : pct);
         if (!power_on_charger() && !s_policy.active) sleep_now(false, 6 * 3600);
     }
-    // empty: say so once, then sleep until it is put on a charger (protects the cell, no brown-out loops)
-    if (!power_on_charger()) {
+    // empty: say so once, then sleep until it is put on a charger (protects the cell, no brown-out loops).
+    // Not while USB is attached: the flash tab powers the board, and with no battery fitted ~2.7 V reaches VBAT
+    // backwards through U4 (no reverse-current block), which would read as an empty battery
+    if (!power_on_charger() && !usb_serial_jtag_is_connected()) {
         int mv = power_battery_mv();
         if (mv > 0 && mv < BATT_EMPTY_MV) {
             if (!s_empty_sent) {
