@@ -17,7 +17,6 @@ typedef enum {
 } led_state_t;
 
 void status_led(led_state_t s);          // keeps the rail on while the LED shows anything
-led_state_t status_current(void);
 void status_flash(int r, int g, int b, int n, int ms);   // blocking blink, 0..255 per colour
 void status_battery(int pct);            // 1 s: green > 50 %, yellow > 20 %, red below
 // the FDC1004 measures on the same rail: pause the LED current for the ~40 ms conversion

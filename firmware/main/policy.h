@@ -21,9 +21,8 @@ typedef struct {
     float temp_cool_c;         // 0 = off
     bool notify_filling;
     // session state
-    bool active, filling_sent, nearly_sent, hot_sent, submerged_sent, lowbat_sent, alarm_active, was_warm, cool_sent;
+    bool active, nearly_sent, hot_sent, lowbat_sent, alarm_active, was_warm, cool_sent;
     double alarm_first_s, alarm_last_s, last_wet_s;   // s (double: wall-clock seconds keep 1 s resolution)
-    float prev_level_mm;
     bool prev_wet;
     float ref_snap;              // above 60 mm the dry REF pad tells whether water is still rising
     double ref_snap_t;

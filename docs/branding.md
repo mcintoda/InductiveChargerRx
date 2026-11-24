@@ -25,7 +25,7 @@ as a bath and not a box. That moment is exactly what the device is for: *alert b
 The mark is built by projecting a 3-D tub (`TUB3D` in `brand.py`) to 2-D polygons with shapely
 (`iso_polys()`). The CAD deboss, logo and icon all use those polygons. Regenerate everything with
 `python3 hardware/mech/brand_render.py` (needs `pip install shapely` besides CadQuery). Earlier marks
-(`tub_solid()`, `ripple_solid()`) are kept in the file for reference.
+(the rev B ripple and the first flat bathtub) are in the git history.
 
 ## Palette (muted)
 | Name | Hex | Use |

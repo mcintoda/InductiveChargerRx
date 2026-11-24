@@ -7,5 +7,6 @@
 esp_err_t power_init(void);
 int power_battery_mv(void);              // -1 on error
 int power_battery_pct(int mv);           // rough Li-ion state of charge from voltage at light load
+int power_battery_level(void);           // power_battery_pct of a fresh reading, -1 if the ADC failed
 bool power_on_charger(void);             // QI_DET_N low: a Qi pad is powering the receiver
 bool power_charging(void);               // CHG_N low: the BQ51050B is charging

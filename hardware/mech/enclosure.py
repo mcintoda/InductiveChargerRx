@@ -162,7 +162,7 @@ BR_L, BR_T, BR_WALL, BR_LIP, BR_GAP = 72.0, 5.0, 2.0, 2.5, 0.3
 # head/neck sizes, so the keyhole takes heads up to 12 mm and necks up to 5.8 mm: measure yours and
 # adjust.  The head sits in a pocket on the device side of the plate; the neck runs in a slot through
 # a 1.5 mm web on the tub side.  Hang the bracket: cups slide to the TOP of each slot.
-KEY_HEAD_D, KEY_NECK_W, KEY_SLIDE, KEY_WEB, KEY_POCKET = 12.5, 6.0, 7.0, 1.5, 3.5
+KEY_HEAD_D, KEY_NECK_W, KEY_SLIDE, KEY_POCKET = 12.5, 6.0, 7.0, 3.5   # web left behind: BR_T - KEY_POCKET = 1.5 mm
 
 
 def make_bracket():
@@ -196,14 +196,6 @@ def make_bracket():
     for wy in (y0 + 38.0, y0 + 48.0):
         plate = plate.cut(cq.Workplane("XY").workplane(offset=z_back - 1).center(0, wy).slot2D(30.0, 5.0).extrude(BR_T + 2))
     return plate
-
-
-def section_svg(shape, path, plane_y=0.0):
-    """Export a cross-section (cut by the plane Y = plane_y) as SVG viewed along -Y."""
-    big = cq.Workplane("XZ").workplane(offset=-plane_y).rect(200, 100).extrude(0.05)
-    sec = shape.intersect(big)
-    cq.exporters.export(sec, path, opt={"projectionDir": (0, -1, 0), "showHidden": False, "strokeWidth": 0.15,
-                                        "width": 900, "height": 400, "marginLeft": 10, "marginTop": 10})
 
 
 def main():

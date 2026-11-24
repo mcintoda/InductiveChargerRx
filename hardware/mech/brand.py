@@ -32,89 +32,6 @@ PALETTE = {
 DEBOSS = 0.35                 # mm
 
 
-# ---------------- the mark: a bathtub filled almost to the brim ----------------
-def _bottom_rounded(cx, cy, w, h, r, depth):
-    """Rectangle with only its two bottom corners rounded."""
-    sk = cq.Sketch().push([(cx, cy)]).rect(w, h).reset().vertices("<Y").fillet(r)
-    return cq.Workplane("XY").placeSketch(sk).extrude(depth)
-
-
-def tub_solid(w, depth, split=False):
-    """Side view of a freestanding tub: rim with overhanging lips, round-bottomed basin, two feet, and the
-    water a hair below the rim (the alert moment). Strokes are ~0.065 w: 0.8 mm at the 12-13 mm deboss."""
-    s, g = 0.065 * w, 0.045 * w                  # wall stroke, gap between wall and water
-    rim_t, rim_top = 0.075 * w, 0.28 * w
-    b_top, b_bot, b_w, b_r = rim_top - rim_t, -0.20 * w, 0.84 * w, 0.19 * w
-    # rim: full width, slightly rounded ends
-    rim = cq.Workplane("XY").placeSketch(cq.Sketch().push([(0, rim_top - rim_t / 2)]).rect(w, rim_t)
-                                         .reset().vertices().fillet(rim_t * 0.45)).extrude(depth)
-    # basin wall: outer minus inner (inner runs up into the rim so the wall opens at the top)
-    outer = _bottom_rounded(0, (b_top + b_bot) / 2, b_w, b_top - b_bot, b_r, depth)
-    in_bot, in_top = b_bot + s, b_top + 0.01 * w
-    inner = _bottom_rounded(0, (in_top + in_bot) / 2, b_w - 2 * s, in_top - in_bot, b_r - s, depth)
-    wall = outer.cut(inner)
-    # water: the inner shape inset by g, topped by a gentle wave just under the rim
-    w_bot, w_w = in_bot + g, b_w - 2 * s - 2 * g
-    y_w, amp = b_top - 0.075 * w, 0.018 * w
-    body = _bottom_rounded(0, (y_w + 2 * amp + w_bot) / 2, w_w, y_w + 2 * amp - w_bot, b_r - s - g, depth)
-    n, x0 = 48, -w_w / 2 - 0.01 * w
-    wave = [(x0 + (w_w + 0.02 * w) * i / n, y_w + amp * math.sin(2 * math.pi * 1.5 * i / n)) for i in range(n + 1)]
-    cutter = cq.Workplane("XY").polyline(wave + [(-x0, w_bot - 0.05 * w), (x0, w_bot - 0.05 * w)]).close().extrude(depth)
-    water = body.intersect(cutter)
-    # feet: short splayed legs under the rounded corners
-    feet = []
-    for side in (-1, 1):
-        xa = side * 0.27 * w
-        feet.append(cq.Workplane("XY").polyline([(xa - 0.045 * w, b_bot + 0.06 * w), (xa + 0.045 * w, b_bot + 0.06 * w),
-                                                 (xa + side * 0.035 * w + 0.03 * w, b_bot - 0.075 * w),
-                                                 (xa + side * 0.035 * w - 0.03 * w, b_bot - 0.075 * w)]).close().extrude(depth))
-    tub = rim.union(wall)
-    for f in feet:
-        tub = tub.union(f)
-    return (tub, water) if split else tub.union(water)
-
-
-MARK = None                                      # set below: the brand mark used on the device and in the logo
-
-
-# ---------------- the mark (rev C2): a bathtub in three-quarter view, water just under the rim ----------------
-ISO = dict(                       # all in units of the mark width w; y up, origin at the mark's centre
-    y0=0.20, a0=0.50, b0=0.17,    # rim outer oval (seen from above at ~20 deg)
-    ai=0.44, bi=0.115,            # rim opening (vertical stroke 0.055 w: 0.6 mm at 11 mm)
-    aw=0.39, bw=0.07,             # water surface: fills the opening to just below the lip (gap >= 0.045 w)
-    y1=0.06, a1=0.42, b1=0.09,    # body: top edge follows the rim's front lip one gap lower
-    y2=-0.20, a2=0.36, b2=0.10,   # body: rounded bottom
-    fx=0.27, fy=-0.36,            # feet
-)
-ISO_YMID = (ISO["y0"] + ISO["b0"] + ISO["fy"]) / 2    # vertical centre of the whole mark
-
-
-def _ell_arc(cx, cy, a, b, t0, t1, n=40):
-    return [(cx + a * math.cos(t0 + (t1 - t0) * i / n), cy + b * math.sin(t0 + (t1 - t0) * i / n)) for i in range(n + 1)]
-
-
-def iso_tub_solid(w, depth, split=False):
-    """Three-quarter view tub. Parts are separated by ~0.05 w gaps so it reads as one-tone deboss."""
-    k = {key: v * w for key, v in ISO.items()}
-    yc = -ISO_YMID * w                                  # shift so the mark is centred on the origin
-    E = lambda a, b, y: cq.Workplane("XY").center(0, y + yc).ellipse(a, b).extrude(depth)   # noqa: E731
-    rim = E(k["a0"], k["b0"], k["y0"]).cut(E(k["ai"], k["bi"], k["y0"]))
-    water = E(k["aw"], k["bw"], k["y0"])
-    top = _ell_arc(0, k["y1"] + yc, k["a1"], k["b1"], math.pi, 2 * math.pi)            # left -> right, under
-    bot = _ell_arc(0, k["y2"] + yc, k["a2"], k["b2"], 2 * math.pi, math.pi)            # right -> left, under
-    body = cq.Workplane("XY").polyline(top + bot).close().extrude(depth)
-    feet = []
-    for side in (-1, 1):
-        xa, yb = side * k["fx"], k["y2"] + yc - k["b2"] * 0.55
-        feet.append(cq.Workplane("XY").polyline([(xa - 0.045 * w, yb + 0.04 * w), (xa + 0.045 * w, yb + 0.04 * w),
-                                                 (xa + side * 0.03 * w + 0.028 * w, k["fy"] + yc),
-                                                 (xa + side * 0.03 * w - 0.028 * w, k["fy"] + yc)]).close().extrude(depth))
-    tub = rim.union(body)
-    for f in feet:
-        tub = tub.union(f)
-    return (tub, water) if split else tub.union(water)
-
-
 # ---------------- the mark (rev C3): a rectangular bathtub in true isometric view ----------------
 # Built as 2-D polygons (shapely) by projecting a 3-D tub: plan L x W, rounded corners, a rim on top, water
 # just under the lip, two visible side walls split by a crease at the near corner, and a tap on the far end.
@@ -125,7 +42,7 @@ ISO_GAP = 0.045                  # gap between parts, as a fraction of the mark 
 def iso_polys():
     """{'tub': polygons (rim + walls + feet), 'water': polygon}, normalised to width 1, centred on (0, 0), y up."""
     from shapely import affinity
-    from shapely.geometry import LineString, MultiPoint, Polygon, box
+    from shapely.geometry import LineString, Polygon, box
     from shapely.ops import unary_union
     T = TUB3D
     c, sn = math.cos(math.radians(30)), math.sin(math.radians(30))
@@ -207,29 +124,6 @@ def iso_svg_paths(g, ox, oy, scale):
 MARK = iso_tub_solid
 
 
-# ---------------- previous mark (rev B): ripples from a pebble, seen at a low angle ----------------
-def ripple_solid(w, depth):
-    a, k = w / 2.0, 0.40
-    parts = []
-    # centre plop
-    parts.append(cq.Workplane("XY").ellipse(a * 0.21, a * 0.21 * k).extrude(depth))
-    # inner ring
-    for f, st, gap in ((0.56, 0.062 * w, 0.0), (1.00, 0.046 * w, 0.30 * w)):
-        rx, ry = a * f, a * f * k
-        ring = (cq.Workplane("XY").ellipse(rx, ry).extrude(depth)
-                .cut(cq.Workplane("XY").ellipse(rx - st, ry - st * k * 1.6).extrude(depth)))
-        if gap:   # break the outer ring at both sides: ripples fading out
-            for side in (-1, 1):
-                ring = ring.cut(cq.Workplane("XY").center(side * rx, 0).rect(gap * 0.55, 2 * ry).extrude(depth))
-        parts.append(ring)
-    # splash droplet above the centre
-    parts.append(cq.Workplane("XY").center(0, a * 0.62).circle(0.055 * w).extrude(depth))
-    s = parts[0]
-    for p in parts[1:]:
-        s = s.union(p)
-    return s
-
-
 def text_solid(txt, size, depth, font=FONT_WORD):
     return cq.Workplane("XY").text(txt, size, depth, combine=False, fontPath=font, halign="center", valign="center")
 
@@ -256,11 +150,6 @@ def scale_geometry(E):
     x_in = 15.9                                  # just outside the 30 mm electrodes (|x| <= 15)
     x_out = E.OUT_W / 2 - 2.9                    # stop before the 2.5 mm front-edge round
     return x_in, x_out
-
-
-def tick(x0, x1, y, w, depth):
-    """Level horizontal tick from x0 to x1."""
-    return cq.Workplane("XY").center((x0 + x1) / 2, y).rect(abs(x1 - x0), w).extrude(depth)
 
 
 # ---------------- features ----------------

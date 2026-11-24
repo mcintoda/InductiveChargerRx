@@ -8,8 +8,6 @@
 typedef struct {
     int battery_pct;
     bool charging;
-    float temp_c;
-    float level_mm;
 } net_status_t;
 
 esp_err_t net_init(void);

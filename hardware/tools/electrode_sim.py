@@ -128,10 +128,6 @@ class Model:
         return (I.imag / self.w) * W_PAD * 1e12        # pF
 
 
-def dC(m, name, level, **kw):
-    return m.solve(level, name, **kw) - m.solve(-14.9, name, **kw)
-
-
 def main():
     os.makedirs(IMG, exist_ok=True)
     m = Model()

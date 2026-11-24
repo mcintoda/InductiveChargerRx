@@ -105,7 +105,6 @@ def prep():
     # --- driven shield: R17 (touch) and R26 (FDC) each drop a via into the In1 shield plane (E7 is on it too)
     sh = net("SHIELD")
     r17 = bxy(pads(fps["R17"])["1"].GetPosition()); r26 = bxy(pads(fps["R26"])["1"].GetPosition())
-    e7 = bxy(pads(fps["E7"])["1"].GetPosition())
     SH_Y = 31.0
     track(board, sh, r17, (r17[0], 30.0)); track(board, sh, (r17[0], 30.0), (22.9, 30.0))
     track(board, sh, (22.9, 30.0), (22.9, SH_Y)); via(board, sh, (22.9, SH_Y))

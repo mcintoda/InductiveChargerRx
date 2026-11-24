@@ -569,7 +569,7 @@ def main():
     best = plain_rounds(board, g, in1)
     print("after plain routing:", best, "unconnected")
     # transactional rip-up: keep a rip-up only if the total number of open connections goes down
-    for attempt in range(25):
+    for _ in range(25):
         if best == 0:
             break
         board.Save(tmp)

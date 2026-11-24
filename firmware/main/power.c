@@ -9,7 +9,7 @@
 static const char *TAG = "power";
 static adc_oneshot_unit_handle_t s_adc;
 static adc_cali_handle_t s_cali;
-#define VBAT_CH ADC_CHANNEL_8   // GPIO9 on ESP32-S3
+static adc_channel_t s_vbat_ch;
 
 esp_err_t power_init(void)
 {
@@ -17,11 +17,13 @@ esp_err_t power_init(void)
                         .pull_up_en = GPIO_PULLUP_ENABLE};
     ESP_RETURN_ON_ERROR(gpio_config(&in), TAG, "gpio in");
 
-    adc_oneshot_unit_init_cfg_t ucfg = {.unit_id = ADC_UNIT_1};
+    adc_unit_t unit;
+    ESP_RETURN_ON_ERROR(adc_oneshot_io_to_channel(PIN_VBAT_SENSE, &unit, &s_vbat_ch), TAG, "vbat pin");
+    adc_oneshot_unit_init_cfg_t ucfg = {.unit_id = unit};
     ESP_RETURN_ON_ERROR(adc_oneshot_new_unit(&ucfg, &s_adc), TAG, "adc");
     adc_oneshot_chan_cfg_t ccfg = {.atten = ADC_ATTEN_DB_12, .bitwidth = ADC_BITWIDTH_DEFAULT};
-    ESP_RETURN_ON_ERROR(adc_oneshot_config_channel(s_adc, VBAT_CH, &ccfg), TAG, "adc ch");
-    adc_cali_curve_fitting_config_t cal = {.unit_id = ADC_UNIT_1, .chan = VBAT_CH, .atten = ADC_ATTEN_DB_12,
+    ESP_RETURN_ON_ERROR(adc_oneshot_config_channel(s_adc, s_vbat_ch, &ccfg), TAG, "adc ch");
+    adc_cali_curve_fitting_config_t cal = {.unit_id = unit, .chan = s_vbat_ch, .atten = ADC_ATTEN_DB_12,
                                            .bitwidth = ADC_BITWIDTH_DEFAULT};
     if (adc_cali_create_scheme_curve_fitting(&cal, &s_cali) != ESP_OK) s_cali = NULL;
     return ESP_OK;
@@ -31,7 +33,7 @@ int power_battery_mv(void)
 {
     int raw = 0, mv = 0, sum = 0;
     for (int i = 0; i < 8; i++) {
-        if (adc_oneshot_read(s_adc, VBAT_CH, &raw) != ESP_OK) return -1;
+        if (adc_oneshot_read(s_adc, s_vbat_ch, &raw) != ESP_OK) return -1;
         if (s_cali) adc_cali_raw_to_voltage(s_cali, raw, &mv);
         else mv = raw * 3100 / 4095;
         sum += mv;
@@ -49,6 +51,12 @@ int power_battery_pct(int mv)
         if (mv <= pts[i][0])
             return pts[i - 1][1] + (mv - pts[i - 1][0]) * (pts[i][1] - pts[i - 1][1]) / (pts[i][0] - pts[i - 1][0]);
     return 100;
+}
+
+int power_battery_level(void)
+{
+    int mv = power_battery_mv();
+    return mv > 0 ? power_battery_pct(mv) : -1;
 }
 
 bool power_on_charger(void) { return gpio_get_level(PIN_QI_DET_N) == 0; }

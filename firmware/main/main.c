@@ -126,19 +126,18 @@ static void checkin(bool online)
     int code = net_watchdog(&s_set, WATCHDOG_DELAY);
     // 2xx: armed. 4xx: this server can't schedule (old or self-hosted ntfy): don't keep retrying every 6 h
     s_next_checkin = now + ((code >= 200 && code < 300) || (code >= 400 && code < 500) ? CHECKIN_S : RETRY_S);
-    int mv0 = power_battery_mv(), pct0 = mv0 > 0 ? power_battery_pct(mv0) : -1;
-    if (!power_on_charger() && pct0 >= 0 && pct0 < POLICY_LOW_BATT_PCT && !s_policy.lowbat_sent) {
+    int pct = power_battery_level();
+    if (!power_on_charger() && pct >= 0 && pct < POLICY_LOW_BATT_PCT && !s_policy.lowbat_sent) {
         char m[96];
-        snprintf(m, sizeof(m), "Battery at %d %%. Put brim on a Qi charger soon.", pct0);
+        snprintf(m, sizeof(m), "Battery at %d %%. Put brim on a Qi charger soon.", pct);
         if (net_ntfy(&s_set, "brim battery low", m, 3, "battery") == ESP_OK) s_policy.lowbat_sent = true;
     }
     if (now >= s_next_status) {
-        int mv = power_battery_mv();
         char m[160];
         if (power_on_charger()) snprintf(m, sizeof(m), "On the charger. brim checks in every 2 days, and you'll get an "
                                          "alert if it goes quiet for 3.");
         else snprintf(m, sizeof(m), "Battery %d %%. brim checks in every 2 days, and you'll get an alert if it goes "
-                      "quiet for 3.", mv > 0 ? power_battery_pct(mv) : 0);
+                      "quiet for 3.", pct < 0 ? 0 : pct);
         if (net_ntfy(&s_set, "brim OK", m, 1, "white_check_mark") == ESP_OK) s_next_status = now + STATUS_S;
     }
     if (!online) net_wifi_stop();
@@ -243,7 +242,7 @@ static void charger_mode(bool placed)
     }
     calibrate_dry(0.5f);
 
-    net_status_t st = {.battery_pct = -1, .temp_c = NAN};
+    net_status_t st = {.battery_pct = -1};
     bool online = net_wifi_connect(&s_set, 15000);
     if (online) {
         net_web_start(&s_set, &st);
@@ -262,8 +261,7 @@ static void charger_mode(bool placed)
             net_unlock(120);
             status_flash(0, 255, 0, 2, 150);
         }
-        int mv = power_battery_mv();
-        st.battery_pct = mv > 0 ? power_battery_pct(mv) : -1;
+        st.battery_pct = power_battery_level();
         st.charging = power_charging();
         status_led(st.charging ? LED_CHARGING : LED_CHARGED);
         if (net_ota_done()) { vTaskDelay(pdMS_TO_TICKS(1500)); esp_restart(); }
@@ -359,8 +357,7 @@ static void bath_mode(void)
             t_temp = t;
         }
         if (t - t_batt > 60 || batt < 0) {
-            int mv = power_battery_mv();
-            batt = mv > 0 ? power_battery_pct(mv) : -1;
+            batt = power_battery_level();
             t_batt = t;
         }
         if (r.wet) rate_add(&rate, (float)(t - t_start), r.level_mm);
@@ -473,8 +470,8 @@ void app_main(void)
     // moved or tapped while asleep: show the battery, then straight back to sleep unless a bath is running
     if (cause == ESP_SLEEP_WAKEUP_EXT1 && s_acc_fitted && (esp_sleep_get_ext1_wakeup_status() & (1ULL << PIN_ACC_INT))) {
         accel_events();
-        int mv = power_battery_mv();
-        status_battery(mv > 0 ? power_battery_pct(mv) : 0);
+        int pct = power_battery_level();
+        status_battery(pct < 0 ? 0 : pct);
         if (!power_on_charger() && !s_policy.active) sleep_now(false, 6 * 3600);
     }
     // empty: say so once, then sleep until it is put on a charger (protects the cell, no brown-out loops)

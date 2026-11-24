@@ -4,7 +4,6 @@
 #include "factory.h"
 
 #include <ctype.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -257,8 +256,8 @@ static esp_err_t page_root(httpd_req_t *req)
                       "<p style='background:#fff3cd;padding:10px;border-radius:6px'><b>Double-tap brim</b> on its "
                       "charger to unlock changes for 2 minutes.</p>");
     if (s_status)
-        n += snprintf(buf + n, sizeof(buf) - n, "<p>Battery %d %% %s &middot; water %s</p>", s_status->battery_pct,
-                      s_status->charging ? "(charging)" : "", isnan(s_status->temp_c) ? "--" : "measured");
+        n += snprintf(buf + n, sizeof(buf) - n, "<p>Battery %d %%%s</p>", s_status->battery_pct,
+                      s_status->charging ? " (charging)" : "");
     n += snprintf(buf + n, sizeof(buf) - n,
                   "<form method=post action=/save><input type=hidden name=k value=%s>"
                   "<label>Wi-Fi name<input name=ssid value='%s' required></label>"

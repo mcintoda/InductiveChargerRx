@@ -26,8 +26,3 @@ static const touch_pad_t SENSE_CH[N_SENSE_PADS] = {
 #define LIS2DW12_ADDR    0x19             // SA0 tied high (no pull-up current)
 #define AW2013_ADDR      0x45
 
-// geometry (mm) - see docs/placement-and-electrodes.md
-#define PAD_PITCH_MM     10.0f
-#define PAD_HEIGHT_MM    9.0f
-#define FRINGE_OFFSET_MM 1.7f             // fixed fringe offset from the field simulation
-#define RANGE_MM         60.0f

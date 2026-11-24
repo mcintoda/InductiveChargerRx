@@ -57,12 +57,10 @@ bool policy_step(policy_t *p, const policy_in_t *in, policy_out_t *out)
         p->last_wet_s = in->now_s;
         // fell in: everything wet at the very first wet sample
         if (in->all_wet && !p->prev_wet) {
-            p->submerged_sent = true;
             return emit(out, EV_SUBMERGED, 4, "brim is under water",
                         "warning", "Every sensor is wet at once - brim may have come off the tub wall.");
         }
         if (p->notify_filling) {
-            p->filling_sent = true;
             snprintf(m, sizeof(m), "Bath filling, water at %s.", t);
             return emit(out, EV_FILLING, 2, "Bath filling", "bathtub", m);
         }

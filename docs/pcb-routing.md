@@ -1,16 +1,21 @@
 # PCB routing and JLC order files
 
-The board is placed and partly hand-routed. **One step remains: the autoroute of the dense electronics band.**
+The board is fully routed (rev C). `hardware/kicad/bath_monitor.kicad_pcb` is now the source of truth for placement
+and copper: schematic changes are carried into it, never regenerated from scratch.
 
-## Pipeline
+## Day-to-day pipeline
 ```
 python3 hardware/tools/gen_schematic.py && python3 hardware/tools/verify_netlist.py
-python3 hardware/tools/route.py prep          # fresh placement + hand routing -> hardware/kicad/route/bath_monitor.dsn
-<autoroute>                                   # bath_monitor.dsn -> bath_monitor.ses   (see below)
-python3 hardware/tools/route.py finish        # import, GND stitching, zone refill, DRC report
+python3 hardware/tools/sync_pcb.py            # carry schematic changes into the routed board (values, nets, new parts)
+python3 hardware/tools/fixroute.py            # only if sync_pcb added parts: route them, DRC-checked
 python3 hardware/tools/jlc_outputs.py         # hardware/fab: gerbers zip, bom_jlc.csv, cpl_jlc.csv (FDC1004 build;
                                               #   --variant=touch or --variant=both, see docs/sensing-options.md)
 ```
+
+## How the board was first built (from scratch)
+`gen_pcb.py` (placement) → `route.py prep` (electrode lanes, TMP117 bus, thermal vias, DSN for an autorouter) →
+`fixroute.py` (grid router used in place of Freerouting) → `route.py finish` steps (GND stitching, zone refill, DRC).
+Re-running this replaces the hand-locked routing, so only do it for a new board revision.
 
 ## What `route.py prep` already does
 - **Electrode lanes:** a via inside each of the 7 electrodes, then a straight 0.2 mm lane on B.Cu up to the electronics

@@ -6,10 +6,7 @@
 
 #include "esp_err.h"
 
-#define ACC_EV_DOUBLE_TAP 0x08            // ALL_INT_SRC bits
-#define ACC_EV_SINGLE_TAP 0x04
-#define ACC_EV_WAKE       0x02
-#define ACC_EV_FREE_FALL  0x01
+#define ACC_EV_DOUBLE_TAP 0x08            // ALL_INT_SRC bit (the only source the firmware acts on)
 
 bool accel_present(void);
 // deep sleep: 12.5 Hz low-power, wake-up (motion > ~0.19 g) on INT1, latched. ~1 uA.

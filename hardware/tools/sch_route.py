@@ -161,8 +161,8 @@ def route(S):
         for c in cs:
             point[c] = net_of(c)
 
-    def astar(srcs, goal_root, net_ids):
-        """Shortest Manhattan path from any src cell to a cell whose net is goal_root (or any of net_ids)."""
+    def astar(srcs, net_ids):
+        """Shortest Manhattan path from any src cell to a cell whose net is any of net_ids."""
         openq, best, came = [], {}, {}
         for s in srcs:
             for d in "hv":
@@ -256,7 +256,7 @@ def route(S):
             best_r = min(rest, key=lambda r: min(abs(a[0] - b[0]) + abs(a[1] - b[1])
                                                  for a in anchors if net_of(a) == r for b in anchors if net_of(b) in tree))
             srcs = {a for a in anchors if net_of(a) == best_r}
-            path = astar(srcs, None, tree | {best_r} - {best_r})
+            path = astar(srcs, tree)
             if path is None:
                 ok = False
                 break

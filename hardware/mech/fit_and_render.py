@@ -20,7 +20,6 @@ import trimesh
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(__file__))
 import enclosure as E  # noqa: E402
@@ -110,7 +109,6 @@ def main():
 
     # ---- cross-section through the battery/coil (Y = battery centre) ----
     bx, by = E.pcb_to_dev(19.0, 68.0)
-    _, ywin = E.pcb_to_dev(19.0, 107.0)
     fig, axes = plt.subplots(2, 1, figsize=(9, 6.2))
     colors = {"cup": "#9bb7d4", "plug": "#3b6fb6", "pcb": "#2e7d32", "module": "#666", "battery": "#d4a017",
               "coil": "#b45309", "foam": "#e5e7eb", "parts": "#a3a3a3"}

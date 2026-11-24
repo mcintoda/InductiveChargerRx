@@ -61,8 +61,6 @@ void status_led(led_state_t s)
     apply(&PAT[s]);
 }
 
-led_state_t status_current(void) { return s_state; }
-
 void status_flash(int r, int g, int b, int n, int ms)
 {
     pattern_t on = {.r = (uint8_t)r, .g = (uint8_t)g, .b = (uint8_t)b}, off = {0};

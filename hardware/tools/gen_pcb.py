@@ -95,8 +95,8 @@ def text(layer, s, x, y, size=1.0, mirror=False):
 
 
 # --- board outline: body + thermal tab on a narrow neck --------------------
-tx0, tx1, ty0, ty1 = TAB
-nx0, nx1, ny0, ny1 = NECK
+tx0, tx1, _, ty1 = TAB
+nx0, nx1, _, ny1 = NECK
 import math  # noqa: E402
 R_TOP = 5.5   # top corners rounded so the board passes the enclosure's R6 bore (hardware/mech)
 

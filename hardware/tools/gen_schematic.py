@@ -347,7 +347,6 @@ U1.update({str(n): "GND" for n in range(42, 66) if n not in (44, 45)})
 P("U1", "MCU_Espressif:ESP32-S3-MINI-1", "ESP32-S3-MINI-1-N8", "BathMonitor:ESP32-S3-MINI-1", MX, MY, 0, U1,
   text=((5.08, -32.0, "left"), (-5.08, 34.0, "right")), MPN="ESP32-S3-MINI-1-N8",
   Note="Footprint: S2-MINI-1 pads (identical per Espressif datasheets) with the S3 20.5 mm body / 5.05 mm antenna section")
-ML = MX - 15.24
 # 3V3 and decoupling
 W(pin("U1", "3"), (MX, 76.2), (363.22, 76.2)); PWR("+3V3", MX, 76.2)
 for ref, val, x in [("C17", C10U, 340.36), ("C18", C100N, 353.06)]:
