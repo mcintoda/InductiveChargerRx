@@ -8,9 +8,37 @@ and copper: schematic changes are carried into it, never regenerated from scratc
 python3 hardware/tools/gen_schematic.py && python3 hardware/tools/verify_netlist.py
 python3 hardware/tools/sync_pcb.py            # carry schematic changes into the routed board (values, nets, new parts)
 python3 hardware/tools/fixroute.py            # only if sync_pcb added parts: route them, DRC-checked
+python3 hardware/tools/acid_traps.py hardware/kicad/bath_monitor.kicad_pcb   # copper notches < 90 deg (expect 1: a GND thermal corner)
 python3 hardware/tools/jlc_outputs.py         # hardware/fab: gerbers zip, bom_jlc.csv, cpl_jlc.csv (FDC1004 build;
                                               #   --variant=touch or --variant=both, see docs/sensing-options.md)
 ```
+
+## Copper clean-up after routing (done once for rev C, 2026-11-24)
+The grid router leaves 0.05 mm staircases, dead-end stubs, copper joined only by overlap and acute notches
+(etchant traps). After any re-route, run, in this order:
+```
+python3 hardware/tools/tidy_board.py hardware/kicad/bath_monitor.kicad_pcb    # joints, stubs, loops, staircases
+python3 hardware/tools/hand_fixes_revC.py hardware/kicad/bath_monitor.kicad_pcb   # 5 spots tidy can't reach (rev C only)
+python3 hardware/tools/fillet_notches.py hardware/kicad/bath_monitor.kicad_pcb    # fill every notch < 90 deg
+```
+- `tidy_board.py` drives `tidy_tracks.py` per net and layer. Steps:
+  - join copper that only touched by overlap;
+  - prune dead ends and dead vias;
+  - cut loops;
+  - straighten staircases.
+
+  A DRC runs after each pass. Any net/layer that gains an error steps down a level (less straightening),
+  so the result never has more errors than the input. It is deterministic; run it once, on the routed board.
+- `hand_fixes_revC.py` replaces 5 slanted pad entries and router clusters (U7 +3V3 ×2, ILIM, FDC_CIN2, ACC_INT)
+  with square ones. It matches exact segments of tidy's output and stops if they're missing.
+- `fillet_notches.py` measures the real copper outline (tracks, pads, vias and zones merged per net, `acid_traps.py`).
+  A short track across the mouth of each notch under 90° makes both new corners 90° + θ/2. Any fillet that causes a
+  DRC error is retried at 0.15 mm, then dropped.
+
+Rev C result:
+- 1631 → 1130 track segments, including 94 fillets. Short segments (< 0.1 mm): 621 → 6.
+- Copper notches under 90°: 98 → 1. The one left is the GND zone's thermal relief at U7 pad 7.
+- 0 dangling tracks or vias, 0 unconnected, netlist MATCH.
 
 ## How the board was first built (from scratch)
 `gen_pcb.py` (placement) → `route.py prep` (electrode lanes, TMP117 bus, thermal vias, DSN for an autorouter) →
