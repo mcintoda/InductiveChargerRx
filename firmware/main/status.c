@@ -22,7 +22,7 @@ static const pattern_t PAT[] = {
     [LED_ALARM] = {255, 0, 0, true, 0, 1, 0, 1},
     [LED_HOT] = {255, 0, 200, true, 1, 1, 1, 1},
     [LED_ATTENTION] = {255, 80, 0, true, 0, 0, 0, 3},
-    [LED_OK] = {0, 255, 0, false},
+    [LED_OK] = {160, 160, 160, false},                 // soft white: silenced (green steady means charged)
 };
 static led_state_t s_state = LED_OFF;
 static bool s_rail;

@@ -45,6 +45,11 @@ static void new_key(void)
     s_key[16] = 0;
 }
 
+// the FDC1004 only sees pads 5 and 6 in the alarm region, so with it as the sensing method the alarm can only sit there
+static bool s_fdc_fitted;
+void net_set_fdc_fitted(bool fitted) { s_fdc_fitted = fitted; }
+static int min_alarm_pad(const settings_t *s) { return s_fdc_fitted && s->sense_mode == SENSE_FDC ? 5 : 1; }
+
 void net_unlock(int seconds) { s_unlock_until = esp_timer_get_time() + (int64_t)seconds * 1000000; }
 static bool unlocked(void) { return esp_timer_get_time() < s_unlock_until; }
 
@@ -260,11 +265,16 @@ static esp_err_t page_root(httpd_req_t *req)
                   "<label>Wi-Fi password<input name=pass type=password placeholder='%s'></label>"
                   "<label>Alarm at the top of pad<select name=pad>",
                   s_key, e_ssid, s->pass[0] ? "unchanged" : "");
-    for (int p = 1; p <= 6; p++)
-        n += snprintf(buf + n, sizeof(buf) - n, "<option value=%d%s>%d%s</option>", p, p == s->alarm_pad ? " selected" : "",
+    int minp = min_alarm_pad(s), sel = s->alarm_pad < minp ? minp : s->alarm_pad;
+    for (int p = minp; p <= 6; p++)
+        n += snprintf(buf + n, sizeof(buf) - n, "<option value=%d%s>%d%s</option>", p, p == sel ? " selected" : "",
                       p, p == 6 ? " (top, default)" : p == 1 ? " (bottom)" : "");
+    n += snprintf(buf + n, sizeof(buf) - n, "</select></label>%s",
+                  minp > 1 ? "<p style='font-size:13px;margin:4px 0 0'>With the default sensing, the alarm can sit at pad 5 "
+                             "or 6. For a lower bath, choose Touch under Level sensing, save, and pick the pad here.</p>"
+                           : "");
     n += snprintf(buf + n, sizeof(buf) - n,
-                  "</select></label><h3 style='margin:22px 0 0'>Water temperature</h3>"
+                  "<h3 style='margin:22px 0 0'>Water temperature</h3>"
                   "<p style='font-size:13px;margin:4px 0 0'>Quick set: "
                   "<a href=# onclick='tlim.value=38;return false'>babies &amp; toddlers 38</a> &middot; "
                   "<a href=# onclick='tlim.value=40;return false'>older kids 40</a> &middot; "
@@ -326,6 +336,7 @@ static esp_err_t page_save(httpd_req_t *req)
     }
     s->notify_filling = form_get(body, "fill", v, sizeof(v));
     if (form_get(body, "sense", v, sizeof(v))) { int m = atoi(v); if (m >= SENSE_TOUCH && m <= SENSE_COMPARE) s->sense_mode = m; }
+    if (s->alarm_pad < min_alarm_pad(s)) s->alarm_pad = min_alarm_pad(s);   // what the chosen sensing can see
     if (!s->topic[0]) settings_new_topic(s->topic, sizeof(s->topic));
     settings_save(s);
     s_saved = true;

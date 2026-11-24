@@ -71,7 +71,7 @@ the phone is in another room or the Wi-Fi is down.
 | Dim blue blip every 4 s | Watching a bath |
 | Yellow slow breathing | Nearly full (about 2 min to go) |
 | Red fast blink + 3 × 3 beeps | Bath full. Repeats every minute while it keeps rising, for up to 15 min |
-| Green steady | Alarm acknowledged on the device |
+| White steady | Alarm silenced on the device (double-tap) |
 | Magenta breathing | Water above your temperature limit |
 | Orange double blink | brim is tilted / out of its bracket |
 | One 1 s flash (green / yellow / red) | Tapped or picked up while asleep: battery above 50 % / above 20 % / below |

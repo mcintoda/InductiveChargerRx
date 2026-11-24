@@ -13,7 +13,7 @@ typedef enum {
     LED_ALARM,        // red fast blink
     LED_HOT,          // magenta breathe
     LED_ATTENTION,    // orange double blink: tilted / off the bracket, moisture in the case
-    LED_OK,           // green: acknowledged (one short flash, then the previous state)
+    LED_OK,           // soft white steady: alarm silenced on the device (green steady = charged)
 } led_state_t;
 
 void status_led(led_state_t s);          // keeps the rail on while the LED shows anything

@@ -301,7 +301,7 @@ static void bath_mode(void)
         mode = SENSE_TOUCH;
     }
     int alarm_pad = s_set.alarm_pad;
-    if (mode == SENSE_FDC && alarm_pad < 5) {            // the FDC only sees PAD5 / PAD6 in the alarm region
+    if (mode == SENSE_FDC && alarm_pad < 5) {            // the FDC only sees PAD5 / PAD6 (the settings page offers only those)
         ESP_LOGW(TAG, "FDC mode: alarm pad %d not covered, using pad 5", alarm_pad);
         alarm_pad = 5;
         s_policy.alarm_mm = lvl_pad_top_mm(alarm_pad);
@@ -447,6 +447,7 @@ void app_main(void)
         ESP_LOGI(TAG, "LIS2DW12 %s", s_acc_fitted ? "fitted" : "not answering");
     }
     if (!s_cal.valid) calibrate_dry(1);                   // first power-up: assume dry
+    net_set_fdc_fitted(s_fdc_fitted);
     // first boot after setup (or new Wi-Fi details): prove they work before relying on them
     if (s_set.ssid[0] && s_set.topic[0] && !s_set.wifi_ok) {
         status_led(LED_SETUP);
