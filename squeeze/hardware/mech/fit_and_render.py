@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import squeeze_unit as U  # noqa: E402
 
 COLORS = dict(skin="#f08a5d", base="#d9d4cc", chassis="#8f9bb3", plate_pos="#5b7db1", plate_neg="#5b7db1",
-              cam="#e8c547", coil="#b87333", pcb="#2f7d4f", xiao="#333333", battery="#9aa0a6",
+              cam="#e8c547", coil="#b87333", pcb="#2f7d4f", parts="#333333", battery="#9aa0a6",
               servo="#3a6fd8", led="#ffffff")
 # parts that are meant to touch: the cam rides on the plate bosses
 TOUCH = {frozenset(("cam", "plate_pos")), frozenset(("cam", "plate_neg"))}

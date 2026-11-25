@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bmp280_comp.h"
 #include "grip.h"
 #include "proto.h"
 #include "shaper.h"
@@ -234,8 +235,24 @@ static void test_proto(void)
     CHECK(sq_seq_accept(5, 5000));   /* partner restarted */
 }
 
+/* Bosch BMP280 datasheet section 3.12 worked example: 25.08 degC, 100653.27 Pa (double). */
+static void test_bmp280(void)
+{
+    const uint8_t raw[24] = { 0x70, 0x6B, 0x43, 0x67, 0x18, 0xFC, 0x7D, 0x8E, 0x43, 0xD6, 0xD0, 0x0B, 0x27, 0x0B,
+                              0x8C, 0x00, 0xF9, 0xFF, 0x8C, 0x3C, 0xF8, 0xC6, 0x70, 0x17 };
+    bmp280_calib_t c;
+    bmp280_parse_calib(raw, &c);
+    CHECK(c.t1 == 27504 && c.t2 == 26435 && c.t3 == -1000 && c.p1 == 36477 && c.p2 == -10685 && c.p3 == 3024 &&
+          c.p4 == 2855 && c.p5 == 140 && c.p6 == -7 && c.p7 == 15500 && c.p8 == -14600 && c.p9 == 6000);
+    double t;
+    double p = bmp280_compensate(&c, 415148, 519888, &t);
+    NEAR(t, 25.08, 0.01);
+    NEAR(p, 100653.27, 0.05);
+}
+
 int main(void)
 {
+    test_bmp280();
     test_grip();
     test_shaper();
     test_turn();

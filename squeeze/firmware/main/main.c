@@ -11,7 +11,7 @@
  */
 #include <math.h>
 
-#include "bmp390.h"
+#include "bmp280.h"
 #include "esp_attr.h"
 #include "esp_log.h"
 #include "esp_sleep.h"
@@ -59,7 +59,7 @@ static uint32_t now_ms(void) { return (uint32_t)(esp_timer_get_time() / 1000); }
 static void sleep_now(uint32_t period_ms)
 {
     servo_off();
-    bmp390_sleep();
+    bmp280_sleep();
     esp_sleep_enable_timer_wakeup((uint64_t)period_ms * 1000ULL);
     esp_deep_sleep_start();
 }
@@ -70,11 +70,11 @@ typedef enum { WOKE_POWER_ON, WOKE_BY_SQUEEZE, WOKE_BY_PARTNER } woke_t;
 static woke_t quick_check(bool sensor_ok)
 {
     int vbat = power_vbat_mv();
-    if (vbat && vbat < VBAT_EMPTY_MV && !power_charging())
+    if (vbat < VBAT_EMPTY_MV && !power_charging() && !power_usb())
         sleep_now(60000);
 
     float pa;
-    if (sensor_ok && bmp390_one_shot(&pa) == ESP_OK) {
+    if (sensor_ok && bmp280_one_shot(&pa) == ESP_OK) {
         if (rtc_have_base && pa - rtc_base_pa > WAKE_PA) {
             radio_start();
             return WOKE_BY_SQUEEZE;
@@ -103,7 +103,7 @@ static float breathe(uint32_t t, uint32_t period_ms)
 void app_main(void)
 {
     power_init();
-    bool sensor_ok = bmp390_init() == ESP_OK;
+    bool sensor_ok = bmp280_init() == ESP_OK;
     if (!sensor_ok)
         ESP_LOGE(TAG, "pressure sensor missing: this unit can receive but not send");
 
@@ -116,7 +116,7 @@ void app_main(void)
     servo_init(CONFIG_SQZ_SERVO_REST_DEG);
     led_init();
     if (sensor_ok)
-        bmp390_start_stream();
+        bmp280_start_stream();
 
     grip_cfg_t gc = grip_default_cfg();
     grip_t grip;
@@ -148,7 +148,7 @@ void app_main(void)
     bool partner_awake = false, calling = woke != WOKE_BY_PARTNER, mask = false;
     uint8_t remote_level = 0;
     int vbat = power_vbat_mv();
-    bool on_usb = vbat == 0; /* breadboard without a battery: never sleep */
+    bool on_usb = power_usb(); /* USB-C plugged in: never sleep */
     float pa = rtc_base_pa;
 
     if (woke == WOKE_BY_PARTNER) {
@@ -168,15 +168,15 @@ void app_main(void)
         if (now - last_vbat >= 1000) {
             last_vbat = now;
             vbat = power_vbat_mv();
-            on_usb = vbat == 0;
+            on_usb = power_usb();
         }
         bool charging = power_charging();
-        bool low = vbat && vbat < VBAT_LOW_MV;
+        bool low = vbat < VBAT_LOW_MV;
         uint8_t flags = (charging ? SQ_FLAG_CHARGING : 0) | (low ? SQ_FLAG_LOW_BATT : 0);
 
         /* --- this holder --- */
         if (sensor_ok)
-            bmp390_read(&pa);
+            bmp280_read(&pa);
         float level = sensor_ok ? grip_update(&grip, pa, DT, mask) : 0.0f;
         if (grip.active) {
             last_activity = now;
@@ -234,7 +234,7 @@ void app_main(void)
         bool hello = (int32_t)(hello_until - now) > 0;
         if (hello)
             target = fmaxf(target, HELLO_LEVEL);
-        if (vbat && vbat < VBAT_NO_SERVO_MV)
+        if (vbat < VBAT_NO_SERVO_MV)
             target = 0.0f;
         float angle = shaper_update(&shaper, target, DT);
         servo_set(angle, !shaper_busy(&shaper), now);

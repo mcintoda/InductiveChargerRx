@@ -13,5 +13,6 @@ void led_init(void);
 void led_rgb(uint32_t rgb, float brightness); /* rgb = 0xRRGGBB, brightness 0..1 */
 
 void power_init(void);
-int power_vbat_mv(void);      /* 0 if no battery is fitted (breadboard on USB) */
+int power_vbat_mv(void);
 bool power_charging(void);    /* on the Qi pad and charging */
+bool power_usb(void);         /* USB-C plugged in (flashing / monitoring): stay awake */

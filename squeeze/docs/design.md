@@ -16,7 +16,7 @@ Nothing here is aimed at certification or volume production. Section 10 notes wh
 
 | # | Requirement | Design response |
 |---|---|---|
-| R1 | Sense a squeeze, including how hard, from a 6-year-old and from an adult | The whole unit is one sealed air volume under a soft silicone skin. A BMP390 pressure sensor reads the rise (0.6 to 2+ kPa). Auto-ranging makes each holder's strongest recent squeeze full scale |
+| R1 | Sense a squeeze, including how hard, from a 6-year-old and from an adult | The whole unit is one sealed air volume under a soft silicone skin. A BMP280 pressure sensor reads the rise (0.6 to 2+ kPa). Auto-ranging makes each holder's strongest recent squeeze full scale |
 | R2 | Reproduce it as a squeeze in the other hand, not a buzz | Servo and oval cam push two curved plates 3 mm outward into the palm and the fingers, in proportion to the partner's squeeze |
 | R3 | Work apart (different rooms) | ESP-NOW radio between the two ESP32-C3s: no router, no app, no pairing step, about 5 ms latency. Section 6 covers range and the option of working across the internet |
 | R4 | Pass back and forth, no judging | Turn-taking: whoever squeezes first has the floor until they let go. No scoring logic exists |
@@ -36,11 +36,11 @@ Nothing here is aimed at certification or volume production. Section 10 notes wh
 
 ```
                  squeeze                                   partner's squeeze
-   hand ──► skin ──► air pressure ──► BMP390                 ──► servo ──► cam ──► plates ──► hand
+   hand ──► skin ──► air pressure ──► BMP280                 ──► servo ──► cam ──► plates ──► hand
                                          │ I2C 50 Hz              ▲ PWM          (3 mm)
                                          ▼                        │
                               ┌───────────────────────┐   5 V via boost + load switch
-     Qi pad ┄┄► coil ──► BQ51050B ──► LiPo ──► XIAO ESP32-C3 ──► RGB LED (through the silicone)
+     Qi pad ┄┄► coil ──► BQ51050B ──► LiPo ──► ESP32-C3-MINI-1U ──► RGB LED (through the silicone)
                 (charger, as brim)   503030   │  grip.c  turn.c  shaper.c
                                               ▼
                                  ESP-NOW broadcast, 12-byte frames ◄┄┄┄┄► the other unit
@@ -63,7 +63,7 @@ skin into that gap and the pressure rises:
 | 0.6 mm over half | 0.63 cm³ | +1.2 kPa |
 | 0.9 mm over 60 % (firm, adult) | 1.13 cm³ | **+2.2 kPa** |
 
-The BMP390 at x4 oversampling has noise of a few Pa, so even a light squeeze is about 100 times the noise.
+The BMP280 at x4 oversampling has noise of a few Pa, so even a light squeeze is about 100 times the noise.
 The firmware (`grip.c`) handles:
 
 - **Baseline tracking.** Body heat (+1 °C ≈ +0.34 kPa), the weather and the plates' own heating move the
@@ -91,9 +91,8 @@ would cost roughly 5 % of the signal on a 3 s squeeze.
 - **Plates:** two curved 2 mm shells (28 × 44 mm) that follow the inside of the skin, one under the palm and
   one under the fingers. Each has a boss that slides in a tunnel in the cam housing, so the plates
   translate straight out (no hinge).
-- **Return:** the stretched skin pushes the plates back onto the cam. **To add in CAD rev B:** two pegs
-  on each plate and a small silicone O-ring band, so the plates stay on the cam even with the skin
-  slack. See section 11.
+- **Return:** two pegs on each plate's inner face, high up at z = 55 mm. A 10 × 1.5 mm silicone O-ring is stretched
+  across to the opposite plate's peg on each side, so the plates always stay on the cam.
 - **Proportional:** the partner's level 0–1 maps to plate travel through the inverse of the cam's lift
   curve (`shaper_cam_inverse`), so half a squeeze gives half the travel. The servo is slew-limited to
   600°/s (an SG90's full speed is about 0.1 s per 60°).
@@ -118,32 +117,37 @@ would cost roughly 5 % of the signal on a 3 s squeeze.
 
 ## 5. Electronics
 
-**Seeed XIAO ESP32-C3** (radio, USB for flashing, external antenna) on a small **carrier board**,
-32 × 22 mm, that copies brim's proven power block:
+One custom board per unit, **assembled by JLC** (4 layers, 1.0 mm, all parts on top): an ellipse 43.2 × 33.2 mm that
+sits in the base pocket, with notches for the two base screws and a break-off LED tab. The netlist, part by part,
+is in [schematic.md](schematic.md). It is generated from `hardware/tools/parts.py`, which also builds the board.
 
-| Block | Part | Notes |
+![board](img/pcb_layers.png)
+
+| Block | Part (LCSC) | Notes |
 |---|---|---|
-| Qi receiver and Li-ion charger | **TI BQ51050B** + **TDK WR303050-12F5-ID** coil | Same circuit as brim rev C. Set R_ILIM for about **200 mA** (0.5C for this cell). The coil lies on the base floor |
-| Battery | **503030 LiPo with protection PCM**, ~400 mAh (5 × 30 × 30 mm) | Stands beside the servo. Wires go to the XIAO's BAT+/BAT− pads (solder them before mounting the XIAO) and to the charger |
-| Servo supply | **TPS61023** boost to 5 V + **TPS22918** load switch, 220 µF bulk | One enable pin (GPIO5, 100 k pull-down). The switch is needed because the boost passes the battery through when off, and an idle SG90 still draws about 5 mA |
-| Squeeze sensor | **Bosch BMP390** (0x77) | Anywhere on the board: it is inside the sealed volume |
-| LED | common-cathode RGB, 220 Ω per colour | On a little tab at the top of the chassis post, under the dome. Wired with 4 thin wires |
-| Battery sense | 1 M / 1 M divider + 100 nF | |
+| Radio + MCU | **ESP32-C3-MINI-1U-N4** (C2911374) | External antenna on its U.FL: an adhesive FPC antenna on the chassis post, away from the coil and the battery |
+| Qi receiver + Li-ion charger | **TI BQ51050B** (C133307) + **TDK WR303050** coil (C6357742) | brim rev C's circuit and values, except R_ILIM: 1.37 k + 196 Ω → **200 mA** (0.5C). The coil lies ferrite side up on the base floor; its leads come up through two holes |
+| Battery | **503030 LiPo with protection PCM**, ~400 mAh (hand part) | Stands beside the servo. Wires go to the BAT pads. The board's 10 k NTC feeds the charger's temperature input |
+| 3.3 V | **RT9080-33** (C841192), 2 µA Iq | As brim |
+| Squeeze sensor | **Bosch BMP280** (C83291), I2C 0x76 | Inside the sealed volume. The BMP390 was out of stock at LCSC. The BMP280's ~1 Pa noise is plenty for kPa signals |
+| Servo supply | **TPS61023** boost (C919459) → 4.95 V, 1 µH (C5291823), 3 × 22 µF | EN low disconnects the output completely (0.1 µA), so no load switch is needed. EN has a 100 k pull-down: off while the ESP32 boots or sleeps |
+| LED | **XL-1615RGBC** common-anode RGB (C965840) on the break-off tab | Four wires to the board. Cathodes go through 220/68/68 Ω to GPIO3/4/5 (active low) |
+| USB-C | HRO TYPE-C-31-M-12 (C165948) | For flashing. Data only: VBUS powers nothing, it is only sensed (56 k/100 k → GPIO1), so the firmware stays awake while plugged in. **The battery must be fitted to flash** |
 
 ### Pins (`firmware/main/board.h`)
-| XIAO | GPIO | Use |
-|---|---|---|
-| D1 | 3 | VBAT / 2 (ADC1_CH3) |
-| D2 | 4 | LED red |
-| D3 | 5 | SERVO_EN (boost + load switch), 100 k pull-down |
-| D4 / D5 | 6 / 7 | I2C SDA / SCL (4.7 k pull-ups) |
-| D6 | 21 | LED green (flickers during the ROM boot log, harmless) |
-| D7 | 20 | LED blue |
-| D8 | 8 | BQ51050B CHG (open drain, 100 k pull-up). Strapping pin: must not be pulled low at boot, and the pull-up ensures that |
-| D10 | 10 | servo PWM |
-| D0, D9 | 2, 9 | free (strapping pins) |
-
-The XIAO's FPC antenna sticks to the inside of the chassis post, away from the battery and the coil.
+| GPIO | Use |
+|---|---|
+| 0 | VBAT / 2 (1 M / 1 M + 100 nF), ADC1_CH0 |
+| 1 | USB VBUS sense |
+| 2 | strapping: 10 k pull-up, unused |
+| 3 / 4 / 5 | LED red / green / blue (active low) |
+| 6 / 7 | I2C SDA / SCL (4.7 k pull-ups) to the BMP280 |
+| 8 | BQ51050B CHG (open drain). Strapping pin, held high by a 10 k pull-up |
+| 9 | BOOT test pad (recovery only) |
+| 10 | servo PWM, through 100 Ω |
+| 18 / 19 | USB D− / D+ |
+| 20 | servo 5 V enable (TPS61023 EN, 100 k pull-down) |
+| 21 | UART TX test pad (boot log) |
 
 ### Power budget (estimates; measure at bring-up)
 | State | Current | Life on 400 mAh |
@@ -153,9 +157,9 @@ The XIAO's FPC antenna sticks to the inside of the chassis post, away from the b
 | Awake and playing squeezes (servo moving about 30 % of the time) | ~120–150 mA average | **~3 h** of continuous play |
 | Charging | 200 mA | full in ~2.5 h |
 
-The intended rhythm is like a toothbrush: it lives on its Qi pad and comes off to play. If standby turns out
-too short, ESP-IDF's ESP-NOW power-save wake window (light sleep with periodic radio windows) should bring
-standby to about 1–2 mA. That is a firmware-only change.
+The intended rhythm is like a toothbrush: it lives on its Qi pad and comes off to play. If standby turns out too short,
+ESP-IDF's ESP-NOW power-save wake window (light sleep with periodic radio windows) should bring it to about 1–2 mA.
+That is a firmware-only change.
 
 ---
 
@@ -180,7 +184,7 @@ standby to about 1–2 mA. That is a firmware-only change.
 ## 7. Behaviour (`firmware/main/main.c`)
 
 **Asleep (most of the time).** Deep sleep. Every 2 s it wakes for about 100 ms and does two checks:
-1. *Is my holder squeezing?* It takes one forced BMP390 reading against a baseline kept in RTC memory (+300 Pa). If so, it wakes and **calls** the partner.
+1. *Is my holder squeezing?* It takes one forced BMP280 reading against a baseline kept in RTC memory (+300 Pa). If so, it wakes and **calls** the partner.
 2. *Is my partner calling?* It starts ESP-NOW and listens for 45 ms for a WAKE frame. If one arrives, it wakes, answers AWAKE, gives **one gentle hello squeeze** (40 %, 0.4 s) and glows the partner's colour for up to a minute.
 
 **Calling.** It sends WAKE every 20 ms for up to 3.5 s (longer than the partner's 2 s sleep period). The first squeeze
@@ -230,9 +234,9 @@ egg) and an adult's.
 |---|---|---|
 | Skin | Cast, **Smooth-On Dragon Skin 10** (Shore 10A), translucent, tinted with **Silc Pig** (blue / orange) | 2 mm wall, 18 cm³ per unit. A translucent tint lets the LED glow through |
 | Skin mold: 2 outer halves + core plug | **SLA resin** (JLC3DP) for a glass-smooth skin | ⚠ Many SLA resins **inhibit platinum silicone cure**. Post-cure fully and coat the cavity with clear acrylic or shellac, and **test-cure a dab first**. FDM PETG with XTC-3D also works |
-| Base | SLA or MJF, white | Flat bottom (1.2 mm floor over the coil), groove for the skin bead, 2 screw bosses |
-| Chassis | FDM PETG or SLA | Floor, servo cradle, two columns, cam housing with the plate tunnels, LED post |
-| Plates ×2, cam | SLA (smooth sliding) | Light grease on the bosses |
+| Base | SLA (JLC3DP), white | Flat bottom (1.2 mm floor over the coil), pocket for the board, groove for the skin bead, 2 screw bosses |
+| Chassis | SLA (JLC3DP) | Floor, servo cradle, two columns, cam housing with the plate tunnels, LED post |
+| Plates ×2, cam | SLA (JLC3DP) | Smooth sliding: light grease on the bosses. Pegs for the O-ring return bands |
 
 ![mold](img/unit_mold.png)
 
@@ -241,39 +245,30 @@ pigment and degas if possible. Close the two halves, then pour into the cavity d
 core plug in slowly: the excess leaves through the 8 vent holes in its lid. Demold after 5 h (Dragon Skin 10 FAST:
 75 min). Trim the vent sprues.
 
-**Assembly:**
-1. Flash the firmware, then run the servo to rest (45°) with the cam *off*. Press the cam and horn on with the short axis toward ±Y, then fit the horn screw.
-2. Stick the coil to the base floor and add a 1.6 mm PORON pad. Put the carrier and XIAO on top (wire the battery to the BAT pads).
-3. Put the servo (tabs cut off) into the cradle with a dot of hot glue. Fix the battery to the servo's side with foam tape. Run the LED wires and the antenna up the post.
-4. Slide the plates' bosses into the housing tunnels and fit the return band (rev B).
-5. Screw the chassis to the base with 2 × M2 screws from below, into the columns.
-6. Stretch the skin over the assembly until the bead snaps into the base groove, with a thin bead of RTV in the groove. That bead is the air seal. Let the RTV cure before the first squeeze test.
+**Assembly and first flash:** [ordering.md](ordering.md) §5.
 
-**To reflash:** remove the 2 screws, slide the base out (the skin stays on), plug USB-C into the XIAO and reassemble. OTA updates over
-ESP-NOW or Wi-Fi are possible later.
+**To reflash:** remove the 2 screws and lift the board out of the base on its wires. The USB-C is on the board's bottom edge.
+OTA updates over ESP-NOW or Wi-Fi are possible later.
 
 **Finishing touches (optional):** a turned-wood or printed "nest" that sits on the Qi pad and holds the pebble
 upright. Deboss initials on the base.
 
 ---
 
-## 9. Build plan
+## 9. Ordering and bring-up
 
-**Stage 1: breadboard. Test the fun before building the hard part.** About $40 for both units. BOM: [bom.md](bom.md).
-Two XIAO ESP32-C3 boards on USB power, each with a BMP390 breakout sealed in a small airtight box and a
-rubber bulb on a tube (squeeze the bulb), plus an SG90 whose horn presses a pad on the back of your hand. Use the same firmware.
-Tie D1 to GND: the firmware then reads 0 V, knows there is no battery and never sleeps. Build with `SQZ_TRACE=y` to tune the thresholds.
+Everything is ordered ready-made: the assembled board from JLCPCB, the printed parts from JLC3DP, and the hand parts.
+The skin is cast at home in the printed mold. Step by step: **[ordering.md](ordering.md)**.
 
-Bring-up checks:
-- [ ] `bmp390_one_shot` reads ~101 kPa at sea level (lower at altitude). A bulb squeeze shows +0.5 to 3 kPa in the trace.
+Bring-up checks (per unit, USB attached, `SQZ_TRACE=y`):
+- [ ] Boot log on USB. The BMP280 reads ~101 kPa at sea level (lower at altitude).
+- [ ] On a Qi pad: the amber LED shows, CHG is low, and the battery voltage rises.
 - [ ] Servo endpoints: adjust `SQZ_SERVO_MIN_US`/`MAX_US` so 45° → 135° is a clean 90° with no buzzing at the ends.
-- [ ] Latency: squeeze one unit and watch the other servo. It should feel instant (expect about 30–50 ms end to end).
+- [ ] Assembled and sealed: a light squeeze shows +0.5 to 2 kPa in the trace. If the reading falls back to the baseline within a second, the skin leaks: add RTV.
+- [ ] Latency: squeeze one unit and watch the other's plates. Expect about 30–50 ms before they move.
 - [ ] Range: carry one unit through the house. Try `SQZ_LONG_RANGE` if it drops out.
-- [ ] Sleep and wake (with a battery): squeeze to wake, partner wakes within 2 s, both sleep after 90 s.
-- [ ] **Play the game with your son for a week.** Change thresholds and feel, not hardware.
-
-**Stage 2: the keeper.** Carrier PCB (KiCad, JLC assembly, reusing brim's Qi block), printed parts, cast skins, assembly.
-Measure sleep current and the actual squeeze pressure in the sealed unit, then retune `WAKE_PA` and `on_pa`.
+- [ ] Sleep and wake (USB unplugged): squeeze to wake, the partner wakes within 2 s, both sleep after 90 s. Measure the sleep current.
+- [ ] Then retune `WAKE_PA` and `on_pa` (grip.c) to the measured squeeze pressures.
 
 ---
 
@@ -287,7 +282,7 @@ Measure sleep current and the actual squeeze pressure in the sealed unit, then r
 - **Small parts:** nothing detaches. Screws are inside the base and the skin is one piece.
 - **Materials:** Dragon Skin is a platinum-cure silicone, skin-safe once fully cured. Post-bake at 60 °C for a few hours to finish the cure.
 - Not certified. Selling it would mean toy safety testing (ASTM F963 / CPSIA in the US, EN 71 / IEC 62115
-  in the EU) and FCC/CE radio approval. The XIAO module is pre-certified, which helps.
+  in the EU) and FCC/CE radio approval. The ESP32-C3-MINI-1U module is pre-certified, which helps.
 
 ---
 
@@ -295,10 +290,11 @@ Measure sleep current and the actual squeeze pressure in the sealed unit, then r
 
 | Item | Status / plan |
 |---|---|
-| **Servo noise.** SG90 gear whine near the ear at bedtime | Test in stage 1. Fallbacks: a coreless metal-gear micro servo (quieter and smoother), or a lower slew rate |
-| Plate return without a band | **CAD rev B:** add pegs and an O-ring band |
+| **Servo noise.** SG90 gear whine near the ear at bedtime | Listen on the first unit. Fallbacks: a coreless metal-gear micro servo (quieter and smoother), or a lower slew rate |
 | Standby 3–5 days (estimate) | Measure. If too short, use the ESP-NOW wake-window light sleep (firmware only) |
-| Firmware not compiled yet | Pure logic is host-tested (`make -C firmware/test`). The ESP-IDF build (5.3.x, esp32c3) and the BMP390 compensation need their first run on hardware |
+| Firmware not compiled yet | Pure logic and the BMP280 compensation (against Bosch's worked example) are host-tested (`make -C firmware/test`). The ESP-IDF build (5.3.x, esp32c3) needs its first run |
 | SLA resin vs platinum silicone | Test-cure a dab, or seal the mold |
+| BMP280 marked discontinued at LCSC (stock remaining) | Check stock when ordering. Drop-in alternatives need a footprint change |
+| JLC placement rotation of polarised parts | Check the preview (ordering.md §1) |
 | Wall thickness and Qi distance | Base floor 1.2 mm, coil on the floor: same stack as brim |
-| Range through the house | Test in stage 1. LR mode is the fallback |
+| Range through the house | Check at bring-up. LR mode is the fallback |

@@ -6,13 +6,13 @@ How it works mechanically (docs/design.md section 4)
     Its bottom lip has an inward bead that snaps into a groove in the rigid BASE; a bead of
     RTV makes it airtight. The whole inside is then one sealed air volume.
   * SENSING: squeezing pushes the skin into a 1 mm air gap over the two PLATES; the
-    air pressure rises a few kPa; the BMP390 on the carrier board reads it.
+    air pressure rises a few kPa; the BMP280 on the main board reads it.
   * ACTUATION: an SG90 servo turns an oval CAM (8 x 5 mm semi-axes) between the two plates'
     bosses. 90 deg of cam pushes each plate out 3 mm into the palm and the fingers. A rubber band
     across the plates keeps them on the cam. Each boss slides in a tunnel in the CAM HOUSING,
     so the plates translate (no hinge).
-  * Qi coil (TDK WR303050, as in brim) lies on the base floor; the carrier PCB with the XIAO
-    ESP32-C3 sits above it; the battery stands beside the servo.
+  * Qi coil (TDK WR303050, as in brim) lies on the base floor; the main board (ESP32-C3-MINI-1U,
+    hardware/tools/gen_pcb.py) sits above it on a foam pad; the battery stands beside the servo.
 
 Coordinates: X = width (52), Y = thickness (42, palm <-> fingers, the plates move along Y),
 Z = up (70), Z = 0 on the flat base.
@@ -53,14 +53,16 @@ Z_SERVO = 16.0                               # servo body bottom
 Z_CAM = Z_SERVO + SERVO["h"] + SERVO["hump_h"] + 0.5   # cam bottom (on the horn, over the spline)
 BOSS_W, BOSS_H = 10.0, 5.0                   # plate boss cross-section (x, z), cam runs in its middle
 Z_BOSS = Z_CAM - 0.2
-PLATE_Z = (18.0, 62.0)
+PLATE_Z = (18.0, 58.0)                       # above 58 the dome is too narrow for a 28 mm plate
 PLATE_HALF_W = 14.0
+PEG_X, PEG_Z, PEG_R, PEG_Y0 = 9.0, 55.0, 1.0, 9.3   # plate return pegs (O-ring band), inner tip at |y| = 9.3
 
 # ---------------- electronics (placeholders for fit) ----------------
 COIL = (30.0, 29.6, 0.9)                     # TDK WR303050-12F5-ID
-PCB = (32.0, 22.0, 1.6)                      # carrier board
-Z_PCB = 3.5
-XIAO = (21.0, 17.8, 4.5)                     # Seeed XIAO ESP32-C3 incl. parts and USB-C
+PCB_A, PCB_B, PCB_T = 21.6, 16.6, 1.0       # main board: ellipse 43.2 x 33.2 x 1.0 (hardware/tools/gen_pcb.py)
+Z_PCB = 3.5                                  # on a 1.4 mm foam pad over the coil
+PARTS_H = 3.3                                # tallest parts: USB-C 3.26, 1 uH inductor 3.0, module 2.4
+UFL = (-9.4 - 4.5, 2.6 + 5.0, 2.6)           # U.FL plug on the module (x, y in CAD frame, height above module)
 BATT = (30.0, 5.0, 30.0)                     # 503030 LiPo standing: x, y (thickness), z
 Z_FLOOR = (10.0, 11.5)                       # chassis floor
 SCREWS = [(-19.5, 0.0), (19.5, 0.0)]         # M2 from below through the base into the columns
@@ -141,6 +143,14 @@ def plate(sign, lift=0.0):
     y0 = sign * CAM_B
     boss_len = (B - SKIN - GAP - PLATE / 2) - CAM_B
     boss = box(0, y0 + sign * boss_len / 2, Z_BOSS, BOSS_W, boss_len, BOSS_H)
+    # return pegs: an O-ring (10 mm ID x 1.5) stretched across to the other plate's peg at each x keeps
+    # both plates on the cam (above the cam housing, clear of the LED post)
+    for px in (-PEG_X, PEG_X):
+        peg = cq.Workplane("XZ").center(px, PEG_Z).circle(PEG_R).extrude(-20 * sign if sign > 0 else 20) \
+            .translate((0, sign * PEG_Y0, 0)).intersect(pebble(SKIN + GAP + 0.5))
+        head = cq.Workplane("XZ").center(px, PEG_Z).circle(PEG_R + 0.6).extrude(0.6 if sign > 0 else -0.6) \
+            .translate((0, sign * PEG_Y0, 0))
+        shell = shell.union(peg).union(head)
     return shell.union(boss).translate((0, sign * lift, 0))
 
 
@@ -165,7 +175,7 @@ def chassis():
     housing = housing.cut(box(0, 0, Z_BOSS - 0.25, BOSS_W + 0.5, 30, BOSS_H + 0.5))      # tunnels
     housing = housing.cut(cq.Workplane("XY").circle(SERVO["hump_r"] + 0.6).extrude(3).translate((0, 0, zb - 1)))
     arms = box(-15, 0, zt - 3, 12, 8, 3).union(box(15, 0, zt - 3, 12, 8, 3))
-    # LED post to the dome (the LED and the XIAO's FPC antenna live up here)
+    # LED post to the dome (the LED tab and the FPC antenna live up here)
     post = box(0, 0, zt, 6, 6, 63.5 - zt)
     c = fl.union(pedestal).union(cradle).union(cols).union(housing).union(arms).union(post)
     return c.intersect(pebble(SKIN + GAP + 0.2, foot=False))
@@ -173,11 +183,18 @@ def chassis():
 
 def electronics():
     coil = box(0, 0, BASE_FLOOR, COIL[0], COIL[1], COIL[2]).edges("|Z").fillet(4)
-    pcb = box(0, 0, Z_PCB, PCB[0], PCB[1], PCB[2]).edges("|Z").fillet(2)
-    xiao = box(0, 0, Z_PCB + PCB[2], XIAO[0], XIAO[1], XIAO[2])
+    pcb = cq.Workplane("XY").ellipse(PCB_A, PCB_B).extrude(PCB_T).translate((0, 0, Z_PCB))
+    for (x, y) in SCREWS:                                  # notches for the base screw bosses (r 2.4 + 0.5)
+        pcb = pcb.cut(cq.Workplane("XY").center(x, y).circle(2.9).extrude(20))
+    # component envelope: everything within 2 mm of the edge stays lower (the base wall), U.FL plug on top
+    comps = cq.Workplane("XY").ellipse(PCB_A - 2.0, PCB_B - 2.0).extrude(PARTS_H).translate((0, 0, Z_PCB + PCB_T))
+    ufl = box(UFL[0], UFL[1], Z_PCB + PCB_T + 2.4, 3.2, 3.2, UFL[2])
+    for (x, y) in SCREWS:                                  # no parts beside the bosses (gen_pcb.py placement)
+        comps = comps.cut(cq.Workplane("XY").center(x, y).circle(3.4).extrude(20))
+    parts_env = comps.union(ufl)
     batt = box(*BATT_POS, *BATT)
-    led = box(0, 0, 63.5, 5, 5, 1.6)
-    return dict(coil=coil, pcb=pcb, xiao=xiao, battery=batt, servo=servo_body(), led=led)
+    led = box(0, 0, 63.5, 8.0, 6.0, 1.0).union(box(0, 0, 64.5, 1.6, 1.5, 0.6))   # break-off LED tab on the post
+    return dict(coil=coil, pcb=pcb, parts=parts_env, battery=batt, servo=servo_body(), led=led)
 
 
 def mold():

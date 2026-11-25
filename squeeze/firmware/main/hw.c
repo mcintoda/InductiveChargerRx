@@ -97,7 +97,7 @@ void servo_off(void)
     s_servo_on = false;
 }
 
-/* ---------------- LED: LEDC timer 1, 5 kHz, 10 bit, common cathode ---------------- */
+/* ---------------- LED: LEDC timer 1, 5 kHz, 10 bit (common anode, see board.h) ---------------- */
 static const int LED_PINS[3] = { PIN_LED_R, PIN_LED_G, PIN_LED_B };
 
 void led_init(void)
@@ -117,6 +117,7 @@ void led_init(void)
             .channel = LEDC_CHANNEL_1 + i,
             .timer_sel = LEDC_TIMER_1,
             .duty = 0,
+            .flags.output_invert = LED_ACTIVE_LOW, /* common anode: duty 0 = pin high = off */
         };
         ledc_channel_config(&ch);
     }
@@ -140,16 +141,15 @@ static adc_cali_handle_t s_cali;
 
 void power_init(void)
 {
-    gpio_config_t chg = { .pin_bit_mask = 1ULL << PIN_CHG_N, .mode = GPIO_MODE_INPUT,
-                          .pull_up_en = GPIO_PULLUP_ENABLE };
-    gpio_config(&chg);
+    gpio_config_t in = { .pin_bit_mask = 1ULL << PIN_CHG_N | 1ULL << PIN_VBUS_SENSE, .mode = GPIO_MODE_INPUT };
+    gpio_config(&in); /* external pull-up on CHG_N, divider on VBUS_SENSE */
 
     adc_oneshot_unit_init_cfg_t u = { .unit_id = ADC_UNIT_1 };
     if (adc_oneshot_new_unit(&u, &s_adc) != ESP_OK)
         return;
     adc_oneshot_chan_cfg_t ch = { .atten = ADC_ATTEN_DB_12, .bitwidth = ADC_BITWIDTH_DEFAULT };
-    adc_oneshot_config_channel(s_adc, ADC_CHANNEL_3, &ch); /* GPIO3 */
-    adc_cali_curve_fitting_config_t cc = { .unit_id = ADC_UNIT_1, .chan = ADC_CHANNEL_3,
+    adc_oneshot_config_channel(s_adc, ADC_CH_VBAT, &ch);
+    adc_cali_curve_fitting_config_t cc = { .unit_id = ADC_UNIT_1, .chan = ADC_CH_VBAT,
                                            .atten = ADC_ATTEN_DB_12, .bitwidth = ADC_BITWIDTH_DEFAULT };
     if (adc_cali_create_scheme_curve_fitting(&cc, &s_cali) != ESP_OK) {
         ESP_LOGW(TAG, "no ADC calibration; battery voltage is approximate");
@@ -164,15 +164,16 @@ int power_vbat_mv(void)
     int sum = 0;
     for (int i = 0; i < 8; i++) {
         int raw = 0, mv = 0;
-        adc_oneshot_read(s_adc, ADC_CHANNEL_3, &raw);
+        adc_oneshot_read(s_adc, ADC_CH_VBAT, &raw);
         if (s_cali)
             adc_cali_raw_to_voltage(s_cali, raw, &mv);
         else
             mv = raw * 2500 / 4095;
         sum += mv;
     }
-    int vbat = sum / 8 * 2; /* 1M/1M divider */
-    return vbat < 2000 ? 0 : vbat;
+    return sum / 8 * 2; /* 1M/1M divider */
 }
 
 bool power_charging(void) { return gpio_get_level(PIN_CHG_N) == 0; }
+
+bool power_usb(void) { return gpio_get_level(PIN_VBUS_SENSE) == 1; }
