@@ -12,6 +12,8 @@ overflows, and reports the water temperature.
 - **Power:** 320 mAh protected LiPo (25.5 × 36 × 4.3 mm), BQ51050B Qi receiver/charger at 143 mA, ~6 months per charge (estimate). Charges lying flat on any Qi pad, like a phone
 - **Build:** JLCPCB 4-layer PCB + SMT assembly, JLC3DP enclosure
 
+> Also in this repo: **[`squeeze/`](squeeze/README.md)**, a pair of hand-held pebbles that pass squeezes back and forth (separate project, reuses brim's Qi charger block).
+
 - [`docs/design.md`](docs/design.md): requirements, architecture, power budget, mechanics, firmware behaviour
 - [`docs/placement-and-electrodes.md`](docs/placement-and-electrodes.md): board placement study and electrode design (with field simulation)
 - [`docs/sensing-options.md`](docs/sensing-options.md): touch vs FDC1004 level sensing: board variants, compare mode, bench protocol, decision rules

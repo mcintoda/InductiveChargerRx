@@ -1,0 +1,78 @@
+menu "Squeeze pair"
+
+    choice SQZ_ROLE
+        prompt "Which unit is this"
+        default SQZ_ROLE_PARENT
+        help
+            Picks this unit's own colour and how hard it squeezes its holder.
+            Build one of each: sdkconfig.parent / sdkconfig.child.
+        config SQZ_ROLE_PARENT
+            bool "Parent's unit"
+        config SQZ_ROLE_CHILD
+            bool "Child's unit"
+    endchoice
+
+    config SQZ_PAIR_SECRET
+        string "Pair secret (identical on both units)"
+        default "change-me-before-flashing"
+        help
+            Hashed into every frame. Units with a different secret ignore each other.
+
+    config SQZ_CHANNEL
+        int "Wi-Fi channel used for ESP-NOW"
+        range 1 13
+        default 1
+
+    config SQZ_LONG_RANGE
+        bool "Enable Espressif long-range (LR) PHY mode"
+        default n
+        help
+            Both units must match. Try this only if the plain mode drops out across the house.
+
+    config SQZ_SWELL_DEG
+        int "Servo travel for a full squeeze (deg of cam, 90 = full 3 mm per plate)"
+        range 10 90
+        default 90 if SQZ_ROLE_PARENT
+        default 65
+        help
+            How hard this unit squeezes its holder. The child's unit is gentler.
+
+    config SQZ_SERVO_REST_DEG
+        int "Servo angle with the plates retracted (cam minor axis on the plates)"
+        range 0 90
+        default 45
+
+    config SQZ_SERVO_MIN_US
+        int "Servo pulse at 0 deg (us)"
+        default 500
+
+    config SQZ_SERVO_MAX_US
+        int "Servo pulse at 180 deg (us)"
+        default 2400
+
+    config SQZ_SERVO_REVERSE
+        bool "Reverse servo direction"
+        default n
+
+    config SQZ_COLOR_PARENT
+        hex "Parent's colour (0xRRGGBB)"
+        default 0x0080FF
+
+    config SQZ_COLOR_CHILD
+        hex "Child's colour (0xRRGGBB)"
+        default 0xFF5A00
+
+    config SQZ_SLEEP_PERIOD_MS
+        int "Asleep: check for a squeeze or a call this often (ms)"
+        range 500 10000
+        default 2000
+
+    config SQZ_SESSION_IDLE_S
+        int "Go to sleep after this long with no squeezes (s)"
+        default 90
+
+    config SQZ_TRACE
+        bool "Log pressure, level and servo angle at 5 Hz (tuning)"
+        default n
+
+endmenu
