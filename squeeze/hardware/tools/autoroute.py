@@ -74,6 +74,8 @@ def main():
     if not pcbnew.ExportSpecctraDSN(board, dsn):
         sys.exit("DSN export failed")
     print("DSN written; running Freerouting ...", flush=True)
+    # Freerouting keeps its settings in /tmp/freerouting/freerouting.json: set "allow_telemetry": false and
+    # "disable_analytics": true there before the first run (it reports usage otherwise)
     r = subprocess.run(["java", "-Djava.awt.headless=true", "-jar", a.jar, "-de", dsn, "-do", ses, "-mp", a.passes,
                         "--gui.enabled=false"], capture_output=True, text=True)
     print(r.stdout[-1500:], r.stderr[-1500:])

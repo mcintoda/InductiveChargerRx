@@ -251,6 +251,10 @@ def setup(board):
 
 
 def main():
+    # start from a fresh project file: autoroute.py adds net classes to it, and they must not pile up
+    for ext in (".kicad_pro", ".kicad_prl"):
+        if os.path.exists(OUT[:-len(".kicad_pcb")] + ext):
+            os.remove(OUT[:-len(".kicad_pcb")] + ext)
     board = pcbnew.BOARD()
     setup(board)
     pts = add_outline(board)
