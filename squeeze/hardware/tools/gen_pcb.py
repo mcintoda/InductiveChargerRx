@@ -6,7 +6,7 @@ Board: 4 layers, 1.0 mm, all parts on top (one-sided JLC assembly).
     a flat for the USB-C mouth, and a break-off LED tab (mouse bites) above the top edge.
   * In1 = solid GND, F.Cu / B.Cu GND pours, In2 = signals. The Qi coil lies under the board,
     ferrite side up.
-  * Placement here; routing by route.py.
+  * Placement and GND fan-out vias here; routing by autoroute.py (Freerouting) + route.py.
 
     python3 squeeze/hardware/tools/gen_pcb.py
 """
@@ -47,7 +47,7 @@ def V(x, y):
 PLACE = {
     # ESP32 module, rotated 180: GND row faces the USB-C, GPIO row (y = -8.6) faces the top
     "U1": (-9.4, -2.6, 180),
-    "C30": (-1.2, 1.0, 90), "C31": (-1.2, -1.6, 0), "R31": (-1.2, -2.6, 0), "R30": (-1.2, -4.4, 0), "C32": (-1.2, -5.4, 0),
+    "C30": (-1.2, 1.0, 90), "C31": (-1.2, -1.6, 0), "R31": (-1.2, -2.6, 180), "R30": (-1.2, -4.4, 180), "C32": (-1.2, -5.4, 0),
     # top left: BMP280 over SDA/SCL (module pins at x -11.0 / -11.8), CHG pull-up, LDO
     "U4": (-11.0, -11.6, 0), "C25": (-13.6, -10.4, 90), "R6": (-8.4, -10.2, 0), "R7": (-8.4, -11.2, 0),
     "R32": (-15.0, -10.4, 90),
@@ -60,8 +60,8 @@ PLACE = {
     "L1": (6.4, -12.6, 0),
     "C1": (3.4, -9.6, 90), "C2": (5.0, -9.6, 90), "C3": (6.6, -9.6, 90), "C23": (2.2, -8.0, 90),
     "U2": (8.6, -4.2, 0),
-    "C4": (9.0, -7.8, 0), "C5": (5.0, -5.8, 0), "C9": (5.0, -3.4, 0), "C7": (4.9, -4.6, 0),
-    "C6": (12.4, -5.2, 180), "C10": (12.4, -2.6, 180), "C8": (12.3, -3.9, 180),
+    "C4": (9.0, -7.8, 0), "C5": (5.0, -5.8, 0), "C9": (5.0, -3.4, 0), "C7": (4.6, -4.6, 0),
+    "C6": (12.4, -5.2, 180), "C10": (12.4, -2.6, 180), "C8": (12.7, -3.9, 180),
     "C11": (15.2, -5.2, 90), "C21": (17.3, -5.2, 90), "C12": (12.4, -6.2, 0), "TP7": (14.6, -10.6, 0),
     "R1": (12.4, -1.6, 0), "R2": (14.2, -1.6, 90), "R3": (7.6, -0.4, 0), "TH1": (10.0, -0.4, 0),
     "C13": (5.0, -2.2, 0), "C22": (5.0, -1.2, 0),
@@ -237,6 +237,65 @@ def thermal_vias(board, nets):
         board.Add(v)
 
 
+def gnd_fanout(board, nets):
+    """A 0.45/0.2 mm GND via beside every GND SMD pad (fan-out before routing), so no pad is left on a
+    top-layer pour island the autorouter fences in. Tries the pad's outward direction first, then around."""
+    gnd = nets["GND"]
+    gc = gnd.GetNetCode()
+    edge = pcbnew.SHAPE_POLY_SET()
+    board.GetBoardPolygonOutlines(edge)
+    edge.Deflate(mm(0.5), 16)
+    others = [q for f in board.GetFootprints() for q in f.Pads() if q.GetNetCode() != gc]
+    holes = [(q.GetPosition(), q.GetDrillSize().x / 2) for f in board.GetFootprints() for q in f.Pads() if q.HasHole()]
+    holes += [(t.GetPosition(), t.GetDrillValue() / 2) for t in board.GetTracks() if t.GetClass() == "PCB_VIA"]
+    CU = (pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu)
+    vias = [t.GetPosition() for t in board.GetTracks() if t.GetClass() == "PCB_VIA"]
+
+    def ok(pos, track_from):
+        circ = pcbnew.SHAPE_CIRCLE(pos, mm(0.225 + 0.15))
+        seg = pcbnew.SHAPE_SEGMENT(track_from, pos, mm(0.2))
+        for q in others:
+            for lay in CU:
+                if q.IsOnLayer(lay) and q.GetEffectiveShape(lay).Collide(circ, 0):
+                    return False
+            if q.IsOnLayer(pcbnew.F_Cu) and q.GetEffectiveShape(pcbnew.F_Cu).Collide(seg, mm(0.15)):
+                return False
+        if any((h - pos).EuclideanNorm() < r + mm(0.1 + 0.25) for h, r in holes):
+            return False
+        if any((v - pos).EuclideanNorm() < mm(0.45 + 0.15) for v in vias):
+            return False
+        return edge.Contains(pos)
+
+    skip = {("U1", "49"), ("U2", "21")}                  # exposed pads: thermal vias already
+    added = 0
+    for f in board.GetFootprints():
+        if f.GetReference().startswith(("TP", "J", "MB")):
+            continue
+        fc = f.GetPosition()
+        for q in f.Pads():
+            if q.GetNetCode() != gc or q.HasHole() or (f.GetReference(), q.GetName()) in skip:
+                continue
+            c = q.GetPosition()
+            d = c - fc
+            base = math.atan2(d.y, d.x) if (d.x or d.y) else 0.0
+            done = False
+            for dist in (0.75, 0.9, 1.1, 1.3):
+                for k in (0, 1, -1, 2, -2, 3, -3, 4, -4, 6, -6, 8):
+                    a = base + k * math.pi / 8
+                    pos = pcbnew.VECTOR2I(c.x + mm(dist * math.cos(a)), c.y + mm(dist * math.sin(a)))
+                    if ok(pos, c):
+                        t = pcbnew.PCB_TRACK(board); t.SetStart(c); t.SetEnd(pos); t.SetWidth(mm(0.25))
+                        t.SetLayer(pcbnew.F_Cu); t.SetNet(gnd); board.Add(t)
+                        v = pcbnew.PCB_VIA(board); v.SetPosition(pos); v.SetWidth(mm(0.45)); v.SetDrill(mm(0.2))
+                        v.SetNet(gnd); board.Add(v)
+                        vias.append(pos); holes.append((pos, mm(0.1)))
+                        added += 1; done = True
+                        break
+                if done:
+                    break
+    return added
+
+
 def setup(board):
     board.SetCopperLayerCount(4)
     ds = board.GetDesignSettings()
@@ -269,6 +328,7 @@ def main():
     for lay in (pcbnew.In1_Cu, pcbnew.F_Cu, pcbnew.B_Cu):
         zone(board, nets["GND"], lay, shrink, prio=0)
     thermal_vias(board, nets)
+    print("GND fan-out vias:", gnd_fanout(board, nets))
     board.Save(OUT)
     # zone filling is reliable only on a board loaded from disk (as brim's gen_pcb.py)
     board = pcbnew.LoadBoard(OUT)
