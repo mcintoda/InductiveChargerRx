@@ -120,6 +120,12 @@ def main():
     board = pcbnew.LoadBoard(PCB)
     if not pcbnew.ExportSpecctraDSN(board, dsn):
         sys.exit("DSN export failed")
+    # In1 is the solid GND plane: not a routing layer (as brim's route.py constrain_dsn)
+    d = open(dsn).read()
+    d, n = re.subn(r"\(layer In1\.Cu\s*\(type signal\)", "(layer In1.Cu (type power)", d)
+    if n != 1:
+        sys.exit("could not mark In1.Cu as a plane in the DSN")
+    open(dsn, "w").write(d)
     print("DSN written; running Freerouting ...", flush=True)
     # Freerouting keeps its settings in /tmp/freerouting/freerouting.json: set "allow_telemetry": false and
     # "disable_analytics": true there before the first run (it reports usage otherwise). Freerouting 2.1 takes the
