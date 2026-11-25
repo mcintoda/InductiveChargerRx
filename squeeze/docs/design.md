@@ -123,6 +123,17 @@ is in [schematic.md](schematic.md). It is generated from `hardware/tools/parts.p
 
 ![board](img/pcb_layers.png)
 
+**Rev A layout:** 4 layers (F.Cu signals, In1 solid GND, In2 signals, B.Cu GND pour + a few signals),
+467 track segments and 109 vias, **DRC clean** (0 unconnected, 0 clearance / edge / hole errors; only cosmetic
+silkscreen and embedded-footprint notices). Power tracks are widened after routing (`widen.py`) to 0.3–0.5 mm
+where the copper around them allows. 6 mm of the +5 V feed to the servo pads stays 0.2 mm along the board edge:
+on an outer layer at the servo's ~0.65 A stall (4 s max) that is a ~10 mV drop and a few degrees.
+
+How it was routed (`hardware/tools/`): `gen_pcb.py` places the parts and pre-places the BQ51050B's escapes
+(it has 8 pins at 0.5 mm pitch on each side feeding 1 mm-pitch passives) and a GND via beside every GND pad;
+`autoroute.py` runs **Freerouting 1.9.0** (In1 kept as a plane); `route.py` (brim's grid router) finishes the last
+connections; `widen.py` widens the power tracks; `drc.py` checks.
+
 | Block | Part (LCSC) | Notes |
 |---|---|---|
 | Radio + MCU | **ESP32-C3-MINI-1U-N4** (C2911374) | External antenna on its U.FL: an adhesive FPC antenna on the chassis post, away from the coil and the battery |

@@ -41,6 +41,9 @@ idf.py -B build-parent -p /dev/ttyACM0 flash monitor
 python3 squeeze/hardware/tools/gen_pcb.py         # board from parts.py: outline, placement, planes
 python3 squeeze/hardware/tools/autoroute.py --jar freerouting-1.9.0.jar --passes 60   # Freerouting (Java 17+, xvfb-run)
 python3 squeeze/hardware/tools/route.py           # finish: GND islands, last connections (brim's fixroute.py, adapted)
+python3 squeeze/hardware/tools/hand_fixes_revA.py --gnd   # only if a GND pad is left on a pour island
+python3 squeeze/hardware/tools/widen.py           # widen power tracks where the copper allows
+python3 squeeze/hardware/tools/render_pcb.py      # docs/img/pcb_layers.png
 python3 squeeze/hardware/tools/drc.py             # DRC summary
 python3 squeeze/hardware/tools/jlc_outputs.py     # hardware/fab: gerbers zip, BOM, CPL, hand parts
 python3 squeeze/hardware/tools/netlist_doc.py     # docs/schematic.md
@@ -50,6 +53,6 @@ python3 squeeze/hardware/mech/squeeze_unit.py     # STEP/STL
 python3 squeeze/hardware/mech/fit_and_render.py   # interference check at rest and full swell, renders
 ```
 
-Status: **rev A, ordering files in progress.** Enclosure CAD fit-checked; firmware ported to the custom board and
-logic-tested (not yet compiled with ESP-IDF); main board placed, routing in progress. Next: routed board + JLC files
-(`hardware/fab/`), then order (docs/ordering.md).
+Status: **rev A, ready to order.** Main board routed and DRC clean; JLC files in `hardware/fab/`; printed parts in
+`hardware/mech/out/`; step by step in [docs/ordering.md](docs/ordering.md). Not yet built: the firmware has not been
+compiled with ESP-IDF or run on hardware, and the first boards need the bring-up checks in design.md §9.

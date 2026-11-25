@@ -1,0 +1,12 @@
+Designator,What,Notes
+J1,Battery 503030,"1S LiPo ~400 mAh with protection PCM: red to 1 (VBAT), black to 2"
+J2,Servo SG90,"cut the servo plug off: red to 1, brown to 2, orange to 3"
+J4,LED wires,4 thin wires up the chassis post to J5 on the LED tab
+J5,LED tab wires,
+L1,TDK WR303050-12F5-ID,Qi coil on the base floor under the board; its two leads come up through these holes (hand-soldered)
+TP1,BOOT,
+TP2,TXD,
+TP3,GND,
+TP5,+3V3,
+TP6,+5V,
+TP7,RECT,

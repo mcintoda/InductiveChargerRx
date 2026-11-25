@@ -26,7 +26,7 @@ Upload `hardware/fab/squeeze-gerbers.zip` at jlcpcb.com → *Order now*.
 | PCB thickness | **1.0 mm** | Height budget inside the base |
 | Surface finish | **ENIG** | Flat pads for the QFN, the LGA sensor and the module |
 | Via covering | Tented (default) | |
-| Min via hole / diameter | 0.25 / 0.5 mm (standard, no extra cost) | |
+| Min via hole / diameter | 0.2 / 0.45 mm (JLC standard for 4 layers) | 58 of the 109 vias are 0.45/0.2 (fan-out); the rest 0.5/0.25 |
 | Quantity | 5 (minimum) | Assemble 2, or 3 to keep a spare |
 | Everything else | default | |
 

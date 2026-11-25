@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Rev A hand fixes after autoroute.py, before the finishing route.py pass.
+"""Rev A hand fixes. Steps 1-3 are now planned at placement (gen_pcb.py u2_fanout); kept for reference
+(--legacy). The pipeline uses only --gnd and --final, after route.py.
 
 U2 (BQ51050B) has VBAT (pin 4) between BOOT1 (pin 3) and CLAMP1 (pin 5), and COMM2 (pin 15) has to
 cross the FOD / NTC exits to reach C10. The autorouters leave both open. Fixes:
@@ -234,6 +235,8 @@ def join_dangling(b, net, via_xy, layer=pcbnew.In2_Cu, reach=2.0):
 
 def main():
     b = pcbnew.LoadBoard(PCB)
+    if not {"--final", "--gnd", "--legacy"} & set(sys.argv):
+        sys.exit("usage: hand_fixes_revA.py --gnd | --final   (--legacy: the old post-route steps 1-3)")
     if "--final" in sys.argv:                            # after route.py: VBAT via links, FOD escape via
         j = join_dangling(b, "VBAT", (6.25, -4.95))
         fod = escape_via(b, "U2", "14", "FOD")
