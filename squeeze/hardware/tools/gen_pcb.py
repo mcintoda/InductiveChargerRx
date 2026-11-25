@@ -60,11 +60,11 @@ PLACE = {
     "L1": (6.4, -12.6, 0),
     "C1": (3.4, -9.6, 90), "C2": (5.0, -9.6, 90), "C3": (6.6, -9.6, 90), "C23": (2.2, -8.0, 90),
     "U2": (8.6, -4.2, 0),
-    "C4": (4.4, -5.0, 90), "C5": (12.6, -7.2, 0), "C9": (12.6, -6.2, 0), "C7": (9.6, -9.4, 0),
-    "C6": (12.6, -2.4, 0), "C10": (12.6, -1.4, 0), "C8": (12.6, 0.2, 0),
-    "C11": (15.2, -5.2, 90), "C21": (17.3, -5.2, 90), "C12": (15.4, -8.0, 0), "TP7": (14.6, -10.6, 0),
-    "R1": (5.2, -1.2, 0), "R2": (5.2, -0.2, 0), "R3": (7.4, -0.2, 0), "TH1": (9.6, -0.2, 0),
-    "C13": (14.8, 2.4, 0), "C22": (14.8, 3.4, 0),
+    "C4": (9.0, -7.8, 0), "C5": (5.0, -5.8, 0), "C9": (5.0, -3.4, 0), "C7": (4.9, -4.6, 0),
+    "C6": (12.4, -5.2, 180), "C10": (12.4, -2.6, 180), "C8": (12.3, -3.9, 180),
+    "C11": (15.2, -5.2, 90), "C21": (17.3, -5.2, 90), "C12": (12.4, -6.2, 0), "TP7": (14.6, -10.6, 0),
+    "R1": (12.4, -1.6, 0), "R2": (14.2, -1.6, 90), "R3": (7.6, -0.4, 0), "TH1": (10.0, -0.4, 0),
+    "C13": (5.0, -2.2, 0), "C22": (5.0, -1.2, 0),
     # battery pads on the right, between the screw notch and the boost
     "J1": (17.6, 4.2, 90),
     # 5 V boost for the servo, bottom right
@@ -227,8 +227,9 @@ def thermal_vias(board, nets):
         if pad.GetName() == "49":
             pts.append(pad.GetPosition())
     u2 = board.FindFootprintByReference("U2")
-    ep = [p for p in u2.Pads() if p.GetName() == "21"][0].GetPosition()
-    for dx, dy in ((-0.6, -0.9), (0.6, -0.9), (-0.6, 0.9), (0.6, 0.9), (0, 0)):
+    # several pads are named 21 (the exposed pad and four corner tabs): use the big one
+    ep = max((p for p in u2.Pads() if p.GetName() == "21"), key=lambda p: p.GetSize().x * p.GetSize().y).GetPosition()
+    for dx, dy in ((-0.45, -0.45), (0.45, -0.45), (-0.45, 0.45), (0.45, 0.45), (0, 0)):
         pts.append(pcbnew.VECTOR2I(ep.x + mm(dx), ep.y + mm(dy)))
     for p in pts:
         v = pcbnew.PCB_VIA(board)
