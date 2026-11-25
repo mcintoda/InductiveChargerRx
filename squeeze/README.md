@@ -39,7 +39,8 @@ idf.py -B build-parent -p /dev/ttyACM0 flash monitor
 
 # main board (KiCad 7: apt install kicad kicad-footprints kicad-symbols)
 python3 squeeze/hardware/tools/gen_pcb.py         # board from parts.py: outline, placement, planes
-python3 squeeze/hardware/tools/route.py           # DRC-driven grid router (adapted from brim's fixroute.py)
+python3 squeeze/hardware/tools/autoroute.py --jar freerouting-1.9.0.jar --passes 60   # Freerouting (Java 17+, xvfb-run)
+python3 squeeze/hardware/tools/route.py           # finish: GND islands, last connections (brim's fixroute.py, adapted)
 python3 squeeze/hardware/tools/drc.py             # DRC summary
 python3 squeeze/hardware/tools/jlc_outputs.py     # hardware/fab: gerbers zip, BOM, CPL, hand parts
 python3 squeeze/hardware/tools/netlist_doc.py     # docs/schematic.md

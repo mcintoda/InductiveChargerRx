@@ -382,7 +382,7 @@ def remove_bad_vias(board, report):
     return len(doomed)
 
 
-def remove_bad_tracks(board, report, kinds=("[clearance]", "[hole_clearance]")):
+def remove_bad_tracks(board, report, kinds=("[clearance]", "[hole_clearance]", "[copper_edge_clearance]")):
     """Unlocked tracks / vias with a clearance error, or tracks with a dangling end."""
     doomed = set()
     for kind in kinds:
