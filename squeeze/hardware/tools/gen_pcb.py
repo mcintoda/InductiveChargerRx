@@ -61,8 +61,8 @@ PLACE = {
     "C1": (3.4, -9.6, 90), "C2": (5.0, -9.6, 90), "C3": (6.6, -9.6, 90), "C23": (2.2, -8.0, 90),
     "U2": (8.6, -4.2, 0),
     "C4": (9.0, -7.8, 0), "C5": (5.0, -5.8, 0), "C9": (5.0, -3.4, 0), "C7": (4.6, -4.6, 0),
-    "C6": (12.4, -5.2, 180), "C10": (12.4, -2.6, 180), "C8": (12.7, -3.9, 180),
-    "C11": (15.2, -5.2, 90), "C21": (17.3, -5.2, 90), "C12": (12.4, -6.2, 0), "TP7": (14.6, -10.6, 0),
+    "C6": (12.4, -5.6, 180), "C10": (12.4, -2.6, 180), "C8": (12.7, -4.4, 180),
+    "C11": (15.2, -5.2, 90), "C21": (17.3, -5.2, 90), "C12": (14.2, -7.4, 0), "TP7": (14.6, -10.6, 0),
     "R1": (12.4, -1.6, 0), "R2": (14.2, -1.6, 90), "R3": (7.6, -0.4, 0), "TH1": (10.0, -0.4, 0),
     "C13": (5.0, -2.2, 0), "C22": (5.0, -1.2, 0),
     # battery pads on the right, between the screw notch and the boost
@@ -195,6 +195,10 @@ def place(board):
         fp.Reference().SetTextSize(pcbnew.VECTOR2I(mm(0.5), mm(0.5)))
         fp.Reference().SetTextThickness(mm(0.08))
         fp.Reference().SetVisible(False)                 # too dense for designators; see docs/pcb.png
+        if p["ref"] == "J3":                             # USB-C shell legs: solid to the GND pour (no starved reliefs)
+            for pad in fp.Pads():
+                if pad.GetName() == "S1":
+                    pad.SetZoneConnection(pcbnew.ZONE_CONNECTION_FULL)
         if not p["placed"]:
             fp.SetAttributes(fp.GetAttributes() | pcbnew.FP_EXCLUDE_FROM_BOM | pcbnew.FP_EXCLUDE_FROM_POS_FILES)
     return nets
@@ -235,6 +239,41 @@ def thermal_vias(board, nets):
         v = pcbnew.PCB_VIA(board)
         v.SetPosition(p); v.SetWidth(mm(VIA_D)); v.SetDrill(mm(VIA_H)); v.SetNet(gnd)
         board.Add(v)
+
+
+def u2_fanout(board, nets):
+    """Planned escapes for the BQ51050B's crowded sides (pins at 0.5 mm pitch, parts at 1 mm), placed before
+    routing so the autorouter works around them:
+      VBAT (pin 4)  : via 0.4 mm outside the left pin row, exactly between the BOOT1 and CLAMP1 lanes
+      BOOT1 (pin 3) : straight track from C5
+      COMM2 (pin 15): via 0.4 mm outside the right pin row
+      FOD (pin 14)  : via 1.0 mm out (staggered below the COMM2 via)
+    Vias 0.45/0.2 mm (JLC standard)."""
+    u2 = board.FindFootprintByReference("U2")
+    pads = {p.GetName(): p for p in u2.Pads() if p.GetName().isdigit() and int(p.GetName()) <= 20}
+
+    def xy(p):
+        return p.GetPosition().x / 1e6 - OX, p.GetPosition().y / 1e6 - OY
+
+    def edge_x(p, side):
+        bb = p.GetBoundingBox()
+        return (bb.GetX() if side < 0 else bb.GetX() + bb.GetWidth()) / 1e6 - OX
+
+    def stub_via(net, frm, to):
+        t = pcbnew.PCB_TRACK(board); t.SetStart(V(*frm)); t.SetEnd(V(*to)); t.SetWidth(mm(0.2))
+        t.SetLayer(pcbnew.F_Cu); t.SetNet(nets[net]); board.Add(t)
+        v = pcbnew.PCB_VIA(board); v.SetPosition(V(*to)); v.SetWidth(mm(0.45)); v.SetDrill(mm(0.2))
+        v.SetNet(nets[net]); board.Add(v)
+
+    x4, y4 = xy(pads["4"]); x15, y15 = xy(pads["15"]); x14, y14 = xy(pads["14"]); x3, y3 = xy(pads["3"])
+    stub_via("VBAT", (x4, y4), (edge_x(pads["4"], -1) - 0.4, y4))
+    stub_via("COMM2", (x15, y15), (edge_x(pads["15"], 1) + 0.4, y15))
+    stub_via("FOD", (x14, y14), (edge_x(pads["14"], 1) + 1.0, y14))
+    c5 = [p for p in board.FindFootprintByReference("C5").Pads() if p.GetName() == "2"][0]
+    cx, cy = xy(c5)
+    for a, b in (((cx, cy), (cx + abs(cy - y3), y3)), ((cx + abs(cy - y3), y3), (x3, y3))):
+        t = pcbnew.PCB_TRACK(board); t.SetStart(V(*a)); t.SetEnd(V(*b)); t.SetWidth(mm(0.2))
+        t.SetLayer(pcbnew.F_Cu); t.SetNet(nets["BOOT1"]); board.Add(t)
 
 
 def gnd_fanout(board, nets):
@@ -304,7 +343,7 @@ def setup(board):
     ds.m_MinClearance = mm(CLEAR)
     ds.m_ViasMinSize = mm(0.45)
     ds.m_MinThroughDrill = mm(0.2)
-    ds.m_CopperEdgeClearance = mm(0.3)
+    ds.m_CopperEdgeClearance = mm(0.25)                  # JLC routed edge: 0.2 mm min (the ellipse polygon rounds)
     nc = ds.m_NetSettings.m_DefaultNetClass
     nc.SetTrackWidth(mm(TRACK)); nc.SetClearance(mm(CLEAR)); nc.SetViaDiameter(mm(VIA_D)); nc.SetViaDrill(mm(VIA_H))
 
@@ -328,6 +367,7 @@ def main():
     for lay in (pcbnew.In1_Cu, pcbnew.F_Cu, pcbnew.B_Cu):
         zone(board, nets["GND"], lay, shrink, prio=0)
     thermal_vias(board, nets)
+    u2_fanout(board, nets)
     print("GND fan-out vias:", gnd_fanout(board, nets))
     board.Save(OUT)
     # zone filling is reliable only on a board loaded from disk (as brim's gen_pcb.py)

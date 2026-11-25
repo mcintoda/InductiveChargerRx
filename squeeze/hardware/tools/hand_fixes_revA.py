@@ -14,9 +14,11 @@ cross the FOD / NTC exits to reach C10. The autorouters leave both open. Fixes:
     python3 squeeze/hardware/tools/hand_fixes_revA.py --gnd        # after route.py: GND pad escapes (4.)
 
   4. --gnd: GND pads left on a top-layer pour island without a via get a short track + 0.45/0.2 via.
+  5. --final: join the VBAT via to its dangling In2 ends; FOD escape via beside U2 pin 14; then route.py again.
 """
 import math
 import os
+import sys
 
 import pcbnew
 
@@ -161,8 +163,90 @@ def gnd_escapes(b):
     return added
 
 
+def collides(b, shape, layer, net, clr=0.15):
+    """Does a new copper shape on `layer` hit other-net copper (pads, tracks, vias) or a hole?"""
+    nc = b.FindNet(net).GetNetCode()
+    for f in b.GetFootprints():
+        for q in f.Pads():
+            if q.GetNetCode() != nc and q.IsOnLayer(layer) and q.GetEffectiveShape(layer).Collide(shape, mm(clr)):
+                return True
+            if q.HasHole() and q.GetNetCode() != nc and q.GetEffectiveHoleShape().Collide(shape, mm(0.25)):
+                return True
+    for t in b.GetTracks():
+        if t.GetNetCode() == nc:
+            continue
+        if (t.GetClass() == "PCB_VIA" or t.GetLayer() == layer) and t.GetEffectiveShape(layer).Collide(shape, mm(clr)):
+            return True
+    return False
+
+
+def escape_via(b, ref, padname, net, radii=(0.7, 0.85, 1.0, 1.2, 1.4)):
+    """Stub + 0.45/0.2 via next to a pad, at the first spot whose via (all layers) and stub (F.Cu) are clear."""
+    q = [p for p in b.FindFootprintByReference(ref).Pads() if p.GetName() == padname][0]
+    c = q.GetPosition()
+    fc = b.FindFootprintByReference(ref).GetPosition()
+    base = math.atan2(c.y - fc.y, c.x - fc.x)
+    edge = pcbnew.SHAPE_POLY_SET(); b.GetBoardPolygonOutlines(edge); edge.Deflate(mm(0.6), 16)
+    for r in radii:
+        for k in (0, 1, -1, 2, -2, 3, -3):
+            a = base + k * math.pi / 12
+            pos = pcbnew.VECTOR2I(c.x + mm(r * math.cos(a)), c.y + mm(r * math.sin(a)))
+            circ = pcbnew.SHAPE_CIRCLE(pos, mm(0.225))
+            seg = pcbnew.SHAPE_SEGMENT(c, pos, mm(0.2))
+            if not edge.Contains(pos) or collides(b, seg, pcbnew.F_Cu, net):
+                continue
+            if any(collides(b, circ, lay, net) for lay in (pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu)):
+                continue
+            if any(t.GetClass() == "PCB_VIA" and (t.GetPosition() - pos).EuclideanNorm() < mm(0.45 + 0.2)
+                   for t in b.GetTracks()):
+                continue
+            t = pcbnew.PCB_TRACK(b); t.SetStart(c); t.SetEnd(pos); t.SetWidth(mm(0.2)); t.SetLayer(pcbnew.F_Cu)
+            t.SetNet(b.FindNet(net)); b.Add(t)
+            v = pcbnew.PCB_VIA(b); v.SetPosition(pos); v.SetWidth(mm(0.45)); v.SetDrill(mm(0.2))
+            v.SetNet(b.FindNet(net)); b.Add(v)
+            return (pos.x / 1e6 - OX, pos.y / 1e6 - OY)
+    return None
+
+
+def join_dangling(b, net, via_xy, layer=pcbnew.In2_Cu, reach=2.0):
+    """Connect a via to dangling track ends of its net on `layer` within `reach` mm, where the link is clear."""
+    vpos = V(*via_xy)
+    ends = {}
+    for t in b.GetTracks():
+        if t.GetNetname() == net and t.GetClass() != "PCB_VIA" and t.GetLayer() == layer:
+            for e in (t.GetStart(), t.GetEnd()):
+                ends[(e.x, e.y)] = ends.get((e.x, e.y), 0) + 1
+    joined = 0
+    for (x, y), n in ends.items():
+        e = pcbnew.VECTOR2I(x, y)
+        if n != 1 or (e - vpos).EuclideanNorm() > mm(reach) or (e - vpos).EuclideanNorm() < mm(0.05):
+            continue
+        if any(t.GetClass() == "PCB_VIA" and t.GetNetname() == net and (t.GetPosition() - e).EuclideanNorm() < mm(0.1)
+               for t in b.GetTracks()):
+            continue
+        seg = pcbnew.SHAPE_SEGMENT(vpos, e, mm(0.25))
+        if collides(b, seg, layer, net):
+            continue
+        t = pcbnew.PCB_TRACK(b); t.SetStart(vpos); t.SetEnd(e); t.SetWidth(mm(0.25)); t.SetLayer(layer)
+        t.SetNet(b.FindNet(net)); b.Add(t); joined += 1
+    return joined
+
+
 def main():
     b = pcbnew.LoadBoard(PCB)
+    if "--final" in sys.argv:                            # after route.py: VBAT via links, FOD escape via
+        j = join_dangling(b, "VBAT", (6.25, -4.95))
+        fod = escape_via(b, "U2", "14", "FOD")
+        pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+        b.Save(PCB)
+        print(f"final: VBAT links {j}, FOD escape via {fod}")
+        return
+    if "--gnd" in sys.argv:                              # after route.py: only the GND escapes
+        esc = gnd_escapes(b)
+        pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+        b.Save(PCB)
+        print(f"GND escapes: {esc}")
+        return
     u2 = b.FindFootprintByReference("U2")
     pads = {p.GetName(): p for p in u2.Pads() if p.GetName().isdigit() and int(p.GetName()) <= 20}
     pin = {n: loc(p) for n, p in pads.items()}
@@ -195,10 +279,8 @@ def main():
     track(b, "COMM2", [(x15, y15), (cvx, y15)])
     via(b, "COMM2", cvx, y15)
 
-    esc = gnd_escapes(b) if "--gnd" in __import__("sys").argv else []
     pcbnew.ZONE_FILLER(b).Fill(b.Zones())
     b.Save(PCB)
-    print(f"GND escapes: {esc}")
     print(f"hand fixes: C8 +0.4, C7 -0.3 mm, removed {n} old items; vias VBAT ({vx:.2f}, {y4:.2f}) COMM2 ({cvx:.2f}, {y15:.2f})")
 
 

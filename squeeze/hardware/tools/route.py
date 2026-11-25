@@ -512,7 +512,7 @@ def fallback(board, g, net, src, dst, dst_via):
     """Retry with a 0.15 mm track. Commits and returns segment count, or 0."""
     global TRACK_W, VIA_D, VIA_DRILL
     keep = TRACK_W
-    for tw, vd, vdr in ((min(BASE_W, TRACK_W), 0.5, 0.25), (0.15, 0.5, 0.25)):   # neck down at fine-pitch pins
+    for tw, vd, vdr in ((min(BASE_W, TRACK_W), 0.5, 0.25), (0.15, 0.5, 0.25), (0.15, 0.45, 0.2)):   # neck down; last: small via
         TRACK_W, VIA_D, VIA_DRILL = tw, vd, vdr
         try:
             obst = build_obstacles(board, g, net, TRACK_W / 2 + CLR + MARGIN)
