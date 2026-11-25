@@ -107,7 +107,7 @@ Full study, simulation and figures: **[placement-and-electrodes.md](placement-an
 ### 3.5 Power
 | Item | Choice |
 |------|--------|
-| Cell | 1S Li-ion pouch, **320 mAh (300 min), 25.5 × 36 × 4.3 mm**, **with integrated protection module (PCM)**, 2 wires (temperature from the PCB NTC) |
+| Cell | 1S Li-ion pouch, **320 mAh (300 min), 25.5 × 36 × 4.3 mm**, **with integrated protection module (PCM)**, 2 wires (temperature from the PCB NTC). Chosen cell ([Amazon](https://a.co/d/00saOwxL)): UL 1642 cell, UL 62133-2 pack, UN38.3 (UL Product iQ file MH20555), 800+ cycles |
 | Regulator | **RT9080-33GJ5** LDO (600 mA, Iq ≈ 2 µA, JLC C841192), same SOT-23-5 pinout as the XC6220 it replaced (8 µA). It must cover the ESP32 Wi-Fi TX peaks of ~350 mA |
 | Battery monitor | 1 M / 1 M divider + 100 nF into ADC1 (≈2 µA) |
 | Sensor rail | TMP117 and its I²C pull-ups are powered from a GPIO, switched on only during measurement |
