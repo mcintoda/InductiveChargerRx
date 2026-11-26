@@ -9,6 +9,7 @@ TAG ?= cur
 SIM ?= sim
 CHILD ?= 0xFF8000
 SLEEP ?= 2000
+DEEP ?= 4000
 SRC = main grip shaper turn proto bmp280 bmp280_comp hw radio
 FW = $(addprefix $(FWDIR)/,$(addsuffix .c,$(SRC))) shim.c
 
@@ -18,7 +19,7 @@ $(SIM): world.c ../main/bmp280_comp.c build/$(TAG)/unitA.o build/$(TAG)/unitB.o
 build/$(TAG)/unit%.o: $(FW) world.h $(wildcard shim/*.h shim/*/*.h) sdkconfig.in.h Makefile
 	@mkdir -p build/$(TAG)/$*/obj
 	@role=$$( [ "$*" = A ] && echo PARENT || echo CHILD ); swell=$$( [ "$*" = A ] && echo 90 || echo 65 ); \
-	 sed "s/@ROLE@/$$role/; s/@SWELL@/$$swell/; s/@CHILD@/$(CHILD)/; s/@SLEEP@/$(SLEEP)/" sdkconfig.in.h > build/$(TAG)/$*/sdkconfig.h
+	 sed "s/@ROLE@/$$role/; s/@SWELL@/$$swell/; s/@CHILD@/$(CHILD)/; s/@SLEEP@/$(SLEEP)/; s/@DEEP@/$(DEEP)/" sdkconfig.in.h > build/$(TAG)/$*/sdkconfig.h
 	@for f in $(FW); do $(CC) $(CFLAGS) -Ibuild/$(TAG)/$* -Ishim -I. -I$(FWDIR) -c $$f -o build/$(TAG)/$*/obj/$$(basename $$f .c).o || exit 1; done
 	@ld -r -o build/$(TAG)/$*/raw.o build/$(TAG)/$*/obj/*.o
 	@nm -u build/$(TAG)/$*/raw.o | awk '{print "u$*_" $$2 " " $$2}' > build/$(TAG)/$*/undef.map

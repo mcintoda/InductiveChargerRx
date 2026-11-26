@@ -14,11 +14,13 @@
 typedef struct {
     float base_tau_s;      /* baseline follows the resting pressure with this time constant */
     float base_fall_tau_s; /* faster when the pressure drops below the baseline */
-    float on_pa;           /* a squeeze starts when the rise exceeds this */
-    float off_pa;          /* ...and ends when it falls below this */
+    float on_pa;           /* a squeeze starts when the rise exceeds this (or 4 sigma of the idle noise) */
+    float off_pa;          /* ...and ends when it falls below this (or 2.5 sigma) */
     float min_range_pa;    /* the smallest rise that counts as a full squeeze */
     float range_tau_s;     /* full scale relaxes back to min_range_pa this slowly */
     float max_squeeze_s;   /* a "squeeze" longer than this is drift: re-zero */
+    float steady_s;        /* a weak (< steady_level) rise held this long is a changed grip, not a squeeze */
+    float steady_level;
 } grip_cfg_t;
 
 typedef struct {
@@ -29,6 +31,11 @@ typedef struct {
     float range;     /* Pa above baseline that maps to level 1.0 */
     float active_s;  /* duration of the current squeeze */
     float level;     /* last output, 0..1 */
+    float level_avg; /* level smoothed over ~0.5 s (hand tremor removed) */
+    float noise_var; /* pressure noise while idle (sensor + hand tremor), Pa^2 */
+    float d_avg, act_var; /* rise and its variance while active (for the pickup case) */
+    bool rezeroed;   /* this update re-zeroed a steady grip / drift (not a squeeze): discard it */
+    bool freeze;     /* set by the caller: keep the baseline (own plates moving, pressure compensated) */
 } grip_t;
 
 grip_cfg_t grip_default_cfg(void);

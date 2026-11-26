@@ -30,14 +30,20 @@ float shaper_update(shaper_t *s, float target, float dt_s)
 
     if (target > c->on_level) {
         s->hold_s += dt_s;
-        if (s->hold_s > c->max_hold_s)
+        if (s->hold_s > 3.0f * c->max_hold_s)
             s->limited = true;
     } else {
         s->hold_s = 0.0f;
         s->limited = false;
     }
-    if (s->limited || target <= c->on_level)
+    if (s->limited || target <= c->on_level) {
         target = 0.0f;
+    } else if (s->hold_s > c->max_hold_s) {
+        float k = clampf(s->hold_s - c->max_hold_s, 0.0f, 1.0f);   /* ease over 1 s */
+        float cap = 1.0f + (c->hold_level - 1.0f) * k;
+        if (target > cap)
+            target = cap;
+    }
 
     float f = shaper_cam_inverse(target, c->cam_a_mm, c->cam_b_mm);
     float want = c->rest_deg + (c->full_deg - c->rest_deg) * f;
@@ -45,6 +51,19 @@ float shaper_update(shaper_t *s, float target, float dt_s)
     float d = want - s->angle;
     s->angle += clampf(d, -step, step);
     return s->angle;
+}
+
+float shaper_lift_mm(const shaper_t *s)
+{
+    const shaper_cfg_t *c = &s->cfg;
+    if (c->cam_a_mm <= c->cam_b_mm)
+        return 0.0f;
+    float span = c->full_deg - c->rest_deg;
+    float f = span != 0.0f ? (s->angle - c->rest_deg) / span : 0.0f;   /* 0..1 of the stroke used */
+    float travel = fabsf(span) / 90.0f;                                 /* this unit's stroke, of 90 deg */
+    float t = clampf(f * travel, 0.0f, 1.0f) * (float)M_PI_2;
+    return sqrtf(c->cam_b_mm * c->cam_b_mm * cosf(t) * cosf(t) + c->cam_a_mm * c->cam_a_mm * sinf(t) * sinf(t))
+           - c->cam_b_mm;
 }
 
 bool shaper_busy(const shaper_t *s)

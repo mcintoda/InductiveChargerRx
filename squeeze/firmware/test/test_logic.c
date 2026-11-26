@@ -87,11 +87,31 @@ static void test_grip(void)
     NEAR(g.baseline, pb, 0.01f);
     /* Unmasked with the hand still squeezing: that counts immediately. */
     CHECK(run(&g, pb + 3000, 1, false) > 0.0f);
+
+    /* Picked up: a weak rise that stays (grip force, not a squeeze) is re-zeroed after 3 s. */
+    grip_init(&g, &c);
+    run(&g, P0, 50, false);
+    run(&g, P0 + 3000, 10, false);        /* a firm squeeze first: full scale 3 kPa */
+    run(&g, P0, 50, false);
+    run(&g, P0 + 400, 50 * 2, false);      /* level ~0.11 */
+    CHECK(g.active);
+    run(&g, P0 + 400, 50 * 2, false);
+    CHECK(!g.active);
+    NEAR(g.baseline, P0 + 400, 1);
+
+    /* Frozen (own plates moving, compensated): the baseline holds, a squeeze is still seen. */
+    grip_init(&g, &c);
+    run(&g, P0, 50, false);
+    g.freeze = true;
+    run(&g, P0 - 300, 50, false);          /* compensation overshoot below the baseline */
+    NEAR(g.baseline, P0, 0.01f);
+    CHECK(run(&g, P0 + 600, 3, false) > 0.0f);
+    g.freeze = false;
 }
 
 static shaper_cfg_t shaper_cfg(void)
 {
-    return (shaper_cfg_t){ .rest_deg = 45, .full_deg = 135, .slew_dps = 600, .max_hold_s = 4,
+    return (shaper_cfg_t){ .rest_deg = 45, .full_deg = 135, .slew_dps = 600, .max_hold_s = 4, .hold_level = 0.4f,
                            .on_level = 0.03f, .cam_a_mm = 8, .cam_b_mm = 5 };
 }
 
@@ -124,10 +144,16 @@ static void test_shaper(void)
         a = shaper_update(&s, 1.0f, DT);
     NEAR(a, 135, 0.01f);
 
-    /* Hold limit: relaxes after 4 s although the partner still squeezes... */
-    for (int i = 0; i < (int)(4.0f / DT) + 20; i++)
+    NEAR(shaper_lift_mm(&s), 3.0f, 0.01f);
+    /* Hold limit: after 4 s it eases to 40 % over 1 s (a long hug is not dropped)... */
+    for (int i = 0; i < (int)(5.5f / DT); i++)
+        a = shaper_update(&s, 1.0f, DT);
+    NEAR(shaper_lift_mm(&s), 0.4f * 3.0f, 0.05f);
+    /* ...lets go at 12 s... */
+    for (int i = 0; i < (int)(7.0f / DT); i++)
         a = shaper_update(&s, 1.0f, DT);
     NEAR(a, 45, 0.01f);
+    NEAR(shaper_lift_mm(&s), 0.0f, 1e-4f);
     /* ...and works again after a release. */
     shaper_update(&s, 0.0f, DT);
     for (int i = 0; i < 20; i++)
@@ -146,6 +172,7 @@ static void test_shaper(void)
     for (int i = 0; i < 30; i++)
         a = shaper_update(&s, 1.0f, DT);
     NEAR(a, -20, 0.01f);
+    NEAR(shaper_lift_mm(&s), sqrtf(25 * cosf(1.1345f) * cosf(1.1345f) + 64 * sinf(1.1345f) * sinf(1.1345f)) - 5, 0.02f);
 }
 
 static void test_turn(void)

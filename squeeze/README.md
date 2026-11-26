@@ -11,7 +11,7 @@ It doesn't judge or score; it just passes squeezes back and forth.
 - **Squeeze back:** an SG90 servo turns an oval cam that pushes two curved plates 3 mm out into the palm and
   fingers, in proportion to the partner's squeeze.
 - **Link:** ESP-NOW between the two units' ESP32-C3 modules: no router, no app, ~5 ms. Turn-taking: whoever squeezes first
-  has the floor.
+  has the floor, and a squeeze back during the partner's still gets through (duplex sensing).
 - **Power:** Qi charging (brim's BQ51050B block and coil), 400 mAh LiPo. Sleeps by itself and wakes on a squeeze or when the
   partner calls.
 - **Enclosure:** 52 × 42 × 70 mm. Cast Dragon Skin 10 skin in each person's colour, glowing from inside. The 3D-printed
@@ -25,7 +25,7 @@ It doesn't judge or score; it just passes squeezes back and forth.
 | [`hardware/fab/`](hardware/fab/) | JLC order files: gerbers zip, `bom_jlc.csv`, `cpl_jlc.csv`, `hand_parts.csv` |
 | [`firmware/`](firmware/) | ESP-IDF 5.3 (ESP32-C3). Pure logic host-tested: `make -C firmware/test` |
 | [`hardware/mech/`](hardware/mech/) | CadQuery model, fit check and renders. STEP/STL in `out/` |
-| [`docs/virtual-experiments.md`](docs/virtual-experiments.md) | Bring-up and usability rehearsed in simulation before ordering: 11 problems found, 10 fixed |
+| [`docs/virtual-experiments.md`](docs/virtual-experiments.md) | Bring-up and usability rehearsed in simulation before ordering: two rounds, every problem found is fixed |
 | [`firmware/sim/`](firmware/sim/) | Test bench: the real firmware for both units against simulated hardware and people |
 
 ```
@@ -36,8 +36,9 @@ python3 squeeze/hardware/tools/erc.py              # static electrical checks
 
 # firmware: one build per unit (same code, different role/colour/strength)
 cd squeeze/firmware
-idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.parent" -B build-parent build
-idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.child"  -B build-child  build
+. ~/esp/esp-idf/export.sh                          # ESP-IDF v5.3.2 (verified: both build, 0 warnings)
+idf.py -B build-parent -D SDKCONFIG=build-parent/sdkconfig -D "SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.parent" set-target esp32c3 build
+idf.py -B build-child  -D SDKCONFIG=build-child/sdkconfig  -D "SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.child"  set-target esp32c3 build
 idf.py -B build-parent -p /dev/ttyACM0 flash monitor
 # set the same "Pair secret" on both first: idf.py menuconfig -> Squeeze pair
 
@@ -58,6 +59,6 @@ python3 squeeze/hardware/mech/fit_and_render.py   # interference check at rest a
 ```
 
 Status: **rev A, ready to order.** Main board routed and DRC clean; JLC files in `hardware/fab/`; printed parts in
-`hardware/mech/out/`; step by step in [docs/ordering.md](docs/ordering.md). Not yet built: the firmware runs on the PC
-test bench but has not been compiled with ESP-IDF or run on the chip; the first boards need the bring-up checks in
+`hardware/mech/out/`; step by step in [docs/ordering.md](docs/ordering.md). Not yet built: the firmware builds with ESP-IDF
+v5.3.2 and runs on the PC test bench, but has not run on the chip; the first boards need the bring-up checks in
 design.md §9.

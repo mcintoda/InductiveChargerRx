@@ -42,7 +42,7 @@ typedef struct {
     /* config */
     double start_s, vbat_soc, held_from, held_to;
     int usb, charging, sensor, agent;
-    double agent_force, agent_start;
+    double agent_force, agent_start, grip_n, tremor_n, tremor_state;
     int agent_rounds;
     squeeze_t sq[256];
     int nsq;
@@ -162,7 +162,10 @@ static double squeeze_force(unit_t *u)
         double a = fmin(1, (t - s->t) / 0.06), b = fmin(1, (s->t + s->dur + 0.06 - t) / 0.06);
         f = fmax(f, s->force * fmin(a, b));
     }
-    return held(u) ? f : 0;
+    if (!held(u))
+        return 0;
+    /* holding force (picking up = a step) + hand tremor (smoothed noise) + squeezes */
+    return u->grip_n + u->tremor_n * u->tremor_state + f;
 }
 
 static double pressure(unit_t *u)
@@ -238,6 +241,7 @@ static void physics_step(void)
         /* air temperature: warms toward the hand when held */
         double tt = held(u) ? 27.0 : 22.0, tau = held(u) ? 300.0 : 600.0;
         u->t_air += (tt - u->t_air) * dt / tau;
+        u->tremor_state += (-u->tremor_state * dt / 0.15) + gauss() * sqrt(2 * dt / 0.15);   /* OU, unit variance */
         u->sq_force = squeeze_force(u);
         /* what the holder feels */
         u->felt_n = held(u) ? 4.0 * lift_mm(u->angle) : 0;
@@ -506,6 +510,8 @@ static void parse(const char *path)
             else if (sscanf(p, " charging %d", &u->charging) == 1) {}
             else if (sscanf(p, " sensor %d", &u->sensor) == 1) {}
             else if (sscanf(p, " battery %lf", &x) == 1) u->vbat_soc = x;
+            else if (sscanf(p, " grip %lf", &x) == 1) u->grip_n = x;
+            else if (sscanf(p, " tremor %lf", &x) == 1) u->tremor_n = x;
             else if (sscanf(p, " squeeze %lf %lf %lf", &x, &y, &z) == 3) add_squeeze(u, x, y, z);
             else if (sscanf(p, " parent %lf %lf %d", &x, &y, &u->agent_rounds) == 3) { u->agent = AG_PARENT; u->agent_start = x; u->agent_force = y; }
             else if (sscanf(p, " child %lf", &x) == 1) { u->agent = AG_CHILD; u->agent_force = x; }

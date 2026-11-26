@@ -1,11 +1,12 @@
 /* squeeze: two hand-held units that pass squeezes back and forth.
  *
  * Doze (most of the time): light sleep. Every 100 ms a fast pressure sample (is my holder squeezing?);
- * every SLEEP_PERIOD_MS the radio listens for 45 ms (is my partner calling?). A squeeze of 0.1 s or
- * longer wakes it. (A flat battery is the only reason for deep sleep.)
+ * every SLEEP_PERIOD_MS (DEEP_PERIOD_MS after RECENT_S) the radio listens for 30 ms (is my partner
+ * calling?). A squeeze of 0.1 s or longer wakes it. (A flat battery is the only reason for deep sleep.)
  *
  * Session: 50 Hz loop. Squeeze -> level -> radio. Partner's level -> plates. Turn-taking (turn.c)
- * decides which way squeezes flow. Squeezes made while the partner is still waking up are kept and
+ * decides which way squeezes flow; duplex sensing lets a squeeze made during the partner's playback
+ * through. A squeeze is sent once confirmed (not a pickup). Squeezes made while the partner wakes are kept and
  * replayed when it answers; the receiver plays at the real pace and skips silence to catch up.
  * 90 s with no squeeze on either side -> BYE -> doze.
  *
@@ -35,15 +36,25 @@ static const char *TAG = "squeeze";
 #define DT               (TICK_MS / 1000.0f)
 #define DOZE_SAMPLE_MS   100    /* asleep: pressure sample period */
 #define DOZE_CONV_MS     7      /* BMP280 forced x1 conversion, slept through */
-#define LISTEN_MS        45     /* asleep: how long to listen for WAKE each SLEEP_PERIOD_MS */
-#define WAKE_PA          150.0f /* asleep: rise that counts as "squeezed me awake" (= grip on_pa: a 6-year-old's gentle squeeze) */
-#define CALL_MS          (CONFIG_SQZ_SLEEP_PERIOD_MS + 1500)
+#define LISTEN_MS        30     /* asleep: how long to listen for WAKE (sent every 20 ms) each listen period */
+#define WAKE_PA_MIN      100.0f /* asleep: smallest rise that wakes (a 6-year-old's gentle squeeze is ~150+) */
+#define WAKE_SIGMAS      8.0f   /* ...or 8 x the measured sensor noise, whichever is larger */
+#define CALL_MS          (CONFIG_SQZ_DEEP_PERIOD_MS + 1500)   /* longer than the partner's slowest listen period */
+#define FIFO_N           512    /* replay outbox / playback queue: 10 s at 50 Hz */
+#define CONFIRM_LEVEL    0.5f   /* a squeeze this strong (0.5 s average) is sent at once; weaker ones when released */
+#define STRONG_LEVEL     0.6f   /* ...or this strong for STRONG_TICKS in a row (a pickup + tremor is not) */
+#define STRONG_TICKS     2
+#define GENTLE_MAX_S     1.5f   /* a gentle squeeze counts if released within this; longer = picked up */
+#define MIN_SENT_LEVEL   0.25f  /* a squeeze is sent at least this strong */
+#define GENTLE_MIN_S     0.12f  /* ...and if it lasted this long (shorter: a tremor blip) */
 #define PARTNER_LOST_MS  3000   /* no heartbeat for this long = partner asleep / out of range */
 #define REMOTE_STALE_MS  250    /* no LEVEL frame for this long = partner let go (link loss safety) */
 #define INVITE_MS        60000  /* woken by the partner: glow its colour for up to a minute */
 #define UNREACHED_MS     1200   /* a call nobody answered: blink own colour */
 #define CATCHUP_FRAMES   4      /* replay: frames sent per tick while catching up */
 #define KEEP_GAP_TICKS   30     /* replay: pauses longer than 0.6 s are shortened to 0.6 s */
+#define MIN_GAP_TICKS    6      /* playback: a pause between two squeezes lasts at least 120 ms, so the
+                                 * plates open far enough to be felt as two (fast children's patterns) */
 #define VBAT_LOW_MV      3500   /* red blink, LOW_BATT flag */
 #define VBAT_NO_SERVO_MV 3400   /* plates off, LED only */
 #define VBAT_EMPTY_MV    3300   /* deep sleep 60 s at a time, no radio, until charged */
@@ -62,6 +73,7 @@ typedef enum { WOKE_POWER_ON, WOKE_BY_SQUEEZE, WOKE_BY_PARTNER } woke_t;
 
 static float rest_pa;     /* resting pressure, tracked while dozing */
 static bool have_rest;
+static float noise_var = 15.0f * 15.0f;   /* doze samples: variance around rest_pa (Pa^2) */
 
 static uint32_t now_ms(void) { return (uint32_t)(esp_timer_get_time() / 1000); }
 
@@ -94,21 +106,25 @@ static woke_t doze(bool sensor_ok)
     led_rgb(0, 0);
     if (sensor_ok)
         bmp280_sleep();
-    uint32_t next_listen = now_ms() + CONFIG_SQZ_SLEEP_PERIOD_MS, next_vbat = now_ms();
+    uint32_t start = now_ms(), next_listen = start + CONFIG_SQZ_SLEEP_PERIOD_MS, next_vbat = start;
     for (;;) {
         light_sleep_ms(DOZE_SAMPLE_MS - DOZE_CONV_MS);
         if (sensor_ok && bmp280_start_fast() == ESP_OK) {
             light_sleep_ms(DOZE_CONV_MS);
             float pa;
             if (bmp280_read(&pa) == ESP_OK) {
-                if (have_rest && pa - rest_pa > WAKE_PA)
+                float wake_pa = fmaxf(WAKE_PA_MIN, WAKE_SIGMAS * sqrtf(noise_var));
+                if (have_rest && pa - rest_pa > wake_pa)
                     return WOKE_BY_SQUEEZE;
-                /* follow drift (~2 s time constant), but not a rise in progress: a slow squeeze must not
-                 * drag the reference up with it */
-                if (!have_rest)
+                /* follow drift (~2 s time constant) and learn the noise, but not during a rise in progress:
+                 * a slow squeeze must not drag the reference up with it */
+                if (!have_rest) {
                     rest_pa = pa;
-                else if (pa - rest_pa < WAKE_PA / 3)
-                    rest_pa += (pa - rest_pa) * 0.05f;
+                } else if (pa - rest_pa < wake_pa / 3) {
+                    float e = pa - rest_pa;
+                    noise_var += (e * e - noise_var) * 0.01f;    /* ~10 s */
+                    rest_pa += e * 0.05f;
+                }
                 have_rest = true;
             }
         }
@@ -119,7 +135,9 @@ static woke_t doze(bool sensor_ok)
                 empty_battery_sleep();
         }
         if ((int32_t)(now - next_listen) >= 0) {
-            next_listen = now + CONFIG_SQZ_SLEEP_PERIOD_MS;
+            /* fast for a while after a session (another round is likely), then slower to save the battery */
+            next_listen = now + (now - start < CONFIG_SQZ_RECENT_S * 1000u ? CONFIG_SQZ_SLEEP_PERIOD_MS
+                                                                            : CONFIG_SQZ_DEEP_PERIOD_MS);
             radio_resume();
             uint32_t until = now_ms() + LISTEN_MS;
             sq_msg_t m;
@@ -138,15 +156,15 @@ static float breathe(uint32_t t, uint32_t period_ms)
 }
 
 /* ---------------- level FIFOs: replay outbox (sender) and playback queue (receiver) ---------------- */
-typedef struct { uint8_t v[256]; uint8_t head; uint16_t n; } fifo_t;
+typedef struct { uint8_t v[FIFO_N]; uint16_t head, n; } fifo_t;
 static void fifo_push(fifo_t *f, uint8_t x)
 {
-    if (f->n == 256) { f->head++; f->n--; }   /* full: drop the oldest */
-    f->v[(uint8_t)(f->head + f->n)] = x;
+    if (f->n == FIFO_N) { f->head = (f->head + 1) % FIFO_N; f->n--; }   /* full: drop the oldest */
+    f->v[(f->head + f->n) % FIFO_N] = x;
     f->n++;
 }
-static uint8_t fifo_pop(fifo_t *f) { uint8_t x = f->v[f->head++]; f->n--; return x; }
-static uint8_t fifo_peek(const fifo_t *f, int i) { return f->v[(uint8_t)(f->head + i)]; }
+static uint8_t fifo_pop(fifo_t *f) { uint8_t x = f->v[f->head]; f->head = (f->head + 1) % FIFO_N; f->n--; return x; }
+static uint8_t fifo_peek(const fifo_t *f, int i) { return f->v[(f->head + i) % FIFO_N]; }
 
 static void session(woke_t woke, bool sensor_ok)
 {
@@ -169,6 +187,7 @@ static void session(woke_t woke, bool sensor_ok)
         .full_deg = CONFIG_SQZ_SERVO_REST_DEG + CONFIG_SQZ_SWELL_DEG,
         .slew_dps = 600, /* SG90: ~0.1 s per 60 deg */
         .max_hold_s = 4,
+        .hold_level = 0.4f,
         .on_level = 0.03f,
         .cam_a_mm = 8, /* hardware/mech/squeeze_unit.py CAM_A / CAM_B */
         .cam_b_mm = 5,
@@ -177,13 +196,18 @@ static void session(woke_t woke, bool sensor_ok)
     shaper_init(&shaper, &sc);
     turn_t turn;
     turn_init(&turn, 150);
-    static fifo_t outq, playq;
-    outq.n = playq.n = 0;
+    static fifo_t outq, playq, staged;
+    outq.n = playq.n = staged.n = 0;
+    bool confirmed = false;          /* the current squeeze is real (strong enough, or released in time) */
+    bool turn_sent = false;
+    int zero_run = 0;                /* playback: consecutive silent ticks played */
+    bool had_level = false;          /* something real was sent this turn: its tail follows */
+    float k_own = 400.0f;            /* Pa per mm of own-plate lift in this hand (learned while playing) */
 
     uint32_t t0 = now_ms();
     uint32_t last_activity = t0, last_hb = 0, last_vbat = 0, partner_seen = 0, last_frame = 0;
     uint32_t call_start = t0, invite_until = 0, unreached_until = 0, trace = 0;
-    bool partner_awake = false, partner_low = false, calling = woke != WOKE_BY_PARTNER, mask = false;
+    bool partner_awake = false, partner_low = false, calling = woke == WOKE_POWER_ON, mask = false;
     uint8_t remote_level = 0;
     int vbat = power_vbat_mv();
     bool on_usb = power_usb(); /* USB-C plugged in: never doze */
@@ -214,11 +238,53 @@ static void session(woke_t woke, bool sensor_ok)
         /* --- this holder --- */
         if (sensor_ok)
             bmp280_read(&pa);
-        float level = sensor_ok ? grip_update(&grip, pa, DT, mask) : 0.0f;
+        float level = 0.0f;
+        bool was_active = grip.active;
+        static int strong_ticks;
+#if CONFIG_SQZ_DUPLEX
+        /* Own plates pushing into the hand raise the pressure too: subtract the learned share plus a margin, and
+         * keep the baseline still. What is left over is the holder squeezing (also during the partner's turn). */
+        float lift = shaper_lift_mm(&shaper);
+        bool own = shaper_busy(&shaper);
+        grip.freeze = own;
+        float comp = own ? k_own * lift * 1.1f + 60.0f : 0.0f;
+        if (sensor_ok)
+            level = grip_update(&grip, pa - comp, DT, false);
+        if (own && lift > 1.0f && !grip.active) {
+            float ko = (pa - grip.baseline) / lift;
+            /* the holder can only add pressure: learn down fast, up slowly (a squeeze during playback is not
+             * taken for the plates) */
+            ko = fminf(fmaxf(ko, 0.0f), 1500.0f);
+            k_own += (ko - k_own) * (ko < k_own ? 0.1f : 0.005f);
+        }
+        (void)mask;
+#else
+        if (sensor_ok)
+            level = grip_update(&grip, pa, DT, mask);
+#endif
         if (grip.active) {
             last_activity = now;
             invite_until = 0;
         }
+        strong_ticks = (grip.active && level >= STRONG_LEVEL) ? strong_ticks + 1 : 0;   /* 40 ms that strong: not tremor */
+        /* a weak rise that turned out to be a grip (picked up) is dropped; a real one is confirmed */
+        if (grip.rezeroed) {
+            staged.n = 0;
+            confirmed = false;
+        } else if (grip.active && !confirmed && (strong_ticks >= STRONG_TICKS || grip.level_avg >= CONFIRM_LEVEL)) {
+            confirmed = true;
+        } else if (was_active && !grip.active && !confirmed && staged.n &&
+                   grip.active_s >= GENTLE_MIN_S && grip.active_s <= GENTLE_MAX_S) {
+            confirmed = true;   /* a gentle squeeze, released quickly: send it now, whoever has the turn */
+            while (staged.n)
+                fifo_push(&outq, fifo_pop(&staged));
+            fifo_push(&outq, 0);
+            turn_sent = true;
+        } else if (was_active && !grip.active && !confirmed) {
+            staged.n = 0;       /* a weak, long rise and fall: picked up and put down */
+        }
+        if (!grip.active && !was_active)
+            confirmed = false;
 
         /* --- the partner --- */
         sq_msg_t m;
@@ -247,6 +313,8 @@ static void session(woke_t woke, bool sensor_ok)
             partner_awake = false;
         if (partner_awake)
             calling = false;
+        /* While this holder has the turn, the partner's frames wait (played when it ends: nothing is lost). */
+        bool hold_playback = turn.st == TURN_TALK;
         /* playback at the real pace. After a replay, catch up by shortening only the long pauses: gaps up to
          * KEEP_GAP_TICKS stay intact, because the rhythm is the game. */
         {
@@ -258,20 +326,45 @@ static void session(woke_t woke, bool sensor_ok)
                 run--;
             }
         }
-        if (playq.n)
+        if (hold_playback)
+            remote_level = 0;
+        else if (playq.n && fifo_peek(&playq, 0) && zero_run > 0 && zero_run < MIN_GAP_TICKS && had_level)
+            remote_level = 0;   /* stretch a short pause; the queue catches up in the next long one */
+        else if (playq.n)
             remote_level = fifo_pop(&playq);
         else if (now - last_frame > REMOTE_STALE_MS)
             remote_level = 0;
-        bool remote_active = remote_level > 0 && (playq.n > 0 || now - last_frame < REMOTE_STALE_MS);
+        if (remote_level) {
+            zero_run = 0;
+            had_level = true;
+        } else if (zero_run < 1000) {
+            zero_run++;
+        }
+        bool remote_active = !hold_playback && remote_level > 0 && (playq.n > 0 || now - last_frame < REMOTE_STALE_MS);
 
         /* --- turn-taking --- */
         turn_out_t o = turn_update(&turn, grip.active, remote_active, shaper_busy(&shaper), now);
-        if (o.send)
-            fifo_push(&outq, (uint8_t)lroundf(level * 255.0f));
+        /* send: our turn, or a squeeze that started during the partner's (duplex). Unconfirmed frames wait. */
+        if (o.send || (o.play && grip.active)) {
+            /* every squeeze arrives strong enough to feel (a gentle one, or one squeezed against the plates) */
+            uint8_t v = (uint8_t)lroundf((grip.active ? fmaxf(level, MIN_SENT_LEVEL) : 0.0f) * 255.0f);
+            if (confirmed) {
+                while (staged.n)
+                    fifo_push(&outq, fifo_pop(&staged));
+                fifo_push(&outq, v);
+                turn_sent = true;
+            } else if (grip.active) {
+                fifo_push(&staged, v);
+            } else if (turn_sent) {
+                fifo_push(&outq, v);   /* the tail after a real squeeze (not after a discarded grip) */
+            }
+        }
+        if (turn.st == TURN_IDLE)
+            turn_sent = false;
         if (partner_awake)   /* live, or catching up on what was squeezed while the partner woke */
             for (int k = 0; k < CATCHUP_FRAMES && outq.n; k++)
                 radio_send(SQ_LEVEL, fifo_pop(&outq), flags);
-        if (grip.active && !partner_awake && !calling) {
+        if (outq.n && !partner_awake && !calling) {   /* a confirmed squeeze waits: wake the partner */
             calling = true; /* partner asleep: wake it (the squeeze waits in the outbox) */
             call_start = now;
         }
@@ -296,7 +389,7 @@ static void session(woke_t woke, bool sensor_ok)
             target = 0.0f;
         float angle = shaper_update(&shaper, target, DT);
         servo_set(angle, !shaper_busy(&shaper), now);
-        /* Our own plates moving raise our own pressure: not the holder squeezing. */
+        /* Our own plates moving raise our own pressure: not the holder squeezing (when not compensating). */
         mask = o.mask || shaper_busy(&shaper);
 
         /* --- LED (legend: docs/design.md section 7) --- */

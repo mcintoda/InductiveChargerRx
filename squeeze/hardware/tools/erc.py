@@ -74,9 +74,16 @@ ilim = 314 / (ohms("R1") + ohms("R2"))
 check("BQ51050B charge current ~0.5C of 400 mAh (+-5 %)", 0.1 <= ilim <= 0.21, f"314 / ({ohms('R1'):.0f} + {ohms('R2'):.0f}) = {ilim * 1000:.0f} mA")
 check("BQ51050B termination resistor (TERM)", bool(pull("TERM", "GND")), f"{pull('TERM', 'GND')} = {ohms('R3') / 1e3:.0f}k (brim value)")
 check("BQ51050B TS input has the NTC", ("TH1", "1") in NETS["NTC"], "10k B3380 to GND")
-check("RT9080 headroom at the servo cut-off (3.4 V, ~350 mA Wi-Fi peak)", False,
-      "3.4 V - 3.3 V = 100 mV vs ~200 mV dropout at 350 mA: 3V3 may sag to ~3.2 V in TX bursts below 3.5 V; "
-      "ESP32-C3 runs to 3.0 V. Firmware stops the servo at 3.4 V and deep-sleeps at 3.3 V.", warn=True)
+# The rail must stay in the ESP32-C3's range (3.0-3.6 V) down to the battery level where the firmware gives up
+# (VBAT_EMPTY_MV, read from main.c). RT9080 dropout: 250 mV max at 600 mA -> ~0.42 ohm; a Wi-Fi TX burst is
+# ~350 mA (ESP32-C3 datasheet, 802.11b at max power).
+_fw = open(os.path.join(os.path.dirname(__file__), "../../firmware/main/main.c")).read()
+_mv = {k: int(re.search(rf"#define {k}\s+(\d+)", _fw).group(1)) for k in ("VBAT_EMPTY_MV", "VBAT_NO_SERVO_MV")}
+r_drop, i_tx = 0.250 / 0.600, 0.350
+rail = min(3.3, _mv["VBAT_EMPTY_MV"] / 1000 - r_drop * i_tx)
+check("RT9080 rail at the firmware cut-off (Wi-Fi burst)", rail >= 3.0,
+      f"{_mv['VBAT_EMPTY_MV'] / 1000:.2f} V - {r_drop:.2f} ohm x {i_tx * 1000:.0f} mA = {rail:.2f} V >= 3.0 V (ESP32-C3 min); "
+      f"servo stops at {_mv['VBAT_NO_SERVO_MV'] / 1000:.2f} V, so the boost never loads the cell below that")
 
 # 5. decoupling
 for net, need in (("+3V3", 3), ("VBAT", 3), ("+5V", 3), ("RECT", 2)):

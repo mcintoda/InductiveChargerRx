@@ -69,11 +69,16 @@ The firmware (`grip.c`) handles:
 - **Baseline tracking.** Body heat (+1 °C ≈ +0.34 kPa), the weather and the plates' own heating move the
   pressure slowly. The baseline follows with a 4 s time constant when nobody is squeezing (1 s when the
   pressure is falling). A "squeeze" that lasts more than 10 s is treated as drift and re-zeroed.
-- **Hysteresis.** A squeeze starts above +150 Pa and ends below +80 Pa.
+- **Hysteresis, self-calibrating.** A squeeze starts above +150 Pa (or 4σ of this holder's idle noise:
+  sensor plus hand tremor, whichever is higher) and ends below +80 Pa (or 2.5σ).
+- **Pickup vs squeeze.** Frames are held until a squeeze is confirmed: 0.5 average level, or 0.6 for 40 ms, or a
+  gentle one released within 0.12–1.5 s. A weak rise held for 3 s is a changed grip (the unit was picked up):
+  it re-zeroes, learns the tremor, and drops the held frames, so tidying up never calls the partner.
 - **Auto-range.** The strongest rise in the last ~30 s is full scale, with a floor of 800 Pa. A child's
   firm squeeze and an adult's firm squeeze both send "1.0", so neither has to squeeze harder to be felt.
-- **Masking.** While the unit's own plates move, its pressure says nothing about its holder, so the
-  reading is ignored (section 7, turn-taking).
+- **Duplex.** While the unit's own plates move, it subtracts their share of the pressure (cam lift × a learned
+  Pa/mm, plus a margin) and keeps the baseline still. Whatever is left is the holder squeezing back
+  (section 7).
 
 **Altitude:** a sealed unit balloons slightly in an airplane cabin (about −25 % pressure). It is fine in a car or a house.
 A flight is untested. If that matters, a 0.2 mm pin vent in the base would equalise in about a minute and
@@ -100,8 +105,8 @@ would cost roughly 5 % of the signal on a 3 s squeeze.
   at most 3 mm, through 2 mm of Shore 10A silicone. Hand tissue at 2–5 N/mm caps the push at roughly
   6–15 N, a gentle hand squeeze. The **child's unit** uses 65° of cam instead of 90°
   (`SQZ_SWELL_DEG`), which gives about 2.3 mm.
-- **Hold limit:** after 4 s of continuous squeeze the plates relax until the partner lets go. This
-  stops the servo from stalling hot against a hand.
+- **Hold limit:** after 4 s of continuous squeeze the plates ease to 40 % over 1 s and hold there, then let go
+  at 12 s. A long hug is felt all the way through, and the servo never stalls hot against a hand.
 
 ![section x = 0](img/unit_section_x0.png)
 
@@ -163,15 +168,17 @@ connections; `widen.py` widens the power tracks; `drc.py` checks.
 ### Power budget (simulated: `firmware/sim`, [virtual-experiments.md](virtual-experiments.md); measure at bring-up)
 | State | Current | Life on 400 mAh |
 |---|---|---|
-| Dozing: light sleep, 10 Hz pressure sample, 45 ms radio listen every 2 s | **~2.8 mA** average (the radio listen is ~85 % of it) | **~6 days** with no play |
+| Dozing, first 10 min after play: light sleep, 10 Hz forced-mode pressure sample, 30 ms radio listen every 2 s | **~2.2 mA** | |
+| Dozing after that: listen every 4 s | **~1.4 mA** | **~12 days** with no play |
 | One 5-minute play session (servo, radio, LED), plus the 90 s before dozing | ~10 mAh | |
-| **3 play sessions a day** | ~97 mAh/day | **~4 days** per charge |
+| **3 play sessions a day** | ~64 mAh/day | **~6 days** per charge |
 | Charging | 200 mA | full in ~2.5 h |
 
-The intended rhythm is like a toothbrush: it lives on its Qi pad and comes off to play. `SQZ_SLEEP_PERIOD_MS = 3000`
-gives ~5 days (2.1 mA dozing). In the simulation that cost one of nine of the child's squeezes in two of five game
-runs, so the default stays at 2 s. ESP-IDF's ESP-NOW power-save wake window could cut the listen cost further:
-a firmware-only change.
+The intended rhythm is like a toothbrush: it lives on its Qi pad and comes off to play. The listen period is short
+just after play, when a reply is likely (`SQZ_SLEEP_PERIOD_MS`, 2 s for `SQZ_RECENT_S` = 10 min), then long
+(`SQZ_DEEP_PERIOD_MS`, 4 s). A call lasts 5.5 s, so it always reaches a slow listener: the first squeezes then arrive
+up to ~4 s late, replayed with their rhythm. ESP-IDF's ESP-NOW power-save wake window could cut the listen cost
+further: a firmware-only change.
 
 ---
 
@@ -198,28 +205,30 @@ a firmware-only change.
 Shaped by the simulated usability runs in [virtual-experiments.md](virtual-experiments.md).
 
 **Asleep, or dozing (most of the time).** Light sleep: the CPU is halted with RAM kept and the radio is off.
-- **10 times a second** it takes a fast pressure sample: the BMP280 runs a forced x1 conversion and the CPU sleeps through it. A rise of 150 Pa over the resting pressure wakes it: any squeeze of 0.1 s or longer, even a gentle one. The resting pressure follows body heat with a ~2 s time constant, but not a rise in progress.
-- **Every 2 s** the radio listens for 45 ms for a WAKE frame. If one arrives, the unit wakes, answers AWAKE and glows the partner's colour (the invite) for up to a minute.
+- **10 times a second** it takes a fast pressure sample: the BMP280 runs a forced x1 conversion and the CPU sleeps through it. A rise of 100 Pa (or 8σ of the samples' own noise, if higher) over the resting pressure wakes it: any squeeze of 0.1 s or longer, even a gentle one. The resting pressure follows body heat with a ~2 s time constant, but not a rise in progress.
+- **Every 2 s** for the first 10 min after play, then every 4 s, the radio listens for 30 ms for a WAKE frame. If one arrives, the unit wakes, answers AWAKE and glows the partner's colour (the invite) for up to a minute.
 
-**Calling.** A squeeze that woke the unit (or any squeeze while the partner is away) sends WAKE every 20 ms for
-up to 3.5 s. **Squeezes made while the partner wakes are kept** (up to 5 s) and replayed as soon as it answers, so the
-first squeezes of a pattern arrive ~0.5-2 s late but with their rhythm intact. The receiver plays at the real pace
-and catches up only by shortening pauses longer than 0.6 s. No answer within 3.5 s: the "nobody answered" blink.
+**Calling.** A confirmed squeeze (not a pickup, section 3) while the partner is away sends WAKE every 20 ms for
+up to 5.5 s. **Squeezes made while the partner wakes are kept** (up to 10 s) and replayed as soon as it answers, so
+the first squeezes of a pattern arrive ~0.5-4 s late but with their rhythm intact. The receiver plays at the real
+pace and catches up only by shortening pauses longer than 0.6 s. No answer within 5.5 s: the "nobody answered" blink.
 
 **Awake (a session).** A 50 Hz loop runs:
 - holder's pressure → `grip` → level → outbox → radio (live, or the replay catching up at 4 frames per tick)
-- radio → playback queue → `shaper` → plates (linearised cam, slew-limited, 4 s hold limit)
+- radio → playback queue → `shaper` → plates (linearised cam, slew-limited, 4 s hold then ease to 40 %). A pause
+  between two squeezes plays for at least 120 ms, so a fast pattern never merges into one squeeze
 - turn-taking (`turn.c`):
   - IDLE → **TALK** when the holder squeezes (local wins a tie). It streams the level and ignores the partner.
-  - IDLE → **LISTEN** when the partner's squeeze arrives. It drives the plates and ignores its own pressure.
+  - IDLE → **LISTEN** when the partner's squeeze arrives. It drives the plates, and still senses its holder
+    (duplex, section 3): a squeeze back during playback is sent too.
   - It returns to IDLE 150 ms after the squeeze ends *and* the plates are back at rest.
 - a heartbeat every 1 s, carrying the charging and low-battery flags. No frames for 3 s means the partner is asleep
   or out of range, and the next squeeze calls again.
 - **90 s** with no squeeze on either side: it sends BYE ×3 and dozes.
 
-Why turn-taking: a unit can't tell its holder squeezing from its own plates pushing into a still hand,
-because both raise the pressure. Passing back and forth is the game anyway. The cost, measured in simulation: a
-squeeze that starts while the partner's squeeze is still playing (≤ 0.25 s apart) is lost.
+Why turn-taking: passing back and forth is the game, and while a unit talks it doesn't play the partner's frames
+(they wait in the queue and play when it stops, so nothing is lost). Overlap: a squeeze made while the partner's
+plays is separated from the plates' own push (duplex) and arrives after it, 0.5–0.7 s later in simulation.
 
 **USB attached at power-on:** a self-test runs first and logs PASS/FAIL. It checks the battery voltage and the
 charger state, reads the pressure (70–110 kPa expected), shows the LED red, green and blue, and sweeps the servo
@@ -302,21 +311,22 @@ Bring-up on the real boards, per unit. Flash with the battery fitted and USB att
 - [ ] Servo endpoints: if it buzzes at the ends, adjust `SQZ_SERVO_MIN_US`/`MAX_US` so 45° → 135° is a clean 90°.
 - [ ] On a Qi pad: faint green LED; the self-test (re-plug USB) says "charging".
 - [ ] Partner link: power the second unit; both show the other's colour faintly within ~1 s. A squeeze is felt on the
-      other unit about 110–130 ms later (simulated).
+      other unit about 155–185 ms later (simulated; it waits ~40 ms to confirm the squeeze is not a pickup).
 - [ ] Assembled and sealed, with `SQZ_TRACE=y`: a light squeeze shows +0.5 to 2 kPa. If it falls back to the baseline
       within a second, the skin leaks: add RTV.
 - [ ] Unplug USB, put it down for 90 s (it dozes), then squeeze briefly: it must call (own colour breathing) and the
-      partner must wake within ~2 s. Measure the dozing current (simulated ~2.8 mA).
+      partner must wake within ~2 s (~4 s after 10 min). Measure the dozing current (simulated 2.2 mA, then 1.4 mA).
 - [ ] Range: carry one unit through the house. Out of range, a squeeze gives the 3-blink "nobody answered".
-- [ ] Retune `WAKE_PA` / `on_pa` to the measured squeeze pressures if needed. The simulation assumed ~80 Pa per newton
-      of grip; the CAD estimate was 0.6–2.2 kPa.
+- [ ] Check the thresholds against the measured squeeze pressures. They follow each holder's noise by themselves
+      (never below `on_pa` 150 Pa, `WAKE_PA_MIN` 100 Pa); the simulation assumed ~80 Pa per newton of grip, the CAD
+      0.6–2.2 kPa. Pick the unit up and put it down: the partner must not swell.
 
 ---
 
 ## 10. Safety
 
 - **Squeeze force** is bounded by travel (3 mm, 2.3 mm on the child's unit) through soft silicone. There is
-  also a 4 s hold limit, and the plates let go after 250 ms if the link drops.
+  also a hold limit (40 % after 4 s, released at 12 s), and the plates let go after 250 ms if the link drops.
 - **No pinch points.** The skin covers every moving part, and there are no gaps a finger can enter.
 - **Battery:** protected LiPo (PCM: overcharge, over-discharge, overcurrent, short). The BQ51050B has
   temperature-qualified charging, as in brim. The cell is enclosed and can't be reached without tools.
@@ -332,10 +342,10 @@ Bring-up on the real boards, per unit. Flash with the battery fitted and USB att
 | Item | Status / plan |
 |---|---|
 | **Servo noise.** SG90 gear whine near the ear at bedtime | Listen on the first unit. Fallbacks: a coreless metal-gear micro servo (quieter and smoother), or a lower slew rate |
-| Standby 3–5 days (estimate) | Measure. If too short, use the ESP-NOW wake-window light sleep (firmware only) |
-| Firmware not compiled for the chip yet | The whole firmware is compiled and run on the PC test bench (`firmware/sim`) against ESP-IDF stand-ins, and the pure logic and BMP280 maths are unit-tested. The real ESP-IDF build (5.3.x, esp32c3) and the light-sleep/Wi-Fi stop–start sequence need their first run on hardware |
+| Battery ~6 days at 3 sessions/day (simulated) | Measure. If too short, use the ESP-NOW wake-window light sleep (firmware only) |
+| Firmware not yet run on the chip | Builds with ESP-IDF v5.3.2 for both roles, 0 warnings ([virtual-experiments.md](virtual-experiments.md) §4), and runs on the PC test bench. The light-sleep/Wi-Fi stop–start sequence and its timing need their first run on hardware |
 | Simulation models are assumptions | Squeeze pressure (80 Pa/N), the hand's stiffness, servo speed and the current figures are modelled, not measured: retune with the bring-up measurements |
-| Overlapping squeezes | Measured: a squeeze starting ≤ 0.25 s after the partner's is lost (turn-taking). The LED shows the partner's colour while theirs plays |
+| Duplex margin | The plates' own pressure is learned per unit (Pa/mm of lift). Check with `SQZ_TRACE=y` that a still hand under playback is not sent as a squeeze; raise the margin in `main.c` if it is |
 | SLA resin vs platinum silicone | Test-cure a dab, or seal the mold |
 | BMP280 marked discontinued at LCSC (stock remaining) | Check stock when ordering. Drop-in alternatives need a footprint change |
 | JLC placement rotation of polarised parts | Check the preview (ordering.md §1) |

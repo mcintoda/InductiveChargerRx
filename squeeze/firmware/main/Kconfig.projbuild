@@ -67,6 +67,25 @@ menu "Squeeze pair"
         range 500 10000
         default 2000
 
+    config SQZ_DEEP_PERIOD_MS
+        int "Asleep for longer than SQZ_RECENT_S: listen for a call this often (ms)"
+        range 1000 10000
+        default 4000
+        help
+            Squeezes made while the partner wakes are replayed, so a longer period only delays the first one.
+
+    config SQZ_RECENT_S
+        int "After a session, keep the fast listen period (SQZ_SLEEP_PERIOD_MS) this long (s)"
+        default 600
+
+    config SQZ_DUPLEX
+        bool "Detect a squeeze that starts while the partner's is playing (own-plate pressure compensated)"
+        default y
+        help
+            The unit learns how much its own plates raise the pressure in its holder's hand and subtracts it.
+            A squeeze on top is sent; the partner plays it as soon as its own squeeze ends. Off: such a
+            squeeze is ignored (plain turn-taking).
+
     config SQZ_SESSION_IDLE_S
         int "Go to sleep after this long with no squeezes (s)"
         default 90

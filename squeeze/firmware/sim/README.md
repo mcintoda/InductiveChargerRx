@@ -33,6 +33,7 @@ python3 plot_timeline.py child_wakes 128.5 145 ../../docs/img/sim_child_wakes.pn
   - the holder feels the plates at 4 N/mm, and a squeeze counts as felt above 1 N;
   - a held unit's air warms towards +5 °C (300 s time constant), adding +0.34 kPa/°C;
   - 2 Pa of sensor noise.
+  - a steady grip (`A grip 4`: picked up, N) plus hand tremor (`A tremor 0.5`: an Ornstein-Uhlenbeck wobble, N rms).
 - **Radio:** ESP-NOW broadcast, delivered in ~2 ms only if the receiver's radio is on, on the same channel, in range, and
   not lost (`loss`).
 - **Battery current, by state:**
@@ -43,7 +44,7 @@ python3 plot_timeline.py child_wakes 128.5 145 ../../docs/img/sim_child_wakes.pn
 
   A 400 mAh cell with a LiPo voltage curve.
 - **People** (`A parent t force rounds`, `B child force`): the parent sends 3 kinds of pattern and waits for the reply.
-  The child copies what it felt, with ±20 % timing.
+  The child copies what it felt, with ±20 % timing. Both can hold the unit with a grip and a tremor while they play (U12).
 
 ## Scenario files
 ```
@@ -53,6 +54,7 @@ loss 0.02               # radio frame loss
 out_of_range 20 60      # s
 A start 0               # power on (A = parent's build, B = child's)
 A usb 1 | A charging 1 | A sensor 0 | A battery 0.05 | A held 155 1e9
+A grip 4 | A tremor 0.5   # while held: a steady grip and a tremor, N
 B squeeze 130.0 0.3 8   # t, duration s, force N
 A parent 130 20 3       # start t, force N, rounds
 B child 8               # copies what it feels, at 8 N

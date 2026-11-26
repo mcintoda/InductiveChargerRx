@@ -198,23 +198,43 @@ def exp_usability(outdir, R, seeds=5):
     # U10 a long hug squeeze (6 s): the plates relax after the 4 s hold limit
     scn = "duration 30\nA start 0\nB start 0.4\nA squeeze 10 6.0 20\n"
     ev, _, _ = run(scn, "hug", outdir)
-    R["U10_hug"] = {"felt_on_B": [(round(a, 2), round(b, 2)) for a, b in intervals(ev, "B", "felt_start", "felt_end")]}
+    R["U10_hug"] = {"felt_on_B_s": [round(b - a, 2) for a, b in intervals(ev, "B", "felt_start", "felt_end")]}
     # U11 false wake-ups: held for an hour, warming, nobody squeezing (lower wake threshold must not call)
     scn = "duration 3700\nA start 0\nB start 0.4\nB held 100 1e9\n"
     ev, _, _ = run(scn, "false_wake", outdir)
     calls = sorted({round(float(r[0])) for r in ev if r[1] == "B" and r[2] == "tx" and r[3] == "3" and float(r[0]) > 100})
     R["U11_false_wakes"] = {"calls_in_1h_held_idle": len(calls), "at_s": calls[:10]}
-    # U8 battery: standby current (a quiet hour, both dozing) and the cost of one 5-minute play session
+    # U12 a messy child: picks the unit up (3 N grip step), tremor 0.6 N, then plays; parent sends patterns
+    rows = []
+    for s in range(3):
+        scn = (f"duration 230\nseed {s + 11}\nA start 0\nB start 0.4\nB held 115 1e9\nB grip 3\nB tremor 0.6\n"
+               "A parent 130 20 3\nB child 8\n")
+        ev, _, _ = run(scn, f"messy_{s}", outdir)
+        calls_pickup = [float(r[0]) for r in ev if r[1] == "B" and r[2] == "tx" and r[3] == "3" and 115 <= float(r[0]) < 129]
+        felt_pickup = [a for a, b in intervals(ev, "A", "felt_start", "felt_end") if 115 <= a < 129]
+        rows.append({"pickup_calls": len(calls_pickup), "pickup_felt_by_parent": len(felt_pickup),
+                     "parent_to_child": delivery(ev, scn, "A", "B"), "child_to_parent": delivery(ev, scn, "B", "A")})
+    R["U12_messy_child"] = rows
+    # U13 the parent tidies up at night: picks the dozing unit up (4 N) for 5 s and puts it down
+    scn = "duration 160\nA start 0\nB start 0.4\nA held 130 135\nA grip 4\nA tremor 0.5\n"
+    ev, _, _ = run(scn, "tidy", outdir)
+    R["U13_tidy"] = {"calls": len({round(float(r[0])) for r in ev if r[1] == "A" and r[2] == "tx" and r[3] == "3" and float(r[0]) > 125}),
+                     "child_felt": len(intervals(ev, "B", "felt_start", "felt_end"))}
+    # U8 battery: dozing current right after a session (fast listen) and later (slow), and one 5-minute session
     base = "A start 0\nB start 0.4\n"
     ev1, _, _ = run("duration 300\n" + base, "standby_300", outdir)
-    ev2, _, _ = run("duration 3900\n" + base, "standby_3900", outdir)
-    standby_ma = {u: (summary_mah(ev2, u) - summary_mah(ev1, u)) / 1.0 for u in "AB"}
+    ev2, _, _ = run("duration 690\n" + base, "standby_690", outdir)
+    ev3, _, _ = run("duration 4290\n" + base, "standby_4290", outdir)
+    fast = {u: (summary_mah(ev2, u) - summary_mah(ev1, u)) / (390 / 3600) for u in "AB"}
+    slow = {u: (summary_mah(ev3, u) - summary_mah(ev2, u)) / 1.0 for u in "AB"}
     play = "".join(f"A squeeze {300 + k * 10} 0.5 20\nB squeeze {304 + k * 10} 0.5 8\n" for k in range(30))
-    ev3, _, _ = run("duration 900\n" + base + play, "session", outdir)
-    ev4, _, _ = run("duration 900\n" + base, "nosession", outdir)
-    sess = {u: summary_mah(ev3, u) - summary_mah(ev4, u) for u in "AB"}
-    day = {u: 24 * standby_ma[u] + 3 * sess[u] for u in "AB"}
-    R["U8_battery"] = {"standby_mA": {u: round(v, 2) for u, v in standby_ma.items()},
+    ev4, _, _ = run("duration 900\n" + base + play, "session", outdir)
+    ev5, _, _ = run("duration 900\n" + base, "nosession", outdir)
+    sess = {u: summary_mah(ev4, u) - summary_mah(ev5, u) for u in "AB"}
+    # a day: 3 sessions, each followed by 10 min of fast listening; the rest slow
+    day = {u: 3 * (sess[u] + fast[u] * 10 / 60) + slow[u] * (24 - 3 * (5 + 10) / 60) for u in "AB"}
+    R["U8_battery"] = {"doze_mA_first_10min": {u: round(v, 2) for u, v in fast.items()},
+                       "doze_mA_later": {u: round(v, 2) for u, v in slow.items()},
                        "session_5min_mAh": {u: round(v, 2) for u, v in sess.items()},
                        "per_day_3_sessions_mAh": {u: round(v, 1) for u, v in day.items()},
                        "days_on_400mAh": {u: round(400 / day[u], 1) for u in "AB"}}
@@ -228,8 +248,9 @@ def show(R):
         print(f"\n== {k}")
         if isinstance(v, list):
             for i, row in enumerate(v):
+                extra = "; ".join(f"{kk} {vv}" for kk, vv in row.items() if kk not in ("parent_to_child", "child_to_parent"))
                 print(f"  seed {i + 1}: parent->child {fmt_del(row['parent_to_child'])}; child->parent "
-                      f"{fmt_del(row['child_to_parent'])}; patterns {row['patterns_sent']}, replies {row['replies']}")
+                      f"{fmt_del(row['child_to_parent'])}; {extra}")
             continue
         for kk, vv in v.items():
             if isinstance(vv, list) and vv and isinstance(vv[0], tuple) and len(vv[0]) == 2 and \
