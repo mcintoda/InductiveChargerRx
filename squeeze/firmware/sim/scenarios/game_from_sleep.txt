@@ -1,0 +1,7 @@
+# U1 bedtime game: both asleep; parent starts patterns at 130 s; the child copies what it feels
+duration 230
+A start 0
+B start 0.4
+B held 120 1e9
+A parent 130 20 3
+B child 8

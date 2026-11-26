@@ -1,0 +1,6 @@
+# B3 both powered (battery), squeeze each: link, servo range, boost power-down, then first sleep and wake cycles
+duration 140
+A start 0
+B start 1.0
+A squeeze 6 0.6 25
+B squeeze 12 0.6 10

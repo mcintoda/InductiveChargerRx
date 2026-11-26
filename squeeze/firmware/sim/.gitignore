@@ -1,0 +1,6 @@
+build/
+out/
+sim
+sim_before
+sim_p3
+out_*.txt

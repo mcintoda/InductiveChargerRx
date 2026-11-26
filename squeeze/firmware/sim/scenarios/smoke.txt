@@ -1,0 +1,3 @@
+duration 10
+A start 0
+B start 0.2

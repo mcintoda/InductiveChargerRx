@@ -1,0 +1,6 @@
+# U7 the child's unit nearly empty (5 %)
+duration 30
+A start 0
+B start 0.3
+B battery 0.05
+A squeeze 10 0.5 20

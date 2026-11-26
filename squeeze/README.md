@@ -25,10 +25,14 @@ It doesn't judge or score; it just passes squeezes back and forth.
 | [`hardware/fab/`](hardware/fab/) | JLC order files: gerbers zip, `bom_jlc.csv`, `cpl_jlc.csv`, `hand_parts.csv` |
 | [`firmware/`](firmware/) | ESP-IDF 5.3 (ESP32-C3). Pure logic host-tested: `make -C firmware/test` |
 | [`hardware/mech/`](hardware/mech/) | CadQuery model, fit check and renders. STEP/STL in `out/` |
+| [`docs/virtual-experiments.md`](docs/virtual-experiments.md) | Bring-up and usability rehearsed in simulation before ordering: 11 problems found, 10 fixed |
+| [`firmware/sim/`](firmware/sim/) | Test bench: the real firmware for both units against simulated hardware and people |
 
 ```
-# host tests (no hardware)
+# host tests and the two-unit simulation (no hardware)
 make -C squeeze/firmware/test
+(cd squeeze/firmware/sim && make && python3 experiments.py)
+python3 squeeze/hardware/tools/erc.py              # static electrical checks
 
 # firmware: one build per unit (same code, different role/colour/strength)
 cd squeeze/firmware
@@ -54,5 +58,6 @@ python3 squeeze/hardware/mech/fit_and_render.py   # interference check at rest a
 ```
 
 Status: **rev A, ready to order.** Main board routed and DRC clean; JLC files in `hardware/fab/`; printed parts in
-`hardware/mech/out/`; step by step in [docs/ordering.md](docs/ordering.md). Not yet built: the firmware has not been
-compiled with ESP-IDF or run on hardware, and the first boards need the bring-up checks in design.md §9.
+`hardware/mech/out/`; step by step in [docs/ordering.md](docs/ordering.md). Not yet built: the firmware runs on the PC
+test bench but has not been compiled with ESP-IDF or run on the chip; the first boards need the bring-up checks in
+design.md §9.

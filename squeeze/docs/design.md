@@ -160,17 +160,18 @@ connections; `widen.py` widens the power tracks; `drc.py` checks.
 | 20 | servo 5 V enable (TPS61023 EN, 100 k pull-down) |
 | 21 | UART TX test pad (boot log) |
 
-### Power budget (estimates; measure at bring-up)
+### Power budget (simulated: `firmware/sim`, [virtual-experiments.md](virtual-experiments.md); measure at bring-up)
 | State | Current | Life on 400 mAh |
 |---|---|---|
-| Asleep: deep sleep, wakes every 2 s for ~100 ms (pressure read, Wi-Fi start, 45 ms listen) | **~3–5 mA** average | **3–5 days** off the pad |
-| Awake, nobody squeezing (radio receiving) | ~85 mA | |
-| Awake and playing squeezes (servo moving about 30 % of the time) | ~120–150 mA average | **~3 h** of continuous play |
+| Dozing: light sleep, 10 Hz pressure sample, 45 ms radio listen every 2 s | **~2.8 mA** average (the radio listen is ~85 % of it) | **~6 days** with no play |
+| One 5-minute play session (servo, radio, LED), plus the 90 s before dozing | ~10 mAh | |
+| **3 play sessions a day** | ~97 mAh/day | **~4 days** per charge |
 | Charging | 200 mA | full in ~2.5 h |
 
-The intended rhythm is like a toothbrush: it lives on its Qi pad and comes off to play. If standby turns out too short,
-ESP-IDF's ESP-NOW power-save wake window (light sleep with periodic radio windows) should bring it to about 1–2 mA.
-That is a firmware-only change.
+The intended rhythm is like a toothbrush: it lives on its Qi pad and comes off to play. `SQZ_SLEEP_PERIOD_MS = 3000`
+gives ~5 days (2.1 mA dozing). In the simulation that cost one of nine of the child's squeezes in two of five game
+runs, so the default stays at 2 s. ESP-IDF's ESP-NOW power-save wake window could cut the listen cost further:
+a firmware-only change.
 
 ---
 
@@ -194,42 +195,58 @@ That is a firmware-only change.
 
 ## 7. Behaviour (`firmware/main/main.c`)
 
-**Asleep (most of the time).** Deep sleep. Every 2 s it wakes for about 100 ms and does two checks:
-1. *Is my holder squeezing?* It takes one forced BMP280 reading against a baseline kept in RTC memory (+300 Pa). If so, it wakes and **calls** the partner.
-2. *Is my partner calling?* It starts ESP-NOW and listens for 45 ms for a WAKE frame. If one arrives, it wakes, answers AWAKE, gives **one gentle hello squeeze** (40 %, 0.4 s) and glows the partner's colour for up to a minute.
+Shaped by the simulated usability runs in [virtual-experiments.md](virtual-experiments.md).
 
-**Calling.** It sends WAKE every 20 ms for up to 3.5 s (longer than the partner's 2 s sleep period). The first squeeze
-is spent waking the partner. After that it is live.
+**Asleep, or dozing (most of the time).** Light sleep: the CPU is halted with RAM kept and the radio is off.
+- **10 times a second** it takes a fast pressure sample: the BMP280 runs a forced x1 conversion and the CPU sleeps through it. A rise of 150 Pa over the resting pressure wakes it: any squeeze of 0.1 s or longer, even a gentle one. The resting pressure follows body heat with a ~2 s time constant, but not a rise in progress.
+- **Every 2 s** the radio listens for 45 ms for a WAKE frame. If one arrives, the unit wakes, answers AWAKE and glows the partner's colour (the invite) for up to a minute.
+
+**Calling.** A squeeze that woke the unit (or any squeeze while the partner is away) sends WAKE every 20 ms for
+up to 3.5 s. **Squeezes made while the partner wakes are kept** (up to 5 s) and replayed as soon as it answers, so the
+first squeezes of a pattern arrive ~0.5-2 s late but with their rhythm intact. The receiver plays at the real pace
+and catches up only by shortening pauses longer than 0.6 s. No answer within 3.5 s: the "nobody answered" blink.
 
 **Awake (a session).** A 50 Hz loop runs:
-- holder's pressure → `grip` → level
+- holder's pressure → `grip` → level → outbox → radio (live, or the replay catching up at 4 frames per tick)
+- radio → playback queue → `shaper` → plates (linearised cam, slew-limited, 4 s hold limit)
 - turn-taking (`turn.c`):
   - IDLE → **TALK** when the holder squeezes (local wins a tie). It streams the level and ignores the partner.
   - IDLE → **LISTEN** when the partner's squeeze arrives. It drives the plates and ignores its own pressure.
   - It returns to IDLE 150 ms after the squeeze ends *and* the plates are back at rest.
-- `shaper`: partner level → cam angle (linearised, slew-limited, 4 s hold limit)
-- a heartbeat every 1 s. No frames for 3 s means the partner is asleep or out of range, and the next squeeze calls again.
-- **90 s** with no squeeze on either side: it sends BYE ×3 and sleeps.
+- a heartbeat every 1 s, carrying the charging and low-battery flags. No frames for 3 s means the partner is asleep
+  or out of range, and the next squeeze calls again.
+- **90 s** with no squeeze on either side: it sends BYE ×3 and dozes.
 
 Why turn-taking: a unit can't tell its holder squeezing from its own plates pushing into a still hand,
-because both raise the pressure. Passing back and forth is the game anyway.
+because both raise the pressure. Passing back and forth is the game anyway. The cost, measured in simulation: a
+squeeze that starts while the partner's squeeze is still playing (≤ 0.25 s apart) is lost.
 
-**Battery.** Below 3.5 V: red blink and a flag to the partner. Below 3.4 V: plates off, LED only. Below 3.3 V: it sleeps 60 s
-at a time without the radio until it is on a charger.
+**USB attached at power-on:** a self-test runs first and logs PASS/FAIL. It checks the battery voltage and the
+charger state, reads the pressure (70–110 kPa expected), shows the LED red, green and blue, and sweeps the servo
+from rest to full and back (section 9). While USB is attached the unit never dozes.
+
+**Battery.** Below 3.5 V: a red blink, and the flag goes to the partner, which blinks red briefly every 4 s.
+Below 3.4 V: plates off, LED only. Below 3.3 V: deep sleep 60 s at a time without the radio, until it is on a charger.
 
 ### LED legend
+Brightness uses a perceptual curve on the whole colour with a visible floor. An earlier version squared each
+channel, which turned orange into red and made the faint states invisible.
+
 | What you see | Meaning |
 |---|---|
 | Partner's colour, brightness following their squeeze | They are squeezing you now |
 | Own colour, brightness following your squeeze | You are squeezing them |
 | Own colour, quick breathing | Calling (waking the other unit) |
-| Partner's colour, slow breathing (up to 1 min) | They just woke you: squeeze back |
+| Own colour, 3 quick blinks | Nobody answered (partner off, asleep too long, or out of range) |
+| Partner's colour, slow breathing (up to 1 min) | They called you: squeeze back |
 | Partner's colour, faint | Connected, nobody squeezing |
-| Off | Asleep, or the partner is asleep or out of range |
-| Faint amber | Charging |
-| Short red blink every 2 s | Battery low |
+| Short red flash every 4 s (over the faint partner glow) | The other unit's battery is low |
+| Off | Dozing |
+| Faint green | Charging |
+| Short red blink every 2 s | This unit's battery is low |
 
-Default colours: parent blue `#0080FF`, child orange `#FF5A00` (Kconfig).
+Default colours: parent blue `#0080FF`, child orange `#FF8000` (Kconfig). The orange was `#FF5A00`, too close
+to red.
 
 ---
 
@@ -271,15 +288,28 @@ upright. Deboss initials on the base.
 Everything is ordered ready-made: the assembled board from JLCPCB, the printed parts from JLC3DP, and the hand parts.
 The skin is cast at home in the printed mold. Step by step: **[ordering.md](ordering.md)**.
 
-Bring-up checks (per unit, USB attached, `SQZ_TRACE=y`):
-- [ ] Boot log on USB. The BMP280 reads ~101 kPa at sea level (lower at altitude).
-- [ ] On a Qi pad: the amber LED shows, CHG is low, and the battery voltage rises.
-- [ ] Servo endpoints: adjust `SQZ_SERVO_MIN_US`/`MAX_US` so 45° → 135° is a clean 90° with no buzzing at the ends.
-- [ ] Assembled and sealed: a light squeeze shows +0.5 to 2 kPa in the trace. If the reading falls back to the baseline within a second, the skin leaks: add RTV.
-- [ ] Latency: squeeze one unit and watch the other's plates. Expect about 30–50 ms before they move.
-- [ ] Range: carry one unit through the house. Try `SQZ_LONG_RANGE` if it drops out.
-- [ ] Sleep and wake (USB unplugged): squeeze to wake, the partner wakes within 2 s, both sleep after 90 s. Measure the sleep current.
-- [ ] Then retune `WAKE_PA` and `on_pa` (grip.c) to the measured squeeze pressures.
+Bring-up was rehearsed before ordering ([virtual-experiments.md](virtual-experiments.md)):
+- **On paper:** `python3 hardware/tools/erc.py` checks the netlist for strapping pins, levels, divider and FB values,
+  LED currents, decoupling and the standby budget. Result: 31 checks, 30 pass, 1 warning (the 3.3 V rail can sag to
+  ~3.2 V in Wi-Fi bursts below 3.5 V battery; the ESP32-C3 runs to 3.0 V).
+- **In simulation:** `firmware/sim` runs the real firmware for both units against simulated hardware, including the
+  self-test, a missing sensor, pairing, servo power-down, charging and the first doze.
+
+Bring-up on the real boards, per unit. Flash with the battery fitted and USB attached; the self-test runs at power-on.
+- [ ] **Self-test PASSED** on the USB console: battery 3.3–4.3 V, pressure 70–110 kPa, LED red → green → blue (look),
+      servo sweeps rest → full → rest and the 5 V supply switches off (watch the plates; no buzzing at the ends).
+      A `FAIL` names the part to check (e.g. "no BMP280 at 0x76: check U4 soldering").
+- [ ] Servo endpoints: if it buzzes at the ends, adjust `SQZ_SERVO_MIN_US`/`MAX_US` so 45° → 135° is a clean 90°.
+- [ ] On a Qi pad: faint green LED; the self-test (re-plug USB) says "charging".
+- [ ] Partner link: power the second unit; both show the other's colour faintly within ~1 s. A squeeze is felt on the
+      other unit about 110–130 ms later (simulated).
+- [ ] Assembled and sealed, with `SQZ_TRACE=y`: a light squeeze shows +0.5 to 2 kPa. If it falls back to the baseline
+      within a second, the skin leaks: add RTV.
+- [ ] Unplug USB, put it down for 90 s (it dozes), then squeeze briefly: it must call (own colour breathing) and the
+      partner must wake within ~2 s. Measure the dozing current (simulated ~2.8 mA).
+- [ ] Range: carry one unit through the house. Out of range, a squeeze gives the 3-blink "nobody answered".
+- [ ] Retune `WAKE_PA` / `on_pa` to the measured squeeze pressures if needed. The simulation assumed ~80 Pa per newton
+      of grip; the CAD estimate was 0.6–2.2 kPa.
 
 ---
 
@@ -303,7 +333,9 @@ Bring-up checks (per unit, USB attached, `SQZ_TRACE=y`):
 |---|---|
 | **Servo noise.** SG90 gear whine near the ear at bedtime | Listen on the first unit. Fallbacks: a coreless metal-gear micro servo (quieter and smoother), or a lower slew rate |
 | Standby 3–5 days (estimate) | Measure. If too short, use the ESP-NOW wake-window light sleep (firmware only) |
-| Firmware not compiled yet | Pure logic and the BMP280 compensation (against Bosch's worked example) are host-tested (`make -C firmware/test`). The ESP-IDF build (5.3.x, esp32c3) needs its first run |
+| Firmware not compiled for the chip yet | The whole firmware is compiled and run on the PC test bench (`firmware/sim`) against ESP-IDF stand-ins, and the pure logic and BMP280 maths are unit-tested. The real ESP-IDF build (5.3.x, esp32c3) and the light-sleep/Wi-Fi stop–start sequence need their first run on hardware |
+| Simulation models are assumptions | Squeeze pressure (80 Pa/N), the hand's stiffness, servo speed and the current figures are modelled, not measured: retune with the bring-up measurements |
+| Overlapping squeezes | Measured: a squeeze starting ≤ 0.25 s after the partner's is lost (turn-taking). The LED shows the partner's colour while theirs plays |
 | SLA resin vs platinum silicone | Test-cure a dab, or seal the mold |
 | BMP280 marked discontinued at LCSC (stock remaining) | Check stock when ordering. Drop-in alternatives need a footprint change |
 | JLC placement rotation of polarised parts | Check the preview (ordering.md §1) |

@@ -3,6 +3,8 @@
  * main.c reads it at 50 Hz. Bring-up check: ~101 kPa at sea level. */
 #include "bmp280.h"
 
+#include <stdbool.h>
+
 #include "bmp280_comp.h"
 #include "board.h"
 #include "driver/i2c_master.h"
@@ -105,5 +107,9 @@ esp_err_t bmp280_one_shot(float *pa)
     }
     return ESP_ERR_TIMEOUT;
 }
+
+/* Doze sampling (10 Hz while asleep): x1 pressure, x1 temperature, forced: ~5.5 ms, ~3 uA average.
+ * The caller light-sleeps through the conversion, then reads with bmp280_read(). */
+esp_err_t bmp280_start_fast(void) { return wr(REG_CTRL_MEAS, (1 << 5) | (1 << 2) | MODE_FORCED); }
 
 esp_err_t bmp280_sleep(void) { return wr(REG_CTRL_MEAS, OSRS | MODE_SLEEP); }

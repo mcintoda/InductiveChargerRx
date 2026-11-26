@@ -1,0 +1,8 @@
+# U3 the child calls, the parent's unit is on the bedside table; the parent picks it up 25 s later
+duration 200
+A start 0
+B start 0.4
+A held 155 1e9
+B squeeze 130.0 0.4 8
+B squeeze 131.0 0.4 8
+A squeeze 158 0.5 20

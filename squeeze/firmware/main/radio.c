@@ -30,8 +30,46 @@ static void on_recv(const esp_now_recv_info_t *info, const uint8_t *data, int le
     xQueueSend(s_rx, &m, 0); /* Wi-Fi task context, not an ISR */
 }
 
+static bool s_inited, s_on;
+
+static void espnow_up(void)
+{
+    ESP_ERROR_CHECK(esp_wifi_start());
+    ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_SQZ_CHANNEL, WIFI_SECOND_CHAN_NONE));
+    esp_wifi_set_ps(WIFI_PS_NONE); /* lowest latency while awake */
+    ESP_ERROR_CHECK(esp_now_init());
+    ESP_ERROR_CHECK(esp_now_register_recv_cb(on_recv));
+    esp_now_peer_info_t peer = { .channel = 0, .ifidx = WIFI_IF_STA, .encrypt = false };
+    memcpy(peer.peer_addr, BCAST, 6);
+    ESP_ERROR_CHECK(esp_now_add_peer(&peer));
+    s_on = true;
+    s_have_seq = false;
+}
+
+void radio_pause(void)
+{
+    if (!s_on)
+        return;
+    esp_now_deinit();
+    esp_wifi_stop();   /* RF off: required before light sleep */
+    s_on = false;
+}
+
+void radio_resume(void)
+{
+    if (!s_inited)
+        radio_start();
+    else if (!s_on)
+        espnow_up();
+}
+
 void radio_start(void)
 {
+    if (s_inited) {
+        radio_resume();
+        return;
+    }
+    s_inited = true;
     s_pair = sq_pair_id(CONFIG_SQZ_PAIR_SECRET);
     s_rx = xQueueCreate(16, sizeof(sq_msg_t));
 
@@ -50,15 +88,7 @@ void radio_start(void)
     ESP_ERROR_CHECK(esp_wifi_set_protocol(WIFI_IF_STA, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G |
                                                          WIFI_PROTOCOL_11N | WIFI_PROTOCOL_LR));
 #endif
-    ESP_ERROR_CHECK(esp_wifi_start());
-    ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_SQZ_CHANNEL, WIFI_SECOND_CHAN_NONE));
-    esp_wifi_set_ps(WIFI_PS_NONE); /* lowest latency while awake */
-
-    ESP_ERROR_CHECK(esp_now_init());
-    ESP_ERROR_CHECK(esp_now_register_recv_cb(on_recv));
-    esp_now_peer_info_t peer = { .channel = 0, .ifidx = WIFI_IF_STA, .encrypt = false };
-    memcpy(peer.peer_addr, BCAST, 6);
-    ESP_ERROR_CHECK(esp_now_add_peer(&peer));
+    espnow_up();
 
     uint8_t mac[6];
     esp_read_mac(mac, ESP_MAC_WIFI_STA);
@@ -68,6 +98,8 @@ void radio_start(void)
 
 void radio_send(uint8_t type, uint8_t level, uint8_t flags)
 {
+    if (!s_on)
+        return;
     uint8_t b[SQ_PKT_LEN];
     sq_msg_t m = { .type = type, .seq = ++s_seq, .level = level, .flags = flags };
     sq_pack(b, s_pair, &m);

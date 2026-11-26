@@ -1,0 +1,10 @@
+# U2 the child starts, both asleep: 3 quick squeezes; the parent is holding its unit
+duration 160
+A start 0
+B start 0.4
+B squeeze 130.0 0.3 8
+B squeeze 130.7 0.3 8
+B squeeze 131.4 0.3 8
+B squeeze 140.0 0.3 8
+B squeeze 140.7 0.3 8
+B squeeze 141.4 0.3 8

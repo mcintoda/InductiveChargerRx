@@ -1,0 +1,7 @@
+# B2 BMP280 not answering (bad solder joint): what does the unit do?
+duration 20
+A start 0
+A usb 1
+A sensor 0
+B start 0.5
+B squeeze 8 0.5 15

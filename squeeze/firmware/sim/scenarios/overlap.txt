@@ -1,0 +1,8 @@
+# U5 both squeeze at almost the same time (awake)
+duration 30
+A start 0
+B start 0.3
+A squeeze 10.0 0.5 20
+B squeeze 10.1 0.5 8
+A squeeze 15.0 0.4 20
+B squeeze 15.25 0.4 8

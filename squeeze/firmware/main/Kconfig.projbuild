@@ -60,7 +60,7 @@ menu "Squeeze pair"
 
     config SQZ_COLOR_CHILD
         hex "Child's colour (0xRRGGBB)"
-        default 0xFF5A00
+        default 0xFF8000
 
     config SQZ_SLEEP_PERIOD_MS
         int "Asleep: check for a squeeze or a call this often (ms)"

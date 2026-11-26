@@ -1,0 +1,5 @@
+# B5 on the Qi pad, charging; partner powered
+duration 15
+A start 0
+A charging 1
+B start 0.5

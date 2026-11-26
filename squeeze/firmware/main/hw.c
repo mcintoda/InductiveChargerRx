@@ -127,9 +127,12 @@ void led_rgb(uint32_t rgb, float brightness)
 {
     if (brightness < 0) brightness = 0;
     if (brightness > 1) brightness = 1;
+    /* Perceptual curve on the brightness, not per channel (squaring each channel turns orange into red),
+     * with a visible floor so "faint" states really show through the silicone. */
+    float g = brightness <= 0.0f ? 0.0f : 0.03f + 0.97f * brightness * brightness;
     for (int i = 0; i < 3; i++) {
-        float v = ((rgb >> (16 - 8 * i)) & 0xFF) / 255.0f * brightness;
-        uint32_t duty = (uint32_t)lroundf(v * v * 1023.0f); /* rough perceptual curve */
+        float v = ((rgb >> (16 - 8 * i)) & 0xFF) / 255.0f * g;
+        uint32_t duty = (uint32_t)lroundf(v * 1023.0f);
         ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1 + i, duty);
         ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1 + i);
     }

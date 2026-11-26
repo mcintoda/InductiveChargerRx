@@ -1,0 +1,6 @@
+# B1 first power-up on the bench: unit A on USB, battery fitted, nobody holding it; B not powered yet
+duration 20
+A start 0
+A usb 1
+A held 1e9 1e9
+B start 1e6
