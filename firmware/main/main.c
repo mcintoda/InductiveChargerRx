@@ -92,6 +92,17 @@ static int batt_level(void) { return usb_serial_jtag_is_connected() ? -1 : power
 // PAD1 cannot wake the chip when the FDC1004 links are fitted: with the rail off its ESD diodes clamp the pad
 static int wake_pad(void) { return s_fdc_fitted ? 2 : 1; }
 
+// during a bath: the lowest pad on the touch peripheral that is not yet half wet, to wake as soon as the water
+// rises again (a paused fill resumed). FDC build: only PAD2..4 are on touch. 0 = none above the water
+static int pad_above(const lvl_result_t *r)
+{
+    for (int pad = 1; pad <= LVL_PADS; pad++) {
+        bool on_touch = s_fdc_fitted ? (pad >= 2 && pad <= 4) : true;
+        if (on_touch && r->raw_frac[pad - 1] < 0.5f) return pad;
+    }
+    return 0;
+}
+
 // with the FDC1004 fitted the sensor rail must stay on while the touch peripheral measures (see wake_pad)
 static void hold_rail(bool on)
 {
@@ -110,6 +121,32 @@ static bool fdc_sample(float pf[FDC_CH])
     sense_resume();
     if (err != ESP_OK) ESP_LOGW(TAG, "FDC1004 read failed: %s", esp_err_to_name(err));
     return err == ESP_OK;
+}
+
+// One bath sample = the mean of 4 readings spread over ~1.6 s. Bath water sloshes back and forth with a ~2 s
+// period (a 1.6 m tub's seiche); a single quick reading every 2 s would alias that into a slow fake rise or fall.
+// Pads respond linearly to the wetted area, so the mean is the mean water level.
+#define SAMPLE_SPREAD 4
+static bool bath_sample(int mode, uint32_t raw[LVL_CH], float pf[FDC_CH])
+{
+    uint64_t acc[LVL_CH] = {0};
+    float pacc[FDC_CH] = {0};
+    int nf = 0;
+    for (int i = 0; i < SAMPLE_SPREAD; i++) {
+        uint32_t r1[LVL_CH];
+        if (sense_read(r1, 2) == ESP_OK)
+            for (int k = 0; k < LVL_CH; k++) acc[k] += r1[k];
+        float p1[FDC_CH];
+        if (mode != SENSE_TOUCH && fdc_sample(p1)) {
+            for (int k = 0; k < FDC_CH; k++) pacc[k] += p1[k];
+            nf++;
+        }
+        if (i < SAMPLE_SPREAD - 1) vTaskDelay(pdMS_TO_TICKS(400));
+    }
+    for (int k = 0; k < LVL_CH; k++) raw[k] = (uint32_t)(acc[k] / SAMPLE_SPREAD);
+    for (int k = 0; k < FDC_CH; k++) pf[k] = nf ? pacc[k] / nf : 0;
+    if (nf) memcpy(s_last_pf, pf, sizeof(s_last_pf));
+    return nf > 0;
 }
 
 // out of the water: refresh the dry baselines (alpha 1 = replace)
@@ -176,9 +213,9 @@ static void bench_console_start(void);
 // so wait awake for whatever would have woken brim, then restart (a software restart keeps RTC memory, like a wake).
 // The console, the log and esptool's automatic reset into the bootloader keep working. Unplug: real deep sleep.
 // Returns only when the computer was unplugged.
-static void usb_wait(bool pad1_wet, uint64_t timer_s)
+static void usb_wait(int touch_pad, uint64_t timer_s)
 {
-    ESP_LOGW(TAG, "USB attached: staying awake (pad1 %s, timer %llus)", pad1_wet ? "wet" : "dry", timer_s);
+    ESP_LOGW(TAG, "USB attached: staying awake (wake pad %d, timer %llus)", touch_pad, timer_s);
     bench_console_start();
     bool charger = power_on_charger();
     double t0 = now_s();
@@ -186,24 +223,26 @@ static void usb_wait(bool pad1_wet, uint64_t timer_s)
         vTaskDelay(pdMS_TO_TICKS(1000));
         bool wake = power_on_charger() != charger || (timer_s && now_s() - t0 >= timer_s) ||
                     (s_acc_fitted && accel_events());
-        if (!wake && !pad1_wet) {
+        if (!wake && touch_pad) {
             uint32_t raw[LVL_CH];
             lvl_cal_t c = s_cal;
-            wake = (!isnan(s_fake_mm) && s_fake_mm > 0) || (sense_read(raw, 2) == ESP_OK && lvl_compute(&c, raw).wet);
+            wake = (!isnan(s_fake_mm) && s_fake_mm > lvl_pad_top_mm(touch_pad) - 4.5f) ||
+                   (sense_read(raw, 2) == ESP_OK && lvl_compute(&c, raw).raw_frac[touch_pad - 1] >= 0.5f);
         }
         if (wake) esp_restart();
     }
     ESP_LOGI(TAG, "USB unplugged: sleeping");
 }
 
-static void sleep_now(bool pad1_wet, uint64_t timer_s)
+// touch_pad: wake when the water reaches this pad (wake_pad() when dry, pad_above() during a bath; 0 = timer only)
+static void sleep_now(int touch_pad, uint64_t timer_s)
 {
     net_wifi_stop();
     status_led(LED_OFF);
     hold_rail(false);
     cal_save();
     bathlog_save();
-    if (!pad1_wet) sense_arm_wake(wake_pad(), lvl_wake_threshold(&s_cal, wake_pad()));   // wake when the bath arrives
+    if (touch_pad) sense_arm_wake(touch_pad, lvl_wake_threshold(&s_cal, touch_pad));
     // ext1, any low: put on a Qi pad (QI_DET_N) or moved / tapped (LIS2DW12 INT1, active low)
     uint64_t ext1 = 0;
     if (!power_on_charger()) ext1 |= 1ULL << PIN_QI_DET_N;
@@ -215,8 +254,8 @@ static void sleep_now(bool pad1_wet, uint64_t timer_s)
         if (!timer_s || c < timer_s) timer_s = c;
     }
     if (timer_s) esp_sleep_enable_timer_wakeup(timer_s * 1000000ULL);
-    if (usb_serial_jtag_is_connected()) usb_wait(pad1_wet, timer_s);
-    ESP_LOGI(TAG, "deep sleep (pad1 %s, timer %llus)", pad1_wet ? "wet" : "dry", timer_s);
+    if (usb_serial_jtag_is_connected()) usb_wait(touch_pad, timer_s);
+    ESP_LOGI(TAG, "deep sleep (wake pad %d, timer %llus)", touch_pad, timer_s);
     esp_deep_sleep_start();
 }
 
@@ -458,7 +497,7 @@ static void charger_mode(bool placed)
         if (now_s() >= s_next_checkin) checkin(false);
         vTaskDelay(pdMS_TO_TICKS(2000));
     }
-    sleep_now(false, 0);
+    sleep_now(wake_pad(), 0);
 }
 
 // ---------------- bath ----------------
@@ -497,7 +536,6 @@ static void bath_mode(void)
     uint32_t raw[LVL_CH];
     float temp = NAN;
     int batt = -1;
-    bool fdc_window = false;
     double t_start = now_s(), t_temp = 0, t_batt = 0, t_dry = 0, t_steady = 0;
     esp_pm_config_t pm = {.max_freq_mhz = 80, .min_freq_mhz = 40, .light_sleep_enable = true};
     esp_pm_configure(&pm);
@@ -505,12 +543,11 @@ static void bath_mode(void)
     for (;;) {
         double t = now_s();
         if (power_on_charger()) esp_restart();            // taken out and put on the charger
-        sense_read(raw, 4);
+        float pf[FDC_CH] = {0};
+        bool fdc_ok = bath_sample(mode, raw, pf);       // ~1.7 s: readings spread across the slosh period
         lvl_cal_t other = s_cal;                          // the other touch method, without learning (compare only)
         lvl_result_t r = lvl_compute(&s_cal, raw);
-        float pf[FDC_CH] = {0};
         fdc_result_t fr = {0};
-        bool fdc_ok = mode != SENSE_TOUCH && fdc_sample(pf);
         if (fdc_ok) fr = fdc_level(&s_fdc, pf);
         if (mode == SENSE_COMPARE) {
             other.ratiometric = !s_cal.ratiometric;
@@ -523,11 +560,10 @@ static void bath_mode(void)
                      (unsigned long)raw[4], (unsigned long)raw[5], (unsigned long)raw[6], pf[0], pf[1], pf[2], pf[3]);
         }
         if (mode == SENSE_FDC) {                          // drive the policy from the FDC
-            if (!fdc_ok) { vTaskDelay(pdMS_TO_TICKS(2000)); continue; }
-            fdc_window = fr.in_window;
+            if (!fdc_ok) { vTaskDelay(pdMS_TO_TICKS(300)); continue; }
             r.wet = fr.pad1_wet;
-            // below the alarm window the FDC only knows that PAD1 is covered
-            r.level_mm = fr.in_window ? fr.level_mm : (fr.pad1_wet ? LVL_PAD_H_MM : 0);
+            // below the alarm window: PAD2..4 are still on touch (fill rate, "nearly full" ~30 mm earlier)
+            r.level_mm = fr.in_window ? fr.level_mm : (fr.pad1_wet ? lvl_lower_mm(&r) : 0);
             r.top_full = fr.top_full;
             r.raw_frac[LVL_REF] = fr.ref_frac;
             r.all_wet = fr.ref_wet && fr.top_full == 6;
@@ -551,9 +587,13 @@ static void bath_mode(void)
         }
         if (r.wet) rate_add(&rate, (float)(t - t_start), r.level_mm);
 
+        // upright in its bracket? (tells "fell in" from "the water came up")
+        float g[3];
+        bool g_ok = s_acc_fitted && accel_gravity(g) == ESP_OK;
+        int upright = (g_ok && s_tilt.ref_valid) ? tilt_angle_deg(g, s_tilt.ref) <= TILT_LIMIT_DEG : -1;
         policy_in_t in = {.now_s = t, .wet = r.wet, .all_wet = r.all_wet, .level_mm = r.level_mm,
                           .ref_frac = r.raw_frac[LVL_REF], .at_alarm = r.top_full >= alarm_pad,
-                          .temp_c = temp, .battery_pct = batt};
+                          .temp_c = temp, .battery_pct = batt, .upright = upright};
         in.rate_ok = rate_mm_per_min(&rate, &in.rate_mm_min);
         in.eta_s = rate_eta_s(&rate, r.level_mm, s_policy.alarm_mm - 1.0f);
         if (r.wet && !log_open) { bathlog_begin(true, t); log_open = true; }   // first wet sample: a new bath
@@ -563,14 +603,13 @@ static void bath_mode(void)
         // the device itself: double tap = "I know", tilt / fall check, LED
         if (s_acc_fitted) {
             uint8_t ev = accel_events();
-            if ((ev & ACC_EV_DOUBLE_TAP) && s_policy.active) {
-                policy_ack(&s_policy);
+            // only silences an alarm that is sounding: a toddler's taps during the fill don't pre-silence it
+            if ((ev & ACC_EV_DOUBLE_TAP) && policy_ack(&s_policy)) {
                 status_flash(0, 255, 0, 2, 150);
                 buzzer_chirp();
                 ESP_LOGI(TAG, "alarm acknowledged on the device");
             }
-            float g[3];
-            if (r.wet && accel_gravity(g) == ESP_OK && tilt_update(&s_tilt, g, t))
+            if (r.wet && g_ok && tilt_update(&s_tilt, g, t) && !s_policy.submerged)   // "under water" already said it
                 notify_text("brim is tilted", "brim is no longer upright - it may have slipped out of its bracket. "
                             "Level readings are unreliable until it is back in place.", 4, "warning,bathtub");
         }
@@ -587,7 +626,7 @@ static void bath_mode(void)
             if (t_dry == 0) t_dry = t;
             if (t - t_dry > 60) {                         // drained or a splash: back to sleep
                 calibrate_dry(0.1f);
-                sleep_now(false, s_policy.active ? 15 * 60 : 6 * 3600);
+                sleep_now(wake_pad(), s_policy.active ? 15 * 60 : 6 * 3600);
             }
         } else t_dry = 0;
 
@@ -596,15 +635,15 @@ static void bath_mode(void)
                            !s_policy.ref_rising;
         if (steady || alarm_quiet) {
             if (t_steady == 0) t_steady = t;
-            // someone is in the bath: check every 5 min. In FDC mode below 40 mm the level is not seen
-            // moving, so check every 2 min (20 mm at a fast 10 mm/min fill: still short of the alarm)
-            // at or near the line (someone may top up): check every minute
-            bool near = s_policy.alarm_active || s_policy.nearly_sent || r.level_mm >= s_policy.alarm_mm - 15.0f;
-            if (t - t_steady > 180)
-                sleep_now(true, near ? 60 : (mode == SENSE_FDC && !fdc_window) ? 2 * 60 : 5 * 60);
+            // someone is in the bath, or the fill paused: wake when the water reaches the next pad up, and check
+            // every 5 min (temperature). No touch pad above the water, or at / near the line (someone may top
+            // up): check every minute
+            int above = pad_above(&r);
+            bool near = s_policy.alarm_active || s_policy.nearly_sent || !above;
+            if (t - t_steady > 180) sleep_now(above, near ? 60 : 5 * 60);
         } else t_steady = 0;
 
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        vTaskDelay(pdMS_TO_TICKS(300));                 // + ~1.7 s of sampling: one sample every ~2 s
     }
 }
 
@@ -660,14 +699,14 @@ void app_main(void)
     if (!settings_provisioned(&s_set) || !s_set.wifi_ok) {
         status_led(LED_SETUP);
         if (net_provision(&s_set, 15 * 60 * 1000)) esp_restart();
-        sleep_now(false, 0);
+        sleep_now(wake_pad(), 0);
     }
     // moved or tapped while asleep: show the battery, then straight back to sleep unless a bath is running
     if (cause == ESP_SLEEP_WAKEUP_EXT1 && s_acc_fitted && (esp_sleep_get_ext1_wakeup_status() & (1ULL << PIN_ACC_INT))) {
         accel_events();
         int pct = batt_level();
         status_battery(pct < 0 ? 0 : pct);
-        if (!power_on_charger() && !s_policy.active) sleep_now(false, 6 * 3600);
+        if (!power_on_charger() && !s_policy.active) sleep_now(wake_pad(), 6 * 3600);
     }
     // empty: say so once, then sleep until it is put on a charger (protects the cell, no brown-out loops).
     // Not while USB is attached: the flash tab powers the board, and with no battery fitted ~2.7 V reaches VBAT

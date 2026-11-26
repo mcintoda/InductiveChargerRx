@@ -117,3 +117,15 @@ lvl_result_t lvl_compute(lvl_cal_t *cal, const uint32_t raw[LVL_CH])
     for (int k = 0; k < LVL_PADS; k++) r.all_wet = r.all_wet && r.raw_frac[k] >= LVL_WET_FRAC;
     return r;
 }
+
+float lvl_lower_mm(const lvl_result_t *r)
+{
+    float level = 0, prev = 1.0f;
+    for (int k = 1; k <= 3; k++) {                   // PAD2..PAD4, chained like lvl_compute
+        float f = prev >= LVL_CHAIN_FRAC ? r->raw_frac[k] : 0;
+        level += f * LVL_PITCH_MM;
+        prev = f;
+    }
+    if (r->raw_frac[1] < 0.08f) return LVL_PAD_H_MM;
+    return clampf(LVL_PITCH_MM + level - LVL_FRINGE_MM, LVL_PAD_H_MM, 4 * LVL_PITCH_MM - 1.0f);
+}

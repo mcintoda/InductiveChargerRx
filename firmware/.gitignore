@@ -5,3 +5,4 @@ sdkconfig.old
 test/test_logic
 keys/
 labels/
+test/scenarios_bin

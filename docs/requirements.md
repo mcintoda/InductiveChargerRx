@@ -56,7 +56,7 @@ Controlling taps or drains; detecting a person in the water; a phone app of our 
 | SYS-AL-01 | Alerts shall reach a phone through a free, account-free push service (ntfy), on iPhone and Android. | No app of our own | D | Met |
 | SYS-AL-02 | A phone alert shall arrive within 15 s of the event when the home Wi-Fi is up. | Two-minute warning budget | T: stopwatch over 10 alerts | Bench |
 | SYS-AL-03 | The full alarm shall also sound and flash on the device within 4 s, without Wi-Fi. | Phone in another room, Wi-Fi down | T | Bench |
-| SYS-AL-04 | A double-tap on the device shall silence repeats for the current fill. | Parent is already there | T | Bench |
+| SYS-AL-04 | A double-tap on the device shall silence the sounding alarm for the current fill, and only a sounding one. | Parent is already there; toddlers tap things | T: `scenarios` 5 | Met (sim) / Bench |
 | SYS-AL-05 | Every alert text shall say what happened and what to do, in plain words. | Usability | I: policy.c messages | Met |
 | SYS-AL-06 | The whole household shall be able to receive the same alerts. | Families | D: two phones subscribed to one topic | Met (ntfy) |
 
@@ -201,6 +201,13 @@ Controlling taps or drains; detecting a person in the water; a phone app of our 
 | SW-POL-02 | Each event at most once per bath, except the full-alarm repeats (SYS-FN-04) and re-arm (SYS-FN-05). | SYS-AL-05 | T | Met |
 | SW-POL-03 | Time handling with ≥ 1 s resolution over the device's life (no float wall-clock time). | All timing | T: `test_refill` on a 1.7e9 s base | Met |
 | SW-POL-04 | The policy shall be pure C with no hardware calls, built and tested on the host. | Testability | T: `make -C test` | Met (48 checks) |
+| SW-POL-05 | No bath-full alarm from splashing below the line: the level is a trend line over ~20 s and must be past the line by more than its own scatter, with most samples agreeing. | SYS-PF-05 | T: `scenarios` 4, 14 (60 seeded runs, ±12 mm waves) | Met (sim) |
+| SW-POL-06 | People getting in (a step of 10–70 mm) shall not trigger repeats or "filling again"; a running tap (steady rise ≥ 0.8 mm/min over 40–120 s) shall. | SYS-PF-05, SYS-FN-04/05 | T: `scenarios` 3, 10, 11, 12 | Met (sim) |
+| SW-POL-07 | "Too hot" re-arms after the water cools 1 °C below the limit; "nearly full" re-arms after the fill pauses 2 min. | SYS-FN-06, SYS-FN-03 | T: `scenarios` 2, 6 | Met (sim) |
+| SW-POL-08 | 2 min with the lowest pad dry ends the bath, including across sleeps (drain and refill = a new bath with its own alerts). | SYS-FN-01 | T: `scenarios` 8 | Met (sim) |
+| SW-POL-09 | Every sensor going under at once with the accelerometer showing brim no longer upright is "brim is under water", and pauses bath-full alarms while it stays under. | SYS-FN-08 | T: `scenarios` 7, 12 | Met (sim) |
+| SW-LVL-06 | Each bath sample averages 4 readings spread over ~1.6 s, so the tub's ~2 s slosh does not alias into a fake level change. | SYS-PF-05 | T: `scenarios` 4 fails without it | Met (sim) |
+| SW-PWR-06 | During a bath, sleeps arm a wake on the next dry touch pad above the water, so a resumed fill is seen within one pad (≤ 10 mm). | SYS-FN-03 | T: `scenarios` 2 | Met (sim) |
 
 ### 4.3 Power management (SW-PWR)
 | ID | Requirement | Parent | Verify | Status |

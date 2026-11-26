@@ -48,6 +48,10 @@ void lvl_cal_init(lvl_cal_t *cal, const uint32_t raw[LVL_CH]);
 void lvl_track_dry(lvl_cal_t *cal, const uint32_t raw[LVL_CH], float alpha);
 // compute the level; learns full[] values as the water passes each pad
 lvl_result_t lvl_compute(lvl_cal_t *cal, const uint32_t raw[LVL_CH]);
+// FDC build: PAD2..PAD4 stay on touch, the FDC1004 sees PAD1 (covered / not) and PAD5..6. Below the FDC's 40 mm
+// window this gives the level from PAD2..4 (9..39 mm; 9 = only PAD1 covered), so the fill rate and the
+// "nearly full" estimate start ~30 mm earlier. Learned-only (no live reference): a few mm, enough for a rate.
+float lvl_lower_mm(const lvl_result_t *r);
 // top edge of pad n (1..6) in mm above the bottom of PAD1: the alarm level for "alarm at pad n"
 float lvl_pad_top_mm(int pad);
 // raw-count threshold for pad n (1..6) used as the deep-sleep wake threshold (50 % wet)

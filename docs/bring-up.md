@@ -97,6 +97,21 @@ a spray bottle, salt, a vacuum jar or hand vacuum pump, the spare 0603 capacitor
 | Piezo bonded in the plug, enclosure closed | Clearly audible from the next room with the door open. Sweep 2–7 kHz, set `BUZ_HZ` to the loudest | Try a thinner bond line (cyanoacrylate, not silicone) or a disc closer to the plug's centre |
 | Double-tap during an alarm | Two green flashes + chirp, no more repeats | Lower the tap threshold (TAP_THS 0x09 = 0.56 g) if taps through the bracket are missed |
 | Tilt the device 45° out of the bracket during a fill | "brim is tilted" after 20 s | Check the learned reference: it is taken at the start of the bath |
+| Double-tap **before** the alarm, during the fill | Nothing happens; the alarm still beeps and repeats later | `policy_ack()` must only act while the alarm sounds |
+| Drop brim flat into the full test tub | "brim is under water" within 10 s, no BATH FULL, no extra "tilted" | Check the accelerometer's `upright` (tilt reference learned at the start of the bath) |
+
+### 5a. Real-tub situations (the simulator's scenarios, on a real bath)
+`make -C firmware/test scenarios` plays these against the firmware logic with a modelled bath. These checks are the
+same situations with real water, sensors and sloshing. Use the bath log CSV (settings page) to see what brim saw.
+| Situation | Pass | If not |
+|---|---|---|
+| Fill at full tap flow | "Nearly full" ≥ 60 s before BATH FULL; BATH FULL within 2 mm of the arrows | FDC build: check PAD2–4 still read on touch (`sensors`) so the rate starts below 40 mm |
+| Water 8 mm under the line, slosh hard by hand for 5 min | No BATH FULL | Check `bath_sample()` spreads its 4 readings over ~1.6 s; measure the tub's slosh period |
+| At the line, alarm silenced; lower a 2 L jug in (≈ +12 mm), splash | No "filling again", no repeats | Log the trend snapshots; the step must fail `policy_sustained_rise()` |
+| At the line, alarm silenced; tap left at a dribble | "Filling again" before the water is 15 mm over the line | Lower the 2 mm minimum rise in `policy_sustained_rise()` |
+| Pause the fill 6 min at a third of the way, resume | Wakes within one pad of resuming; a fresh "nearly full" | The in-bath sleep must arm the next dry pad (`pad_above()`) |
+| Drain fully, refill within 5 min | Second bath gets its own "nearly full" and BATH FULL | Dry spell ≥ 2 min must end the bath (`POLICY_SESSION_END_S`) |
+| 41 °C water, cool to 36 °C, then add hot to 42 °C | Two "too hot" alerts | Re-arm hysteresis `POLICY_HOT_REARM_C` |
 
 ## 6. Power budget
 | Check | Pass |

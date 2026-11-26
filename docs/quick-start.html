@@ -116,6 +116,7 @@ footer { font-size: 12.5px; color: var(--muted); }
         <li>Pick your home Wi-Fi (2.4 GHz) and type its password.</li>
         <li>Tap <b>Copy topic</b>. In the ntfy app tap <b>+</b>, paste, subscribe.</li>
         <li>Tap <b>Save</b>. Within a minute ntfy shows <b>“brim is connected”</b> and the light flashes green twice.</li>
+        <li>Let urgent alerts through <b>Do Not Disturb</b>. Android: in ntfy, open the topic's notification settings and allow the urgent channel to override Do Not Disturb. iPhone: Settings → Focus → each Focus you use → Apps → add ntfy.</li>
       </ol>
       <p class="note"><b>Cyan again, no alert?</b> The password was wrong. Rejoin <code>brim-setup</code>: the page says what failed.</p>
     </div>
@@ -146,7 +147,7 @@ footer { font-size: 12.5px; color: var(--muted); }
       <h2>Mount the bracket at your “full” line</h2>
       <ol>
         <li>Push each suction cup's head through the round end of a keyhole and slide it to the top of the slot.</li>
-        <li>Decide how full you like your bath. Wipe the tub wall, wet the cups, and press the bracket on so its <b>top edge sits 3 mm below that line</b>.</li>
+        <li>Decide how full you like your bath <b>before anyone gets in</b>. Each child adds 1–2 cm when they climb in, and brim knows that's not the tap. Wipe the tub wall, wet the cups, and press the bracket on so its <b>top edge sits 3 mm below that line</b>.</li>
         <li>Slide brim in from the top, <b>logo facing into the tub</b>, flat Qi side against the wall.</li>
       </ol>
       <p class="note">The two <b>small arrows</b> on brim's face, and the groove on each side, now sit at your full line. The grey panels you can see through the case are the level sensors: the bath is tracked from the lowest one up.</p>
@@ -181,11 +182,11 @@ footer { font-size: 12.5px; color: var(--muted); }
       <p>It wakes when water reaches the lowest sensor, then blips dim blue every 4 s while it watches. Your phone gets:</p>
       <div class="alerts">
         <div class="alert"><b>Nearly full</b>About 2 minutes to go.</div>
-        <div class="alert"><b>Bath full</b>Urgent. brim also flashes red and beeps. Repeats every minute while still rising, up to 15 min.</div>
-        <div class="alert"><b>Bath too hot</b>Above 38 °C, set for little ones. Change it in settings (40 or 42 °C for older kids and adults), and add an optional “cooling down” alert.</div>
+        <div class="alert"><b>Bath full</b>Urgent. brim also flashes red and beeps. Repeats every minute while the tap is still running, up to 15 min. Splashing and kids climbing in don't set it off.</div>
+        <div class="alert"><b>Bath too hot</b>Above 38 °C, set for little ones. Warns again if the water cools and then heats up (someone ran the hot tap). Change it in settings (40 or 42 °C for older kids and adults), and add an optional “cooling down” alert.</div>
         <div class="alert"><b>Battery and check-ins</b>“Battery low” below 20 %. A silent “brim OK” once a week, and <b>“brim hasn’t checked in”</b> if it goes quiet for 3 days.</div>
       </div>
-      <p class="note"><b>Double-tap brim</b> to silence a bath-full alarm: two green flashes and a chirp. If you top the bath up later, it warns you again. Also, if brim gets knocked out of its bracket you'll get “brim is tilted”.</p>
+      <p class="note"><b>Double-tap brim</b> to silence a bath-full alarm: two green flashes and a chirp. It only works while the alarm is sounding, so a toddler tapping brim during the fill can't silence it early. If the tap is still running, or you top the bath up later, it warns you again. If brim gets knocked out of its bracket you'll get “brim is tilted”, or “brim is under water” if it falls in.</p>
     </div>
     <div class="fig" aria-hidden="true">
       <svg viewBox="0 0 210 200">
@@ -249,6 +250,7 @@ footer { font-size: 12.5px; color: var(--muted); }
     <h2>If something's off</h2>
     <dl>
       <dt>No “brim is connected” alert</dt><dd>Check you subscribed to the exact topic. If the light blinks cyan again, the Wi-Fi password was wrong or the network is 5 GHz only.</dd>
+      <dt>Partner, grandparent or babysitter</dt><dd>On their phone: install ntfy and subscribe to the same topic (copy it from the settings page, or from your ntfy app). Everyone subscribed gets every alert.</dd>
       <dt>Want to check alerts still work</dt><dd>Put brim on the pad, tap “brim is charging”, then <b>Send a test alert</b>.</dd>
       <dt>Moved house or changed Wi-Fi</dt><dd>Same: on the pad, tap the notification, double-tap brim, edit the Wi-Fi.</dd>
       <dt>Page says “Locked”</dt><dd>Double-tap brim on its pad, then press Save again within 2 minutes.</dd>
