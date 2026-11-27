@@ -24,6 +24,7 @@ wick_w      = 13;   // groove width (fits a 12 mm wick strip)
 wick_d      = 1.2;  // groove depth (thin polyester/microfiber strip sits flush)
 feather_len = 12;   // tapered leading edge so water runs onto the arm
 feather_min = 1.0;  // thickness at the leading edge (JLC MJF minimum wall)
+tip_r       = 1.5;  // radius on the drip tip and bottom corners, smooth underfoot
 tip_h       = 10;   // height of the V drip tip (valley stays 3 mm below the slab)
 
 $fn = 96;
@@ -93,7 +94,8 @@ module side_chamfers() { // 45-degree top side edges on the arm so a foot can't 
 
 module drip_tip_keep() { // V point at the bottom so drops leave from one spot
     translate([0, 200, 0]) rotate([90, 0, 0]) linear_extrude(400)
-        polygon([[0, 50], [width, 50], [width, -drop + tip_h], [width / 2, -drop], [0, -drop + tip_h]]);
+        offset(r = tip_r) offset(delta = -tip_r)   // rounds the tip and the bottom corners
+            polygon([[0, 50], [width, 50], [width, -drop + tip_h], [width / 2, -drop], [0, -drop + tip_h]]);
 }
 
 intersection() {

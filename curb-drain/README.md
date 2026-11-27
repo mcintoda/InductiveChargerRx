@@ -13,7 +13,7 @@ Infographic with every cross-section, drawn to scale: [`docs/curb-drain-sections
 | **Comb inlet** | The last 8 mm of the arm, next to the silicone bead. Slots cut through to the stone, so even a 0.6 mm film of water gets in. |
 | **Grooved arm** | 2.6 mm thick and 59 mm long, resting directly on the granite. V-grooves 1.0 mm wide and 1.3 mm deep at a 2.0 mm pitch pull water toward the edge by capillary action. |
 | **Bend and leg** | Wrap over the curb's shower-side edge and run 32 mm down the front of the ¾ in (19 mm) slab, ending 13 mm below its ½ in overhang and well clear of the floor 1¾ in below. Gravity on the leg pulls water through the grooves; any leg from about 25 mm up gives the same flow, because the grooves' capillary pull is the limit. |
-| **Drip tips** | A V point (or a sawtooth every 24 mm on the long run) so drops fall cleanly onto the tile. |
+| **Drip tips** | A V point (or a sawtooth about every 23 mm on the long run) so drops fall cleanly onto the tile. Tips are rounded to a 1.5 mm radius so they're smooth underfoot. |
 
 ## Files
 

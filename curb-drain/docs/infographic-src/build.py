@@ -304,7 +304,12 @@ def panel_tip():
     saw = []
     for k in range(3, -1, -1):
         saw.append(P(k*TOOTH_P, -22))
-        if k: saw.append(P((k-0.5)*TOOTH_P, -32))
+        if k:   # rounded tip, 1.5 mm radius
+            cx, r = (k-0.5)*TOOTH_P, 1.5
+            phi = math.atan((TOOTH_P/2)/10); zc = -32 + r/math.sin(phi)
+            for j in range(9):
+                th = -phi - (math.pi - 2*phi) * j / 8
+                saw.append(P(cx + r*math.cos(th), zc + r*math.sin(th)))
     b = [poly(outline + saw, "nylon")]
     for c in [1.0 + 2.0*i for i in range(int(span/2))]:
         ph = (c % TOOTH_P) / TOOTH_P
@@ -318,6 +323,8 @@ def panel_tip():
     b.append(text(P(span,0)[0]+14, P(0,-12)[1], "grooves run straight down", "lbl small"))
     b.append(text(P(span,0)[0]+14, P(0,-34)[1], "each tooth gathers", "lbl small"))
     b.append(text(P(span,0)[0]+14, P(0,-34)[1]+15, "its grooves into one drip", "lbl small muted"))
+    b.append(text(P(span,0)[0]+14, P(0,-34)[1]+33, "tips rounded to 1.5 mm", "lbl small"))
+    b.append(text(P(span,0)[0]+14, P(0,-34)[1]+48, "so they're smooth underfoot", "lbl small muted"))
     return svg(720, 330, "".join(b), "Section D, the sawtooth drip edge seen from the shower", 520)
 
 def panel_joint():

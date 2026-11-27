@@ -5,7 +5,7 @@ Usage: python3 curb_run.py [total_length_mm] [max_section_mm]
 """
 import math, sys
 import numpy as np, trimesh
-from manifold3d import Manifold, CrossSection, FillRule
+from manifold3d import Manifold, CrossSection, FillRule, JoinType
 
 # ---- fit to the curb (same as curb_drain.scad) ----
 PAD, RE, DROP = 59.0, 3.0, 32.0          # arm length (glass 66.7 mm in), curb edge radius, leg length (19 mm slab + 13 mm)
@@ -13,6 +13,7 @@ PAD, RE, DROP = 59.0, 3.0, 32.0          # arm length (glass 66.7 mm in), curb e
 T, CW, CD, PITCH, RTIP = 2.6, 1.0, 1.3, 2.0, 0.15
 FEATHER_LEN, FEATHER_MIN, COMB_LEN = 12.0, 1.0, 8.0
 TOOTH_PITCH, TOOTH_H = 24.0, 10.0          # drip sawtooth along the leg bottom
+TIP_R = 1.5                                # radius on the tooth tips
 CH = 1.4                                   # chamfer on the two outer ends
 # ---- joint ----
 TAB_LEN, TAB_ROOT, TAB_TIP = 6.0, 14.0, 20.0   # dovetail on the arm, in plan view
@@ -62,7 +63,9 @@ def section(L, left_end, right_end):
     for k in range(n_t):
         saw += [(k * P, -DROP + TOOTH_H), ((k + 0.5) * P, -DROP)]
     saw += [(L, -DROP + TOOTH_H), (L + 50, -DROP + TOOTH_H), (L + 50, 50)]
-    keep = Manifold.extrude(CrossSection([saw], FillRule.EvenOdd), big).rotate((90, 0, 0)).translate((0, big / 2, 0))
+    # round each tooth tip (and every other convex corner) to TIP_R so the hanging edge is smooth underfoot
+    saw_cs = CrossSection([saw], FillRule.EvenOdd).offset(-TIP_R, JoinType.Round, 2.0, 48).offset(TIP_R, JoinType.Round, 2.0, 48)
+    keep = Manifold.extrude(saw_cs, big).rotate((90, 0, 0)).translate((0, big / 2, 0))
     body = body ^ keep
     # chamfers on the top edges of the arm at the outer ends of the run
     for end in ("l", "r"):
