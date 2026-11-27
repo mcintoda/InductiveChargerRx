@@ -11,8 +11,8 @@ Infographic with every cross-section, drawn to scale: [`docs/curb-drain-sections
 | Part | What it does |
 |---|---|
 | **Comb inlet** | The last 8 mm of the arm, next to the silicone bead. Slots cut through to the stone, so even a 0.6 mm film of water gets in. |
-| **Grooved arm** | 2.6 mm thick and 56 mm long, resting directly on the granite. V-grooves 1.0 mm wide and 1.3 mm deep at a 2.0 mm pitch pull water toward the edge by capillary action. |
-| **Bend and leg** | Wrap over the curb's shower-side edge and run 40 mm down the front of the 3 cm slab, ending 10 mm below its ½ in overhang. Gravity on the leg is what pulls water through the grooves. |
+| **Grooved arm** | 2.6 mm thick and 59 mm long, resting directly on the granite. V-grooves 1.0 mm wide and 1.3 mm deep at a 2.0 mm pitch pull water toward the edge by capillary action. |
+| **Bend and leg** | Wrap over the curb's shower-side edge and run 32 mm down the front of the ¾ in (19 mm) slab, ending 13 mm below its ½ in overhang and well clear of the floor 1¾ in below. Gravity on the leg pulls water through the grooves; any leg from about 25 mm up gives the same flow, because the grooves' capillary pull is the limit. |
 | **Drip tips** | A V point (or a sawtooth every 24 mm on the long run) so drops fall cleanly onto the tile. |
 
 ## Files
@@ -29,11 +29,11 @@ Infographic with every cross-section, drawn to scale: [`docs/curb-drain-sections
 
 ## Fitting it to your curb
 
-These values are set for the measured curb: a 3 cm granite slab that overhangs the shower by about ½ in, with the fixed glass about 2.5 in (64 mm) from the shower-side edge:
+These values are set for the measured curb: a ¾ in (19 mm) granite slab that overhangs the shower by about ½ in, 1¾ in above the shower floor, with the fixed glass 2⅝ in (67 mm) from the shower-side edge:
 
-- `pad_depth = 56`: arm length. It ends about 7.5 mm short of the glass and should stay 2–3 mm short of the silicone at its base, without touching it.
+- `pad_depth = 59`: arm length. It ends about 7.7 mm short of the glass and should stay 2–3 mm short of the silicone at its base, without touching it.
 - `edge_radius = 3`: the curb's inner top edge (0.5 = sharp, ~19 = full bullnose).
-- `drop = 40`: how far the leg runs down the slab's front edge. Set it to the slab thickness plus about 10 mm so drops fall clear of the overhang.
+- `drop = 32`: how far the leg runs down the slab's front edge. Set it to the slab thickness plus about 13 mm so every drip point is below the overhang.
 
 Regenerate:
 
@@ -56,7 +56,7 @@ cd stl/3ft-run && python3 ../../cad/curb_run.py 914.4      # total length in mm;
 
 ## Installing
 
-1. **Wash the clip with dish soap before use.** As-printed nylon can bead water, which slows it a lot (13–85 min instead of 2–4). Soap from showering keeps it working.
+1. **Wash the clip with dish soap before use.** As-printed nylon can bead water, which slows it a lot (14–90 min instead of 2–4). Soap from showering keeps it working.
 2. **Tape the vertical leg only** (wet-rated double-sided tape such as 3M VHB) to the slab's front edge. **Never put tape under the arm:** 1 mm of tape lifts the grooves above the puddle and the clip stalls with most of the water left.
 3. The arm rests directly on the granite, with the comb end toward the glass. On the long run, drop each section onto the previous one's dovetail from above.
 
@@ -68,9 +68,9 @@ The model solves Stokes flow on each groove cross-section (checked against exact
 
 | Design (nylon wetted) | Result |
 |---|---|
-| v4 comb inlet | about 2–4 min, puddle fully drained in every case run (13–85 min before the first soap wash) |
+| v4 comb inlet | about 2–4 min, puddle fully drained in every case run (14–90 min before the first soap wash) |
 | Grooves without the comb | 2–4 min, but stalls with about 20 mL left if the granite holds the puddle edge tightly |
-| Grooves with 1 mm tape under the arm | stalls with 31–36 mL left |
+| Grooves with 1 mm tape under the arm | stalls with 33–37 mL left |
 | Cloth wick | about 50 min, leaves a damp film |
 
 The contact angles on the nylon and the granite were not measured, so the results cover a range. The model also assumes the shrinking puddle stays in touch with the clip. The 3 ft run makes sure it does.

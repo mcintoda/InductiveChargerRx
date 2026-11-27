@@ -101,18 +101,18 @@ def panel_side():
     P = lambda x, z: (ox + x*s, oy - z*s)
     b = []
     # floors
-    b.append(poly([P(-45,-100),P(12.7,-100),P(12.7,-106),P(-45,-106)],"tile"))
-    b.append(poly([P(152,-100),P(200,-100),P(200,-106),P(152,-106)],"tile"))
-    b.append(text(*P(-43,-96),"shower floor","lbl small"))
-    b.append(text(*P(198,-96),"bathroom floor","lbl small","end"))
+    b.append(poly([P(-45,-63.5),P(12.7,-63.5),P(12.7,-69.5),P(-45,-69.5)],"tile"))
+    b.append(poly([P(152,-63.5),P(200,-63.5),P(200,-69.5),P(152,-69.5)],"tile"))
+    b.append(text(*P(-43,-59.5),"shower floor","lbl small"))
+    b.append(text(*P(198,-59.5),"bathroom floor","lbl small","end"))
     # curb
-    b.append(poly([P(12.7,-30),P(152,-30),P(152,-100),P(12.7,-100)],"stone"))
-    b.append(poly([P(0,0),P(152,0),P(152,-30),P(0,-30)],"stone"))
-    b.append(line(*P(0,-30),*P(152,-30),"slabline"))
-    b.append(text(*P(128,-17),"3 cm slab","lbl on-stone","middle"))
-    b.append(text(*P(105,-68),"curb","lbl on-stone","middle"))
+    b.append(poly([P(12.7,-19),P(152,-19),P(152,-63.5),P(12.7,-63.5)],"stone"))
+    b.append(poly([P(0,0),P(152,0),P(152,-19),P(0,-19)],"stone"))
+    b.append(line(*P(0,-19),*P(152,-19),"slabline"))
+    b.append(text(*P(130,-12),"¾ in slab","lbl on-stone","middle"))
+    b.append(text(*P(130,-45),"curb","lbl on-stone","middle"))
     # fixed glass panel + silicone bead
-    gx = 63.5
+    gx = 66.7
     bead = [P(gx,6)] + [P(gx - 4*(1 - math.cos(math.pi/2*k/12)), 6*(1 - math.sin(math.pi/2*k/12))) for k in range(13)] + [P(gx,0)]
     b.append(poly(bead,"bead"))
     b.append(poly([P(gx,0),P(gx+10,0),P(gx+10,62),P(gx,62)],"glass"))
@@ -131,28 +131,30 @@ def panel_side():
     # clip: arm, arc, leg
     re = 3; arm_top, arm_bot = T, 0
     pts = []
-    pts.append(P(56, 1.0)); pts.append(P(44, T))
+    pts.append(P(59, 1.0)); pts.append(P(47, T))
     for k in range(13):
         a = math.pi/2 * k/12
         pts.append(P(re - (re+T)*math.sin(a), -re + (re+T)*math.cos(a)))
-    pts += [P(-T,-28), P(-T,-40), P(0,-40)]
+    pts += [P(-T,-32), P(0,-32)]
     for k in range(13):
         a = math.pi/2 * (12-k)/12
         pts.append(P(re - re*math.sin(a), -re + re*math.cos(a)))
-    pts.append(P(56,0))
+    pts.append(P(59,0))
     b.append(poly(pts,"nylon"))
     # drips from tip
-    for k,z in enumerate((-46,-58)):
+    for k,z in enumerate((-38,-49)):
         cx, cy = P(-1.3,z); b.append(f'<path class="drop" d="M{f(cx)},{f(cy-8)} q5,7 0,10 q-5,-3 0,-10z"/>')
     # tape on leg
-    b.append(poly([P(0,-10),P(0.9,-10),P(0.9,-30),P(0,-30)],"tape"))
+    b.append(poly([P(0,-6),P(0.9,-6),P(0.9,-17),P(0,-17)],"tape"))
     # dimensions
-    b.append(dimh(P(0,0)[0], P(gx,0)[0], P(0,24)[1], "2.5 in (64 mm) to the glass"))
-    b.append(dimh(P(0,0)[0], P(56,0)[0], P(0,12)[1], "arm 56 mm"))
-    b.append(dimh(P(56,0)[0], P(gx,0)[0], P(0,12)[1], ""))
-    b.append(text(P(56,0)[0]-0, P(0,12)[1]-7, "7.5 ", "dimt", "end"))
-    b.append(dimv(P(-9,0)[0], P(0,0)[1], P(0,-40)[1], "40 mm","left"))
-    b.append(dimh(P(0,0)[0], P(152,0)[0], P(0,-112)[1], "6 in (152 mm) curb", above=False))
+    b.append(dimh(P(0,0)[0], P(gx,0)[0], P(0,24)[1], "2⅝ in (67 mm) to the glass"))
+    b.append(dimh(P(0,0)[0], P(59,0)[0], P(0,12)[1], "arm 59 mm"))
+    b.append(dimh(P(59,0)[0], P(gx,0)[0], P(0,12)[1], ""))
+    b.append(text(P(59,0)[0]-0, P(0,12)[1]-7, "7.7 ", "dimt", "end"))
+    b.append(dimv(P(-9,0)[0], P(0,0)[1], P(0,-32)[1], "32 mm","left"))
+    b.append(dimv(P(160,0)[0], P(0,-19)[1], P(0,-63.5)[1], "1¾ in"))
+    b.append(dimv(P(160,0)[0], P(0,0)[1], P(0,-19)[1], "¾ in"))
+    b.append(dimh(P(0,0)[0], P(152,0)[0], P(0,-75.5)[1], "curb (width not to scale)", above=False))
     # callouts
     def call(x,z,tx,tz,s1,s2=None,anchor="start"):
         a = P(x,z); t = P(tx,tz)
@@ -160,18 +162,18 @@ def panel_side():
         o += text(t[0]+(4 if anchor=="start" else -4), t[1]+4, s1, "lbl", anchor)
         if s2: o += text(t[0]+(4 if anchor=="start" else -4), t[1]+19, s2, "lbl small muted", anchor)
         return o
-    b.append(call(35,2.0,38,-22,"puddle, about 3 mm deep","held flat by surface tension"))
-    b.append(call(53,0.8,58,-48,"comb inlet (section C)","slots open to the stone"))
-    b.append(call(6,-30,-38,-36,"½ in overhang","drops fall clear","end"))
+    b.append(call(35,2.0,40,-6,"puddle, about 3 mm deep","held flat by surface tension"))
+    b.append(call(56,0.8,72,-30,"comb inlet (section C)","slots open to the stone"))
+    b.append(call(6,-19,-38,-26,"½ in overhang","drops fall clear","end"))
     b.append(call(gx-2,2.5,gx+14,22,"silicone bead","clip stops just short of it"))
-    b.append(call(25,1.5,48,-84,"grooved arm (section A)","rests directly on the granite"))
-    b.append(call(0.5,-14,-38,-6,"tape on the leg only","never under the arm","end"))
-    b.append(call(-1.3,-40,-38,-62,"drip edge (section D)","drips every 23 mm","end"))
+    b.append(call(25,1.5,30,-48,"grooved arm (section A)","rests directly on the granite"))
+    b.append(call(0.5,-11,-38,-6,"tape on the leg only","never under the arm","end"))
+    b.append(call(-1.3,-32,-38,-48,"drip edge (section D)","drips every 23 mm","end"))
     # section cut marks
-    for xm, lab in ((25,"A"),(52,"C")):
+    for xm, lab in ((25,"A"),(55,"C")):
         x1, y1 = P(xm, 7); x2, y2 = P(xm,-5)
         b.append(line(x1,y1,x2,y2,"cut")); b.append(text(x1, y1-4, lab, "cutl","middle"))
-    W, H = 950, 630
+    W, H = 950, 520
     return svg(W, H, "".join(b), "Side section of the shower curb with the drain clip", 640)
 
 def panel_arm():
@@ -227,7 +229,7 @@ def panel_groove():
 def panel_comb():
     s, ox, oy = 48, 60, 150
     P = lambda x, z: (ox + x*s, oy - z*s)
-    t = T - (T - 1.0) * (52 - 44) / 12
+    t = T - (T - 1.0) * (55 - 47) / 12
     b = [f'<clipPath id="cclip"><rect x="{ox-48}" y="0" width="{f(10.5*s+48)}" height="300"/></clipPath><g clip-path="url(#cclip)">']
     b.append(poly([P(-1,0),P(31,0),P(31,-1.6),P(-1,-1.6)],"stone"))
     b.append(poly([P(-1,0),P(31,0),P(31,0.6),P(-1,0.6)],"water"))
@@ -284,7 +286,7 @@ def panel_wick():
 RUN_L, RUN_N = 304.8, 3          # final design: 3 ft run in three sections (cad/curb_run.py)
 TOOTH_P = RUN_L / round(RUN_L / 24.0)
 TAB_LEN, TAB_ROOT, TAB_TIP, CLR_SIDE, CLR_END = 6.0, 14.0, 20.0, 0.3, 0.5
-PAD, RE = 56.0, 3.0
+PAD, RE = 59.0, 3.0
 TAB_YC = (RE + PAD - 12.0) / 2
 
 def run_centers(left_outer):
@@ -301,18 +303,18 @@ def panel_tip():
     outline = [P(0,-3)] + [P(span,-3)]
     saw = []
     for k in range(3, -1, -1):
-        saw.append(P(k*TOOTH_P, -30))
-        if k: saw.append(P((k-0.5)*TOOTH_P, -40))
+        saw.append(P(k*TOOTH_P, -22))
+        if k: saw.append(P((k-0.5)*TOOTH_P, -32))
     b = [poly(outline + saw, "nylon")]
     for c in [1.0 + 2.0*i for i in range(int(span/2))]:
         ph = (c % TOOTH_P) / TOOTH_P
-        zend = -30 - 10 * (1 - abs(ph - 0.5) * 2)
+        zend = -22 - 10 * (1 - abs(ph - 0.5) * 2)
         b.append(line(*P(c,-3.6),*P(c,zend+0.7),"grooveline"))
     for k in range(3):
-        cx, cy = P((k+0.5)*TOOTH_P, -40)
+        cx, cy = P((k+0.5)*TOOTH_P, -32)
         b.append(f'<path class="drop" d="M{f(cx)},{f(cy+6)} q6,8 0,12 q-6,-4 0,-12z"/>')
     b.append(dimh(P(0,0)[0],P(TOOTH_P,0)[0],P(0,-3)[1]-10,f"{TOOTH_P:.1f} mm"))
-    b.append(dimv(P(0,0)[0]-12,P(0,-30)[1],P(0,-40)[1],"10 mm","left"))
+    b.append(dimv(P(0,0)[0]-12,P(0,-22)[1],P(0,-32)[1],"10 mm","left"))
     b.append(text(P(span,0)[0]+14, P(0,-12)[1], "grooves run straight down", "lbl small"))
     b.append(text(P(span,0)[0]+14, P(0,-34)[1], "each tooth gathers", "lbl small"))
     b.append(text(P(span,0)[0]+14, P(0,-34)[1]+15, "its grooves into one drip", "lbl small muted"))
@@ -358,9 +360,9 @@ def panel_overview():
     P = lambda x, y: (ox + x*s, oy + y*s)      # top view: x along curb, y from shower edge (top) toward bathroom
     total = RUN_L * RUN_N
     b = [poly([P(0,0),P(total,0),P(total,152),P(0,152)],"stone")]
-    b.append(poly([P(0,63.5),P(total,63.5),P(total,73.5),P(0,73.5)],"glass"))
-    b.append(poly([P(0,59.5),P(total,59.5),P(total,63.5),P(0,63.5)],"bead"))
-    b.append(poly([P(0,6),P(total,6),P(total,59),P(0,59)],"water", 'style="opacity:.55"'))
+    b.append(poly([P(0,66.7),P(total,66.7),P(total,76.7),P(0,76.7)],"glass"))
+    b.append(poly([P(0,62.7),P(total,62.7),P(total,66.7),P(0,66.7)],"bead"))
+    b.append(poly([P(0,6),P(total,6),P(total,62),P(0,62)],"water", 'style="opacity:.55"'))
     for k in range(RUN_N):
         xa = k * RUN_L
         b.append(poly([P(xa,-2.6),P(xa+RUN_L,-2.6),P(xa+RUN_L,PAD),P(xa,PAD)], "nylon" if k % 2 == 0 else "nylon2"))
@@ -374,7 +376,7 @@ def panel_overview():
     b.append(dimh(P(0,0)[0], P(total,0)[0], P(0,152)[1]+22, f"{total:.0f} mm (3 ft) curb run", above=False))
     b.append(text(P(0,0)[0]-8, P(0,4)[1], "shower", "lbl small", "end"))
     b.append(text(P(0,0)[0]-8, P(0,4)[1]+15, "side", "lbl small muted", "end"))
-    b.append(text(P(total,0)[0]+8, P(0,68.5)[1]+5, "glass", "lbl small"))
+    b.append(text(P(total,0)[0]+8, P(0,71.7)[1]+5, "glass", "lbl small"))
     b.append(text(P(total,0)[0]+8, P(0,120)[1]+5, "bathroom", "lbl small"))
     b.append(text(P(total,0)[0]+8, P(0,135)[1]+5, "side", "lbl small muted"))
     return svg(960, 250, "".join(b), "Plan view of the whole 3 ft run on the curb", 640)

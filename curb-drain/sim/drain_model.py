@@ -12,7 +12,7 @@ W, D = 1.0e-3, 1.3e-3             # groove: width at surface, depth
 alpha = np.arctan(W / 2 / D)      # V half-angle (21 deg)
 r_tip = 0.15e-3                   # MJF rounds the bottom of the V
 N = 13                            # grooves (2.0 mm pitch)
-L_arm, L_arc, R_arc, L_leg = 48.8e-3, 7.8e-3, 4.95e-3, 31e-3
+L_arm, L_arc, R_arc, L_leg = 51.8e-3, 7.8e-3, 4.95e-3, 23e-3
 p_drop = 55.0                     # Pa needed to grow a drop at the tip before it falls
 
 def v_masks(X, Y):

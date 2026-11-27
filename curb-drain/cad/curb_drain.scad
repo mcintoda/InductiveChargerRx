@@ -9,9 +9,9 @@
 mode = "grooves"; // ["grooves", "wick"]
 
 /* [Fit to your curb] */
-pad_depth   = 56;   // arm length from the shower-side edge; glass is ~63.5 mm (2.5 in) in, so this stops ~7.5 mm short of it, clear of the silicone
+pad_depth   = 59;   // arm length from the shower-side edge; glass is 2 5/8 in (66.7 mm) in, so this stops ~7.7 mm short of it, clear of the silicone
 edge_radius = 3;    // radius of the curb's inner top edge (0.5 = sharp, ~3 = eased, ~19 = full bullnose on 1.5" stone)
-drop        = 40;   // how far the leg runs down the inner face below the curb top
+drop        = 32;   // leg length: 3/4 in (19 mm) slab + 13 mm, so every drip point is below the overhang (floor is 44 mm further down)
 
 /* [Part] */
 width       = 30;   // along the curb
@@ -24,7 +24,7 @@ wick_w      = 13;   // groove width (fits a 12 mm wick strip)
 wick_d      = 1.2;  // groove depth (thin polyester/microfiber strip sits flush)
 feather_len = 12;   // tapered leading edge so water runs onto the arm
 feather_min = 1.0;  // thickness at the leading edge (JLC MJF minimum wall)
-tip_h       = 12;   // height of the V drip tip
+tip_h       = 10;   // height of the V drip tip (valley stays 3 mm below the slab)
 
 $fn = 96;
 re = max(edge_radius, 0.5);
