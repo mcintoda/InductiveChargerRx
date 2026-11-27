@@ -14,6 +14,8 @@
   --stone-line: #9b9385;
   --stone-text: #4d473e;
   --nylon: #474e57;
+  --nylon-2: #7d8690;
+  --slot: #ffffff;
   --water: #9fd0f2;
   --water-edge: #1f7fc9;
   --glass: #bfe3e8;
@@ -33,7 +35,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #111518; --sheet: #181d21; --ink: #e5eaee; --muted: #9aa6b0; --rule: #2c343a;
-    --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf;
+    --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf; --nylon-2: #7f8892; --slot: #181d21;
     --water: #24618f; --water-edge: #5cb2f0; --glass: #2b5a60; --glass-edge: #5fa6b0;
     --tile: #2a3035; --tape: #b98d2a; --fabric: #a8566c; --bead: #6c7780; --dim: #8e99a3; --cut: #f0784f;
     --ok: #3cc48b; --bad: #f0784f; color-scheme: dark;
@@ -41,7 +43,7 @@
 }
 :root[data-theme="dark"] {
   --paper: #111518; --sheet: #181d21; --ink: #e5eaee; --muted: #9aa6b0; --rule: #2c343a;
-  --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf;
+  --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf; --nylon-2: #7f8892; --slot: #181d21;
   --water: #24618f; --water-edge: #5cb2f0; --glass: #2b5a60; --glass-edge: #5fa6b0;
   --tile: #2a3035; --tape: #b98d2a; --fabric: #a8566c; --bead: #6c7780; --dim: #8e99a3; --cut: #f0784f;
   --ok: #3cc48b; --bad: #f0784f; color-scheme: dark;
@@ -75,6 +77,12 @@ h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(30px, 5vw
 svg text { font-family: var(--f-body); }
 .stone { fill: url(#hatch); stroke: var(--stone-line); stroke-width: 1; }
 .nylon { fill: var(--nylon); }
+.nylon2 { fill: var(--nylon-2); }
+.slot { fill: var(--slot); }
+.gap { fill: var(--slot); stroke: var(--cut); stroke-width: 1; }
+.combband { fill: var(--slot); opacity: .35; }
+.grooveplan { stroke: var(--slot); stroke-width: 1.2; opacity: .35; }
+.lbl.inv { fill: var(--slot); font-weight: 600; }
 .water { fill: var(--water); stroke: var(--water-edge); stroke-width: 1; }
 .glass { fill: var(--glass); stroke: var(--glass-edge); stroke-width: 1; }
 .bead { fill: var(--bead); stroke: var(--muted); stroke-width: 1; }
@@ -118,10 +126,16 @@ svg text { font-family: var(--f-body); }
 
 <div class="wrap">
   <header>
-    <div class="eyebrow">Shower entry curb · fixed glass panel · JLC3DP MJF PA12 · v4</div>
+    <div class="eyebrow">Shower entry curb · fixed glass panel · JLC3DP MJF PA12 · final design</div>
     <h1>Curb drain clip, in section</h1>
-    <p class="lede">Every cross-section of the clip that drains the puddle off a flat granite shower curb. All drawings are to scale from the same model that was simulated and that you upload to JLC. Water runs down the fixed glass panel, collects on the curb against the silicone bead, enters the clip at the comb, runs along 13 capillary grooves, over the edge and down to a drip tip above the tile.</p>
+    <p class="lede">The final design: a 3 ft drain strip along the shower side of a flat granite curb, printed as three sections that lock together with dovetails. Water runs down the fixed glass panel, collects against the silicone bead, enters the strip at the comb, runs along capillary grooves (13 for every 26 mm), over the edge, and drips onto the tile. All drawings are to scale from the files you upload to JLC.</p>
   </header>
+
+  <section class="sheet">
+    <h2>The whole run, from above</h2>
+    <div class="fig">{{OVERVIEW}}</div>
+    <p>Three 304.8 mm sections cover 914 mm of curb. Each one drains on its own, because the grooves run across the curb rather than along it, so no water has to cross a joint. The pale band along each section is the comb inlet, which sits in the puddle just short of the silicone bead.</p>
+  </section>
 
   <section class="sheet">
     <h2>Side section through the curb</h2>
@@ -134,7 +148,7 @@ svg text { font-family: var(--f-body); }
       <span><i class="sw" style="background: var(--bead)"></i>silicone</span>
     </div>
     <div class="fig">{{SIDE}}</div>
-    <p>Nothing is exaggerated: at 2.6 mm the clip is barely thicker than the puddle it sits in. Red dash-dot lines mark where sections A and C are cut.</p>
+    <p>This is the same at every point along the run. Nothing is exaggerated: at 2.6 mm the strip is barely thicker than the puddle it sits in. Red dash-dot lines mark where sections A and C are cut.</p>
   </section>
 
   <section class="sheet">
@@ -157,9 +171,9 @@ svg text { font-family: var(--f-body); }
       <p>For the last 8 mm of the arm, each groove becomes a slot cut right through to the granite. Water enters at stone level, so the clip keeps draining after the puddle is thinner than the grooves are high.</p>
     </section>
     <section class="sheet">
-      <h2><span class="tag">D</span>Drip tip, seen from inside the shower</h2>
+      <h2><span class="tag">D</span>Drip edge, seen from inside the shower</h2>
       <div class="fig">{{TIP}}</div>
-      <p>The leg's grooves carry the water down. The V point at the bottom collects it into one place so drops fall cleanly onto the tile instead of creeping back under the clip.</p>
+      <p>The leg's grooves carry the water down. The bottom edge is a sawtooth, 13 teeth per section, so the water gathers at each point and drops cleanly onto the tile instead of creeping back under the strip.</p>
     </section>
   </div>
 
@@ -170,19 +184,25 @@ svg text { font-family: var(--f-body); }
   </section>
 
   <section class="sheet">
-    <h2><span class="tag">A′</span>Cloth version, same cut</h2>
-    <div class="fig">{{WICK}}</div>
-    <p>The alternative print holds a microfiber strip in one wide groove. It drains about 30 times more slowly than wetted grooves, but it pulls the puddle down to a damp film.</p>
+    <h2><span class="tag">E</span>Joint between sections, from above</h2>
+    <div class="grid2" style="gap:20px; align-items:center">
+      <div class="fig">{{JOINT}}</div>
+      <div style="display:grid; gap:10px; min-width:0">
+        <p>A dovetail tab on the arm of each section drops into a socket in the next one from above. It can't pull apart along the curb, and any section lifts straight out for cleaning. There are no flexing snaps to break.</p>
+        <p>The fit has 0.3 mm of clearance at the sides, inside JLC's 0.2–0.4 mm range for parts that fit together, and 0.5 mm of slack at the end so the nylon can expand when it's warm and damp.</p>
+        <p>Each section is accurate to about ±1.2 mm in length (±0.4%), so leave a few millimetres at the ends of the run.</p>
+      </div>
+    </div>
   </section>
 
   <section class="sheet">
     <h2>What the simulation found</h2>
     <div class="results">
-      <div class="res"><span class="k">v4 comb inlet</span><span class="v ok">≈ 2 min</span><span class="n">to drain a 46 mL puddle, nylon wetted. Emptied it in every case run; about 15–100 min if the nylon is not yet wetted.</span></div>
+      <div class="res"><span class="k">Final design (comb inlet)</span><span class="v ok">≈ 2 min</span><span class="n">to drain a 46 mL puddle, nylon wetted. Emptied it in every case run; about 15–100 min if the nylon is not yet wetted.</span></div>
       <div class="res"><span class="k">Grooves without the comb</span><span class="v ok">2–4 min</span><span class="n">but stalls with about 20 mL left if the granite holds the puddle edge tightly.</span></div>
       <div class="res"><span class="k">Tape under the arm</span><span class="v bad">stalls</span><span class="n">31–36 of 46 mL left on the curb.</span></div>
       <div class="res"><span class="k">Cloth wick</span><span class="v">≈ 50 min</span><span class="n">leaves a thin damp film.</span></div>
     </div>
-    <p class="foot">Method: Stokes flow solved on each groove cross-section (checked against exact pipe solutions to 0.3%), coupled to a capillary and gravity flow model along the arm, bend and leg, and a draining-puddle model. Water at 30 °C. Contact angles on the nylon and granite were not measured, so the results cover a range. Fresh, unwashed nylon may bead water; wash the clip with dish soap before use.</p>
+    <p class="foot">Method: Stokes flow solved on each groove cross-section (checked against exact pipe solutions to 0.3%), coupled to a capillary and gravity flow model along the arm, bend and leg, and a draining-puddle model. Water at 30 °C. Results are for one 30 mm width of strip; the 3 ft run has 30 times the capacity and keeps every part of the puddle in touch with it. Contact angles on the nylon and granite were not measured, so the results cover a range. Fresh, unwashed nylon may bead water; wash the strip with dish soap before use.</p>
   </section>
 </div>

@@ -161,7 +161,7 @@ def panel_side():
     b.append(call(gx-2,2.5,gx+14,22,"silicone bead","clip stops just short of it"))
     b.append(call(25,1.5,22,-78,"grooved arm (section A)","rests directly on the granite"))
     b.append(call(0.5,-14,-38,-4,"tape on the leg only","never under the arm","end"))
-    b.append(call(-1.3,-40,-38,-62,"drip tip (section D)","drops fall onto the tile","end"))
+    b.append(call(-1.3,-40,-38,-62,"drip edge (section D)","a drop point every 23 mm","end"))
     # section cut marks
     for xm, lab in ((25,"A"),(62,"C")):
         x1, y1 = P(xm, 7); x2, y2 = P(xm,-5)
@@ -259,7 +259,7 @@ def panel_mount():
         b.append(text(P(9.4,fl)[0]+6,P(9.4,fl)[1]+(18 if fl < 1.6 else 5),f"groove floor {fl:.1f}","dimt"))
         b.append(text(ox+133, 28, title, "h3t","middle"))
         b.append(text(ox+133, 50, verdict, f"verdict {cls}","middle"))
-    return svg(900, 290, "".join(b), "Mounting comparison", 600)
+    return svg(1000, 290, "".join(b), "Mounting comparison", 640)
 
 def panel_wick():
     s, ox, oy = 22, 70, 120
@@ -276,26 +276,107 @@ def panel_wick():
     b.append(text(P(31,0)[0]+6, P(0,1.8)[1]+31, "past the end of the arm", "lbl small muted"))
     return svg(1000, 200, "".join(b), "Section A, cloth version", 640)
 
+RUN_L, RUN_N = 304.8, 3          # final design: 3 ft run in three sections (cad/curb_run.py)
+TOOTH_P = RUN_L / round(RUN_L / 24.0)
+TAB_LEN, TAB_ROOT, TAB_TIP, CLR_SIDE, CLR_END = 6.0, 14.0, 20.0, 0.3, 0.5
+PAD, RE = 66.0, 3.0
+TAB_YC = (RE + PAD - 12.0) / 2
+
+def run_centers(left_outer):
+    first = (2.6 if left_outer else 1.5) + CW / 2
+    out, c = [], first
+    while c <= RUN_L - 1.5 - CW / 2 + 1e-9:
+        out.append(c); c += PITCH
+    return out
+
 def panel_tip():
-    s, ox, oy = 7, 40, 40
-    P = lambda x, z: (ox + x*s, oy - z*s)   # x along curb, z down the leg (0 = top of leg)
-    b = [poly([P(0,-3),P(30,-3),P(30,-28),P(15,-40),P(0,-28)],"nylon")]
-    for i in range(N):
-        c = X0 + i*PITCH
-        zend = -28 - 12 * (1 - abs(c-15)/15)
-        b.append(line(*P(c,-3.5),*P(c,zend+0.6),"grooveline"))
-    cx, cy = P(15,-40)
-    b.append(f'<path class="drop" d="M{f(cx)},{f(cy+6)} q7,9 0,13 q-7,-4 0,-13z"/>')
-    b.append(text(P(30,0)[0]+14, P(0,-10)[1], "grooves run straight down", "lbl small"))
-    b.append(text(P(30,0)[0]+14, P(0,-30)[1], "V tip gathers them", "lbl small"))
-    b.append(text(P(30,0)[0]+14, P(0,-30)[1]+15, "into one drip point", "lbl small muted"))
-    b.append(dimh(P(0,0)[0],P(30,0)[0],P(0,-3)[1]-10,"30 mm"))
-    b.append(dimv(P(0,0)[0]-12,P(0,-28)[1],P(0,-40)[1],"12 mm V","left"))
-    return svg(520, 360, "".join(b), "Section D, the drip tip seen from the shower", 360)
+    s, ox, oy = 6.0, 60, 50
+    span = 3 * TOOTH_P
+    P = lambda x, z: (ox + x*s, oy - z*s)        # x along curb, z down the leg (0 = curb top)
+    outline = [P(0,-3)] + [P(span,-3)]
+    saw = []
+    for k in range(3, -1, -1):
+        saw.append(P(k*TOOTH_P, -30))
+        if k: saw.append(P((k-0.5)*TOOTH_P, -40))
+    b = [poly(outline + saw, "nylon")]
+    for c in [1.0 + 2.0*i for i in range(int(span/2))]:
+        ph = (c % TOOTH_P) / TOOTH_P
+        zend = -30 - 10 * (1 - abs(ph - 0.5) * 2)
+        b.append(line(*P(c,-3.6),*P(c,zend+0.7),"grooveline"))
+    for k in range(3):
+        cx, cy = P((k+0.5)*TOOTH_P, -40)
+        b.append(f'<path class="drop" d="M{f(cx)},{f(cy+6)} q6,8 0,12 q-6,-4 0,-12z"/>')
+    b.append(dimh(P(0,0)[0],P(TOOTH_P,0)[0],P(0,-3)[1]-10,f"{TOOTH_P:.1f} mm"))
+    b.append(dimv(P(0,0)[0]-12,P(0,-30)[1],P(0,-40)[1],"10 mm","left"))
+    b.append(text(P(span,0)[0]+14, P(0,-12)[1], "grooves run straight down", "lbl small"))
+    b.append(text(P(span,0)[0]+14, P(0,-34)[1], "each tooth gathers", "lbl small"))
+    b.append(text(P(span,0)[0]+14, P(0,-34)[1]+15, "its grooves into one drip", "lbl small muted"))
+    return svg(720, 330, "".join(b), "Section D, the sawtooth drip edge seen from the shower", 520)
+
+def panel_joint():
+    s, ox, oy = 7.0, 90, 520
+    P = lambda x, y: (ox + (x - (RUN_L - 24))*s, oy - y*s)   # plan view: x along curb, y across it
+    x0, x1 = RUN_L - 24, RUN_L + 24
+    b = [f'<clipPath id="jclip"><rect x="{f(P(x0,0)[0])}" y="0" width="{f(48*s)}" height="{oy + 40}"/></clipPath><g clip-path="url(#jclip)">']
+    def half(xa, xb, cls, centers):
+        b.append(poly([P(xa,-2.6),P(xb,-2.6),P(xb,PAD),P(xa,PAD)], cls))
+        for c in centers:
+            if xa < c < xb:
+                b.append(poly([P(c-CW/2,PAD-8),P(c+CW/2,PAD-8),P(c+CW/2,PAD+0.5),P(c-CW/2,PAD+0.5)],"slot"))
+                b.append(line(*P(c,0.5),*P(c,PAD-8.3),"grooveplan"))
+    half(x0, RUN_L, "nylon", run_centers(True))
+    half(RUN_L, x1, "nylon2", [RUN_L + c for c in run_centers(False)])
+    # socket (gap) in the second section, then the tab of the first
+    d = TAB_LEN + CLR_END; k = (TAB_TIP - TAB_ROOT) / TAB_LEN / 2
+    wr, wt = TAB_ROOT/2 + CLR_SIDE, TAB_TIP/2 + CLR_SIDE + k*CLR_END
+    b.append(poly([P(RUN_L, TAB_YC-wr), P(RUN_L+d, TAB_YC-wt), P(RUN_L+d, TAB_YC+wt), P(RUN_L, TAB_YC+wr)], "gap"))
+    b.append(poly([P(RUN_L, TAB_YC-TAB_ROOT/2), P(RUN_L+TAB_LEN, TAB_YC-TAB_TIP/2), P(RUN_L+TAB_LEN, TAB_YC+TAB_TIP/2), P(RUN_L, TAB_YC+TAB_ROOT/2)], "nylon"))
+    b.append("</g>")
+    b.append(line(*P(RUN_L,-6),*P(RUN_L,PAD+3),"cut"))
+    b.append(text(P(RUN_L,0)[0]-6, P(0,PAD+4)[1], "start", "lbl small", "end"))
+    b.append(text(P(RUN_L,0)[0]+6, P(0,PAD+4)[1], "middle", "lbl small"))
+    b.append(line(*P(RUN_L+TAB_LEN,-2.6),*P(RUN_L+TAB_LEN,-8),"dim"))
+    b.append(dimh(P(RUN_L,0)[0], P(RUN_L+TAB_LEN,0)[0], P(0,-7)[1], "6 mm tab", above=False))
+    b.append(dimv(P(x1,0)[0]+14, P(0,TAB_YC+TAB_TIP/2)[1], P(0,TAB_YC-TAB_TIP/2)[1], "20 tip"))
+    b.append(line(*P(RUN_L-0.3, TAB_YC+TAB_ROOT/2), P(x0,0)[0]-6, P(0,TAB_YC+TAB_ROOT/2+12)[1], "lead"))
+    b.append(text(P(x0,0)[0]-10, P(0,TAB_YC+TAB_ROOT/2+12)[1]+4, "14 mm root", "dimt", "end"))
+    b.append(line(*P(RUN_L+TAB_LEN+0.3, TAB_YC+TAB_TIP/2-1), P(x1,0)[0]+6, P(0,TAB_YC+TAB_TIP/2+9)[1], "lead"))
+    b.append(text(P(x1,0)[0]+8, P(0,TAB_YC+TAB_TIP/2+9)[1]-4, "0.3 mm sides", "dimt"))
+    b.append(text(P(x1,0)[0]+8, P(0,TAB_YC+TAB_TIP/2+9)[1]+12, "0.5 mm end", "dimt"))
+    b.append(text(P(x0,0)[0]-8, P(0,PAD-4)[1], "comb", "lbl small muted", "end"))
+    b.append(text(P(x0,0)[0]-8, P(0,12)[1], "grooves", "lbl small muted", "end"))
+    b.append(text(P(x0,0)[0]-8, P(0,1)[1], "edge", "lbl small muted", "end"))
+    return svg(600, 610, "".join(b), "Section E, plan view of a joint", 400)
+
+def panel_overview():
+    s = 0.86; ox, oy = 60, 60
+    P = lambda x, y: (ox + x*s, oy + y*s)      # top view: x along curb, y from shower edge (top) toward bathroom
+    total = RUN_L * RUN_N
+    b = [poly([P(0,0),P(total,0),P(total,152),P(0,152)],"stone")]
+    b.append(poly([P(0,76),P(total,76),P(total,86),P(0,86)],"glass"))
+    b.append(poly([P(0,70),P(total,70),P(total,76),P(0,76)],"bead"))
+    b.append(poly([P(0,6),P(total,6),P(total,68),P(0,68)],"water", 'style="opacity:.55"'))
+    for k in range(RUN_N):
+        xa = k * RUN_L
+        b.append(poly([P(xa,-2.6),P(xa+RUN_L,-2.6),P(xa+RUN_L,PAD),P(xa,PAD)], "nylon" if k % 2 == 0 else "nylon2"))
+        b.append(poly([P(xa,PAD-8),P(xa+RUN_L,PAD-8),P(xa+RUN_L,PAD),P(xa,PAD)], "combband"))
+        if k < RUN_N - 1:
+            xr = xa + RUN_L
+            b.append(poly([P(xr,TAB_YC-TAB_ROOT/2),P(xr+TAB_LEN,TAB_YC-TAB_TIP/2),P(xr+TAB_LEN,TAB_YC+TAB_TIP/2),P(xr,TAB_YC+TAB_ROOT/2)], "nylon" if k % 2 == 0 else "nylon2"))
+        name = ("start", "middle", "end")[k] if RUN_N == 3 else f"section {k+1}"
+        b.append(text(P(xa + RUN_L/2, 0)[0], P(0, 36)[1] + 5, name, "lbl inv", "middle"))
+        b.append(dimh(P(xa,0)[0], P(xa+RUN_L,0)[0], P(0,-2.6)[1]-12, f"{RUN_L:.1f} mm"))
+    b.append(dimh(P(0,0)[0], P(total,0)[0], P(0,152)[1]+22, f"{total:.0f} mm (3 ft) curb run", above=False))
+    b.append(text(P(0,0)[0]-8, P(0,4)[1], "shower", "lbl small", "end"))
+    b.append(text(P(0,0)[0]-8, P(0,4)[1]+15, "side", "lbl small muted", "end"))
+    b.append(text(P(total,0)[0]+8, P(0,81)[1]+5, "glass", "lbl small"))
+    b.append(text(P(total,0)[0]+8, P(0,120)[1]+5, "bathroom", "lbl small"))
+    b.append(text(P(total,0)[0]+8, P(0,135)[1]+5, "side", "lbl small muted"))
+    return svg(960, 250, "".join(b), "Plan view of the whole 3 ft run on the curb", 640)
 
 html = open(__import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "template.html")).read()
 for k, v in dict(SIDE=panel_side(), ARM=panel_arm(), GROOVE=panel_groove(), COMB=panel_comb(),
-                 MOUNT=panel_mount(), WICK=panel_wick(), TIP=panel_tip()).items():
+                 MOUNT=panel_mount(), TIP=panel_tip(), JOINT=panel_joint(), OVERVIEW=panel_overview()).items():
     html = html.replace("{{"+k+"}}", v)
 open(__import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "..", "curb-drain-sections.html"),"w").write(html)
 print(len(html))
