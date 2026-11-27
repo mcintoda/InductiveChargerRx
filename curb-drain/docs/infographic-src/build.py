@@ -113,7 +113,7 @@ def panel_side():
     b.append(text(*P(130,-45),"curb","lbl on-stone","middle"))
     # fixed glass panel + silicone bead
     gx = 66.7
-    bead = [P(gx,6)] + [P(gx - 4*(1 - math.cos(math.pi/2*k/12)), 6*(1 - math.sin(math.pi/2*k/12))) for k in range(13)] + [P(gx,0)]
+    bead = [P(gx,6)] + [P(gx - 4.8*(1 - math.cos(math.pi/2*k/12)), 6*(1 - math.sin(math.pi/2*k/12))) for k in range(13)] + [P(gx,0)]
     b.append(poly(bead,"bead"))
     b.append(poly([P(gx,0),P(gx+10,0),P(gx+10,62),P(gx,62)],"glass"))
     b.append(text(*P(gx+14,48),"fixed glass panel","lbl"))
@@ -126,7 +126,7 @@ def panel_side():
     for k in range(11):
         a = math.pi/2 * k/10
         pud.append(P(6 + 4 - 4*math.cos(a), 3*math.sin(a)))
-    pud += [P(gx-4.5,3), P(gx-4.5,0)]
+    pud += [P(gx-5.3,3), P(gx-5.3,0)]
     b.append(poly(pud,"water"))
     # clip: arm, arc, leg
     re = 3; arm_top, arm_bot = T, 0
@@ -165,7 +165,7 @@ def panel_side():
     b.append(call(35,2.0,40,-6,"puddle, about 3 mm deep","held flat by surface tension"))
     b.append(call(56,0.8,72,-30,"comb inlet (section C)","slots open to the stone"))
     b.append(call(6,-19,-38,-26,"½ in overhang","drops fall clear","end"))
-    b.append(call(gx-2,2.5,gx+14,22,"silicone bead","clip stops just short of it"))
+    b.append(call(gx-2,2.5,gx+14,22,"3/16 in silicone bead","2.9 mm gap to the clip"))
     b.append(call(25,1.5,30,-48,"grooved arm (section A)","rests directly on the granite"))
     b.append(call(0.5,-11,-38,-6,"tape on the leg only","never under the arm","end"))
     b.append(call(-1.3,-32,-38,-48,"drip edge (section D)","drips every 23 mm","end"))
@@ -361,7 +361,7 @@ def panel_overview():
     total = RUN_L * RUN_N
     b = [poly([P(0,0),P(total,0),P(total,152),P(0,152)],"stone")]
     b.append(poly([P(0,66.7),P(total,66.7),P(total,76.7),P(0,76.7)],"glass"))
-    b.append(poly([P(0,62.7),P(total,62.7),P(total,66.7),P(0,66.7)],"bead"))
+    b.append(poly([P(0,61.9),P(total,61.9),P(total,66.7),P(0,66.7)],"bead"))
     b.append(poly([P(0,6),P(total,6),P(total,62),P(0,62)],"water", 'style="opacity:.55"'))
     for k in range(RUN_N):
         xa = k * RUN_L

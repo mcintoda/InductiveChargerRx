@@ -31,7 +31,7 @@ Infographic with every cross-section, drawn to scale: [`docs/curb-drain-sections
 
 These values are set for the measured curb: a ¾ in (19 mm) granite slab that overhangs the shower by about ½ in, 1¾ in above the shower floor, with the fixed glass 2⅝ in (67 mm) from the shower-side edge:
 
-- `pad_depth = 59`: arm length. It ends about 7.7 mm short of the glass and should stay 2–3 mm short of the silicone at its base, without touching it.
+- `pad_depth = 59`: arm length. It ends 7.7 mm short of the glass, which leaves a 2.9 mm gap to the 3/16 in (4.8 mm) silicone bead at its base. Keep that gap at 2–3 mm so the strip never touches the silicone.
 - `edge_radius = 3`: the curb's inner top edge (0.5 = sharp, ~19 = full bullnose).
 - `drop = 32`: how far the leg runs down the slab's front edge. Set it to the slab thickness plus about 13 mm so every drip point is below the overhang.
 
