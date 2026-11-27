@@ -1,0 +1,188 @@
+<title>Curb Drain Clip Sections</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drawing sheet. One large side section, then lettered detail sections in a two-column grid. */
+:root {
+  --paper: #f3f5f6;
+  --sheet: #ffffff;
+  --ink: #1b2126;
+  --muted: #5d6973;
+  --rule: #d5dbe0;
+  --stone: #c9c3b8;
+  --stone-line: #9b9385;
+  --stone-text: #4d473e;
+  --nylon: #474e57;
+  --water: #9fd0f2;
+  --water-edge: #1f7fc9;
+  --glass: #bfe3e8;
+  --glass-edge: #6fb3bd;
+  --tile: #dde1e4;
+  --tape: #e9b949;
+  --fabric: #f0a3b8;
+  --bead: #c9d2d9;
+  --dim: #6a737c;
+  --cut: #c4421a;
+  --ok: #0e7a52;
+  --bad: #b23a14;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111518; --sheet: #181d21; --ink: #e5eaee; --muted: #9aa6b0; --rule: #2c343a;
+    --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf;
+    --water: #24618f; --water-edge: #5cb2f0; --glass: #2b5a60; --glass-edge: #5fa6b0;
+    --tile: #2a3035; --tape: #b98d2a; --fabric: #a8566c; --bead: #6c7780; --dim: #8e99a3; --cut: #f0784f;
+    --ok: #3cc48b; --bad: #f0784f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111518; --sheet: #181d21; --ink: #e5eaee; --muted: #9aa6b0; --rule: #2c343a;
+  --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf;
+  --water: #24618f; --water-edge: #5cb2f0; --glass: #2b5a60; --glass-edge: #5fa6b0;
+  --tile: #2a3035; --tape: #b98d2a; --fabric: #a8566c; --bead: #6c7780; --dim: #8e99a3; --cut: #f0784f;
+  --ok: #3cc48b; --bad: #f0784f; color-scheme: dark;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 40px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+header { display: grid; gap: 10px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.lede { max-width: 66ch; color: var(--muted); margin: 0; }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.sheet h2 { font-family: var(--f-display); font-weight: 700; font-size: 19px; margin: 0; display: flex; align-items: baseline; gap: 10px; text-wrap: balance; }
+.tag { font-family: var(--f-mono); font-weight: 500; font-size: 13px; color: var(--cut); border: 1.5px solid var(--cut); border-radius: 50%; width: 26px; height: 26px; display: inline-grid; place-items: center; flex: none; transform: translateY(-2px); }
+.sheet p { margin: 0; max-width: 70ch; color: var(--muted); }
+.fig { overflow-x: auto; }
+.fig svg { display: block; width: 100%; height: auto; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr)); gap: 28px; }
+.results { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0; border-top: 1px solid var(--rule); }
+.res { padding: 14px 16px 4px 0; display: grid; gap: 2px; align-content: start; }
+.res .k { font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.res .v { font-family: var(--f-display); font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums; }
+.res .v.bad { color: var(--bad); }
+.res .v.ok { color: var(--ok); }
+.res .n { font-size: 13px; color: var(--muted); }
+.key { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--muted); }
+.key span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 16px; height: 12px; border-radius: 2px; border: 1px solid var(--rule); display: inline-block; }
+.foot { font-size: 13px; color: var(--muted); max-width: 80ch; }
+
+/* SVG drawing styles */
+svg text { font-family: var(--f-body); }
+.stone { fill: url(#hatch); stroke: var(--stone-line); stroke-width: 1; }
+.nylon { fill: var(--nylon); }
+.water { fill: var(--water); stroke: var(--water-edge); stroke-width: 1; }
+.glass { fill: var(--glass); stroke: var(--glass-edge); stroke-width: 1; }
+.bead { fill: var(--bead); stroke: var(--muted); stroke-width: 1; }
+.tile { fill: var(--tile); stroke: var(--rule); }
+.tape { fill: var(--tape); }
+.fabric { fill: url(#weave); stroke: var(--fabric); stroke-width: 1; }
+.drop { fill: var(--water-edge); }
+.dim { stroke: var(--dim); stroke-width: 1; fill: none; }
+.dimt { font-family: var(--f-mono); font-size: 13px; fill: var(--dim); }
+.dimt.strong { fill: var(--ink); font-weight: 500; }
+.lbl { font-size: 14px; fill: var(--ink); }
+.lbl.small { font-size: 13px; }
+.lbl.muted { fill: var(--muted); }
+.lbl.on-stone { fill: var(--stone-text); font-size: 13px; font-style: italic; }
+.lead { stroke: var(--muted); stroke-width: 1; }
+.lead.dash { stroke-dasharray: 3 3; }
+.leaddot { fill: var(--ink); }
+.lvl { stroke: var(--water-edge); stroke-width: 1.2; stroke-dasharray: 6 4; }
+.lvl2 { stroke: var(--dim); stroke-width: 1; stroke-dasharray: 2 3; }
+.cut { stroke: var(--cut); stroke-width: 2; stroke-dasharray: 8 3 2 3; }
+.cutl { font-family: var(--f-mono); font-weight: 500; font-size: 14px; fill: var(--cut); }
+.h3t { font-family: var(--f-display); font-weight: 700; font-size: 16px; fill: var(--ink); }
+.verdict { font-size: 14px; font-weight: 600; }
+.verdict.ok { fill: var(--ok); }
+.verdict.bad { fill: var(--bad); }
+.grooveline { stroke: var(--sheet); stroke-width: 2.2; opacity: .55; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="8" height="8" style="fill: var(--stone)"/>
+      <line x1="0" y1="0" x2="0" y2="8" style="stroke: var(--stone-line); stroke-width: 1"/>
+    </pattern>
+    <pattern id="weave" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" style="fill: var(--fabric); opacity: .55"/>
+      <path d="M0 3h6M3 0v6" style="stroke: var(--fabric); stroke-width: 1"/>
+    </pattern>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Shower entry curb · fixed glass panel · JLC3DP MJF PA12 · v4</div>
+    <h1>Curb drain clip, in section</h1>
+    <p class="lede">Every cross-section of the clip that drains the puddle off a flat granite shower curb. All drawings are to scale from the same model that was simulated and that you upload to JLC. Water runs down the fixed glass panel, collects on the curb against the silicone bead, enters the clip at the comb, runs along 13 capillary grooves, over the edge and down to a drip tip above the tile.</p>
+  </header>
+
+  <section class="sheet">
+    <h2>Side section through the curb</h2>
+    <div class="key">
+      <span><i class="sw" style="background: var(--stone)"></i>granite</span>
+      <span><i class="sw" style="background: var(--nylon)"></i>nylon clip</span>
+      <span><i class="sw" style="background: var(--water)"></i>water</span>
+      <span><i class="sw" style="background: var(--tape)"></i>mounting tape</span>
+      <span><i class="sw" style="background: var(--glass)"></i>glass</span>
+      <span><i class="sw" style="background: var(--bead)"></i>silicone</span>
+    </div>
+    <div class="fig">{{SIDE}}</div>
+    <p>Nothing is exaggerated: at 2.6 mm the clip is barely thicker than the puddle it sits in. Red dash-dot lines mark where sections A and C are cut.</p>
+  </section>
+
+  <section class="sheet">
+    <h2><span class="tag">A</span>Grooved arm, cut across the curb</h2>
+    <div class="fig">{{ARM}}</div>
+    <p>The grooves are V-shaped so their corners pull water along by capillary action. Their floors sit 1.3 mm above the stone, below the 1.6 mm depth the puddle thins to, so the water stays connected to them.</p>
+  </section>
+
+  <section class="sheet">
+    <h2><span class="tag">B</span>One groove, and how water sits in it</h2>
+    <div class="fig">{{GROOVE}}</div>
+    <p>Drawn 150× actual size. Gravity on the leg pulls the water, and the meniscus in each groove responds by curving. The more it curves, the harder it pulls, until it recedes into the bottom of the V. The flow model was solved for each of these shapes.</p>
+    <p><strong style="color: var(--ink)">The rule that decides it:</strong> water creeps along the groove by itself only if its contact angle θ with the nylon is below 90° − α = 69°. Fresh nylon can be above that. A wash with dish soap brings it well below.</p>
+  </section>
+
+  <div class="grid2">
+    <section class="sheet">
+      <h2><span class="tag">C</span>Comb inlet by the silicone bead</h2>
+      <div class="fig">{{COMB}}</div>
+      <p>For the last 8 mm of the arm, each groove becomes a slot cut right through to the granite. Water enters at stone level, so the clip keeps draining after the puddle is thinner than the grooves are high.</p>
+    </section>
+    <section class="sheet">
+      <h2><span class="tag">D</span>Drip tip, seen from inside the shower</h2>
+      <div class="fig">{{TIP}}</div>
+      <p>The leg's grooves carry the water down. The V point at the bottom collects it into one place so drops fall cleanly onto the tile instead of creeping back under the clip.</p>
+    </section>
+  </div>
+
+  <section class="sheet">
+    <h2>Why the arm has to sit on the stone</h2>
+    <div class="fig">{{MOUNT}}</div>
+    <p>Heights in mm. The puddle thins to about 1.6 mm before it starts to shrink. A millimetre of tape sounds harmless, but it lifts every groove out of reach. Tape the vertical leg to the curb's inner face and let the arm lie directly on the granite.</p>
+  </section>
+
+  <section class="sheet">
+    <h2><span class="tag">A′</span>Cloth version, same cut</h2>
+    <div class="fig">{{WICK}}</div>
+    <p>The alternative print holds a microfiber strip in one wide groove. It drains about 30 times more slowly than wetted grooves, but it pulls the puddle down to a damp film.</p>
+  </section>
+
+  <section class="sheet">
+    <h2>What the simulation found</h2>
+    <div class="results">
+      <div class="res"><span class="k">v4 comb inlet</span><span class="v ok">≈ 2 min</span><span class="n">to drain a 46 mL puddle, nylon wetted. Emptied it in every case run; about 15–100 min if the nylon is not yet wetted.</span></div>
+      <div class="res"><span class="k">Grooves without the comb</span><span class="v ok">2–4 min</span><span class="n">but stalls with about 20 mL left if the granite holds the puddle edge tightly.</span></div>
+      <div class="res"><span class="k">Tape under the arm</span><span class="v bad">stalls</span><span class="n">31–36 of 46 mL left on the curb.</span></div>
+      <div class="res"><span class="k">Cloth wick</span><span class="v">≈ 50 min</span><span class="n">leaves a thin damp film.</span></div>
+    </div>
+    <p class="foot">Method: Stokes flow solved on each groove cross-section (checked against exact pipe solutions to 0.3%), coupled to a capillary and gravity flow model along the arm, bend and leg, and a draining-puddle model. Water at 30 °C. Contact angles on the nylon and granite were not measured, so the results cover a range. Fresh, unwashed nylon may bead water; wash the clip with dish soap before use.</p>
+  </section>
+</div>

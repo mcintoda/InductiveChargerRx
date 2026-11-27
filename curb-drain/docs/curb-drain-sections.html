@@ -1,0 +1,188 @@
+<title>Curb Drain Clip Sections</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drawing sheet. One large side section, then lettered detail sections in a two-column grid. */
+:root {
+  --paper: #f3f5f6;
+  --sheet: #ffffff;
+  --ink: #1b2126;
+  --muted: #5d6973;
+  --rule: #d5dbe0;
+  --stone: #c9c3b8;
+  --stone-line: #9b9385;
+  --stone-text: #4d473e;
+  --nylon: #474e57;
+  --water: #9fd0f2;
+  --water-edge: #1f7fc9;
+  --glass: #bfe3e8;
+  --glass-edge: #6fb3bd;
+  --tile: #dde1e4;
+  --tape: #e9b949;
+  --fabric: #f0a3b8;
+  --bead: #c9d2d9;
+  --dim: #6a737c;
+  --cut: #c4421a;
+  --ok: #0e7a52;
+  --bad: #b23a14;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111518; --sheet: #181d21; --ink: #e5eaee; --muted: #9aa6b0; --rule: #2c343a;
+    --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf;
+    --water: #24618f; --water-edge: #5cb2f0; --glass: #2b5a60; --glass-edge: #5fa6b0;
+    --tile: #2a3035; --tape: #b98d2a; --fabric: #a8566c; --bead: #6c7780; --dim: #8e99a3; --cut: #f0784f;
+    --ok: #3cc48b; --bad: #f0784f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111518; --sheet: #181d21; --ink: #e5eaee; --muted: #9aa6b0; --rule: #2c343a;
+  --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf;
+  --water: #24618f; --water-edge: #5cb2f0; --glass: #2b5a60; --glass-edge: #5fa6b0;
+  --tile: #2a3035; --tape: #b98d2a; --fabric: #a8566c; --bead: #6c7780; --dim: #8e99a3; --cut: #f0784f;
+  --ok: #3cc48b; --bad: #f0784f; color-scheme: dark;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 40px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+header { display: grid; gap: 10px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.lede { max-width: 66ch; color: var(--muted); margin: 0; }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.sheet h2 { font-family: var(--f-display); font-weight: 700; font-size: 19px; margin: 0; display: flex; align-items: baseline; gap: 10px; text-wrap: balance; }
+.tag { font-family: var(--f-mono); font-weight: 500; font-size: 13px; color: var(--cut); border: 1.5px solid var(--cut); border-radius: 50%; width: 26px; height: 26px; display: inline-grid; place-items: center; flex: none; transform: translateY(-2px); }
+.sheet p { margin: 0; max-width: 70ch; color: var(--muted); }
+.fig { overflow-x: auto; }
+.fig svg { display: block; width: 100%; height: auto; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr)); gap: 28px; }
+.results { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0; border-top: 1px solid var(--rule); }
+.res { padding: 14px 16px 4px 0; display: grid; gap: 2px; align-content: start; }
+.res .k { font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.res .v { font-family: var(--f-display); font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums; }
+.res .v.bad { color: var(--bad); }
+.res .v.ok { color: var(--ok); }
+.res .n { font-size: 13px; color: var(--muted); }
+.key { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--muted); }
+.key span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 16px; height: 12px; border-radius: 2px; border: 1px solid var(--rule); display: inline-block; }
+.foot { font-size: 13px; color: var(--muted); max-width: 80ch; }
+
+/* SVG drawing styles */
+svg text { font-family: var(--f-body); }
+.stone { fill: url(#hatch); stroke: var(--stone-line); stroke-width: 1; }
+.nylon { fill: var(--nylon); }
+.water { fill: var(--water); stroke: var(--water-edge); stroke-width: 1; }
+.glass { fill: var(--glass); stroke: var(--glass-edge); stroke-width: 1; }
+.bead { fill: var(--bead); stroke: var(--muted); stroke-width: 1; }
+.tile { fill: var(--tile); stroke: var(--rule); }
+.tape { fill: var(--tape); }
+.fabric { fill: url(#weave); stroke: var(--fabric); stroke-width: 1; }
+.drop { fill: var(--water-edge); }
+.dim { stroke: var(--dim); stroke-width: 1; fill: none; }
+.dimt { font-family: var(--f-mono); font-size: 13px; fill: var(--dim); }
+.dimt.strong { fill: var(--ink); font-weight: 500; }
+.lbl { font-size: 14px; fill: var(--ink); }
+.lbl.small { font-size: 13px; }
+.lbl.muted { fill: var(--muted); }
+.lbl.on-stone { fill: var(--stone-text); font-size: 13px; font-style: italic; }
+.lead { stroke: var(--muted); stroke-width: 1; }
+.lead.dash { stroke-dasharray: 3 3; }
+.leaddot { fill: var(--ink); }
+.lvl { stroke: var(--water-edge); stroke-width: 1.2; stroke-dasharray: 6 4; }
+.lvl2 { stroke: var(--dim); stroke-width: 1; stroke-dasharray: 2 3; }
+.cut { stroke: var(--cut); stroke-width: 2; stroke-dasharray: 8 3 2 3; }
+.cutl { font-family: var(--f-mono); font-weight: 500; font-size: 14px; fill: var(--cut); }
+.h3t { font-family: var(--f-display); font-weight: 700; font-size: 16px; fill: var(--ink); }
+.verdict { font-size: 14px; font-weight: 600; }
+.verdict.ok { fill: var(--ok); }
+.verdict.bad { fill: var(--bad); }
+.grooveline { stroke: var(--sheet); stroke-width: 2.2; opacity: .55; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="8" height="8" style="fill: var(--stone)"/>
+      <line x1="0" y1="0" x2="0" y2="8" style="stroke: var(--stone-line); stroke-width: 1"/>
+    </pattern>
+    <pattern id="weave" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" style="fill: var(--fabric); opacity: .55"/>
+      <path d="M0 3h6M3 0v6" style="stroke: var(--fabric); stroke-width: 1"/>
+    </pattern>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Shower entry curb · fixed glass panel · JLC3DP MJF PA12 · v4</div>
+    <h1>Curb drain clip, in section</h1>
+    <p class="lede">Every cross-section of the clip that drains the puddle off a flat granite shower curb. All drawings are to scale from the same model that was simulated and that you upload to JLC. Water runs down the fixed glass panel, collects on the curb against the silicone bead, enters the clip at the comb, runs along 13 capillary grooves, over the edge and down to a drip tip above the tile.</p>
+  </header>
+
+  <section class="sheet">
+    <h2>Side section through the curb</h2>
+    <div class="key">
+      <span><i class="sw" style="background: var(--stone)"></i>granite</span>
+      <span><i class="sw" style="background: var(--nylon)"></i>nylon clip</span>
+      <span><i class="sw" style="background: var(--water)"></i>water</span>
+      <span><i class="sw" style="background: var(--tape)"></i>mounting tape</span>
+      <span><i class="sw" style="background: var(--glass)"></i>glass</span>
+      <span><i class="sw" style="background: var(--bead)"></i>silicone</span>
+    </div>
+    <div class="fig"><svg viewBox="0 0 950 630" role="img" aria-label="Side section of the shower curb with the drain clip" style="min-width:640px"><polygon class="tile" points="121.50,560.00 270.00,560.00 270.00,579.80 121.50,579.80" /><polygon class="tile" points="771.60,560.00 930.00,560.00 930.00,579.80 771.60,579.80" /><text class="lbl small" x="128.10" y="546.80" text-anchor="start" >shower floor</text><text class="lbl small" x="923.40" y="546.80" text-anchor="end" >bathroom floor</text><polygon class="stone" points="270.00,230.00 771.60,230.00 771.60,560.00 270.00,560.00" /><text class="lbl on-stone" x="633.00" y="428.00" text-anchor="middle" >granite curb</text><polygon class="bead" points="520.80,200.30 520.80,200.30 520.63,204.18 520.13,207.99 519.29,211.67 518.15,215.15 516.71,218.38 515.00,221.30 513.05,223.86 510.90,226.02 508.58,227.74 506.12,228.99 503.58,229.75 501.00,230.00 520.80,230.00" /><polygon class="glass" points="520.80,230.00 553.80,230.00 553.80,25.40 520.80,25.40" /><text class="lbl" x="567.00" y="71.60" text-anchor="start" >fixed glass panel</text><text class="lbl small muted" x="567.00" y="98.00" text-anchor="start" >water runs down it</text><path class="drop" d="M516.84,170.20 q4,6 0,9 q-4,-3 0,-9z"/><path class="drop" d="M516.84,124.00 q4,6 0,9 q-4,-3 0,-9z"/><polygon class="water" points="289.80,230.00 289.80,230.00 289.96,228.45 290.45,226.94 291.24,225.51 292.32,224.18 293.67,223.00 295.24,221.99 297.01,221.18 298.92,220.58 300.94,220.22 303.00,220.10 499.35,220.10 499.35,230.00" /><polygon class="nylon" points="487.80,226.70 448.20,221.42 279.90,221.42 277.49,221.58 275.12,222.05 272.83,222.83 270.66,223.90 268.65,225.24 266.83,226.83 265.24,228.65 263.90,230.66 262.83,232.83 262.05,235.12 261.58,237.49 261.42,239.90 261.42,322.40 261.42,362.00 270.00,362.00 270.00,239.90 270.08,238.61 270.34,237.34 270.75,236.11 271.33,234.95 272.05,233.87 272.90,232.90 273.87,232.05 274.95,231.33 276.11,230.75 277.34,230.34 278.61,230.08 279.90,230.00 487.80,230.00" /><path class="drop" d="M265.71,373.80 q5,7 0,10 q-5,-3 0,-10z"/><path class="drop" d="M265.71,413.40 q5,7 0,10 q-5,-3 0,-10z"/><polygon class="tape" points="270.00,263.00 272.97,263.00 272.97,329.00 270.00,329.00" /><line class="dim" x1="270.00" y1="150.80" x2="520.80" y2="150.80" /><line class="dim" x1="270.00" y1="145.80" x2="270.00" y2="155.80" /><line class="dim" x1="520.80" y1="145.80" x2="520.80" y2="155.80" /><text class="dimt" x="395.40" y="143.80" text-anchor="middle" >3 in (76 mm) to the glass</text><line class="dim" x1="270.00" y1="190.40" x2="487.80" y2="190.40" /><line class="dim" x1="270.00" y1="185.40" x2="270.00" y2="195.40" /><line class="dim" x1="487.80" y1="185.40" x2="487.80" y2="195.40" /><text class="dimt" x="378.90" y="183.40" text-anchor="middle" >arm 66 mm</text><line class="dim" x1="487.80" y1="190.40" x2="520.80" y2="190.40" /><line class="dim" x1="487.80" y1="185.40" x2="487.80" y2="195.40" /><line class="dim" x1="520.80" y1="185.40" x2="520.80" y2="195.40" /><text class="dimt" x="504.30" y="183.40" text-anchor="middle" >10</text><line class="dim" x1="240.30" y1="230.00" x2="240.30" y2="362.00" /><line class="dim" x1="235.30" y1="230.00" x2="245.30" y2="230.00" /><line class="dim" x1="235.30" y1="362.00" x2="245.30" y2="362.00" /><text class="dimt" x="232.30" y="300.00" text-anchor="end" >40 mm</text><line class="dim" x1="270.00" y1="599.60" x2="771.60" y2="599.60" /><line class="dim" x1="270.00" y1="594.60" x2="270.00" y2="604.60" /><line class="dim" x1="771.60" y1="594.60" x2="771.60" y2="604.60" /><text class="dimt" x="520.80" y="615.60" text-anchor="middle" >6 in (152 mm) curb</text><line class="lead" x1="385.50" y1="223.40" x2="395.40" y2="302.60" /><circle class="leaddot" cx="385.50" cy="223.40" r="2.5"/><text class="lbl" x="399.40" y="306.60" text-anchor="start" >puddle, about 3 mm deep</text><text class="lbl small muted" x="399.40" y="321.60" text-anchor="start" >held flat by surface tension</text><line class="lead" x1="477.90" y1="227.36" x2="461.40" y2="388.40" /><circle class="leaddot" cx="477.90" cy="227.36" r="2.5"/><text class="lbl" x="465.40" y="392.40" text-anchor="start" >comb inlet (section C)</text><text class="lbl small muted" x="465.40" y="407.40" text-anchor="start" >slots open to the stone</text><line class="lead" x1="514.20" y1="221.75" x2="567.00" y2="157.40" /><circle class="leaddot" cx="514.20" cy="221.75" r="2.5"/><text class="lbl" x="571.00" y="161.40" text-anchor="start" >silicone bead</text><text class="lbl small muted" x="571.00" y="176.40" text-anchor="start" >clip stops just short of it</text><line class="lead" x1="352.50" y1="225.05" x2="342.60" y2="487.40" /><circle class="leaddot" cx="352.50" cy="225.05" r="2.5"/><text class="lbl" x="346.60" y="491.40" text-anchor="start" >grooved arm (section A)</text><text class="lbl small muted" x="346.60" y="506.40" text-anchor="start" >rests directly on the granite</text><line class="lead" x1="271.65" y1="276.20" x2="144.60" y2="243.20" /><circle class="leaddot" cx="271.65" cy="276.20" r="2.5"/><text class="lbl" x="140.60" y="247.20" text-anchor="end" >tape on the leg only</text><text class="lbl small muted" x="140.60" y="262.20" text-anchor="end" >never under the arm</text><line class="lead" x1="265.71" y1="362.00" x2="144.60" y2="434.60" /><circle class="leaddot" cx="265.71" cy="362.00" r="2.5"/><text class="lbl" x="140.60" y="438.60" text-anchor="end" >drip tip (section D)</text><text class="lbl small muted" x="140.60" y="453.60" text-anchor="end" >drops fall onto the tile</text><line class="cut" x1="352.50" y1="206.90" x2="352.50" y2="246.50" /><text class="cutl" x="352.50" y="202.90" text-anchor="middle" >A</text><line class="cut" x1="474.60" y1="206.90" x2="474.60" y2="246.50" /><text class="cutl" x="474.60" y="202.90" text-anchor="middle" >C</text></svg></div>
+    <p>Nothing is exaggerated: at 2.6 mm the clip is barely thicker than the puddle it sits in. Red dash-dot lines mark where sections A and C are cut.</p>
+  </section>
+
+  <section class="sheet">
+    <h2><span class="tag">A</span>Grooved arm, cut across the curb</h2>
+    <div class="fig"><svg viewBox="0 0 1000 250" role="img" aria-label="Section A, the grooved arm" style="min-width:640px"><polygon class="stone" points="48.00,150.00 752.00,150.00 752.00,198.40 48.00,198.40" /><polygon class="water" points="132.92,113.39 133.41,114.25 134.13,114.93 135.02,115.36 136.00,115.51 136.98,115.36 137.87,114.93 138.59,114.25 139.08,113.39 147.00,92.80 125.00,92.80 125.00,92.80" /><polygon class="water" points="176.92,113.39 177.41,114.25 178.13,114.93 179.02,115.36 180.00,115.51 180.98,115.36 181.87,114.93 182.59,114.25 183.08,113.39 191.00,92.80 169.00,92.80 169.00,92.80" /><polygon class="water" points="220.92,113.39 221.41,114.25 222.13,114.93 223.02,115.36 224.00,115.51 224.98,115.36 225.87,114.93 226.59,114.25 227.08,113.39 235.00,92.80 213.00,92.80 213.00,92.80" /><polygon class="water" points="264.92,113.39 265.41,114.25 266.13,114.93 267.02,115.36 268.00,115.51 268.98,115.36 269.87,114.93 270.59,114.25 271.08,113.39 279.00,92.80 257.00,92.80 257.00,92.80" /><polygon class="water" points="308.92,113.39 309.41,114.25 310.13,114.93 311.02,115.36 312.00,115.51 312.98,115.36 313.87,114.93 314.59,114.25 315.08,113.39 323.00,92.80 301.00,92.80 301.00,92.80" /><polygon class="water" points="352.92,113.39 353.41,114.25 354.13,114.93 355.02,115.36 356.00,115.51 356.98,115.36 357.87,114.93 358.59,114.25 359.08,113.39 367.00,92.80 345.00,92.80 345.00,92.80" /><polygon class="water" points="396.92,113.39 397.41,114.25 398.13,114.93 399.02,115.36 400.00,115.51 400.98,115.36 401.87,114.93 402.59,114.25 403.08,113.39 411.00,92.80 389.00,92.80 389.00,92.80" /><polygon class="water" points="440.92,113.39 441.41,114.25 442.13,114.93 443.02,115.36 444.00,115.51 444.98,115.36 445.87,114.93 446.59,114.25 447.08,113.39 455.00,92.80 433.00,92.80 433.00,92.80" /><polygon class="water" points="484.92,113.39 485.41,114.25 486.13,114.93 487.02,115.36 488.00,115.51 488.98,115.36 489.87,114.93 490.59,114.25 491.08,113.39 499.00,92.80 477.00,92.80 477.00,92.80" /><polygon class="water" points="528.92,113.39 529.41,114.25 530.13,114.93 531.02,115.36 532.00,115.51 532.98,115.36 533.87,114.93 534.59,114.25 535.08,113.39 543.00,92.80 521.00,92.80 521.00,92.80" /><polygon class="water" points="572.92,113.39 573.41,114.25 574.13,114.93 575.02,115.36 576.00,115.51 576.98,115.36 577.87,114.93 578.59,114.25 579.08,113.39 587.00,92.80 565.00,92.80 565.00,92.80" /><polygon class="water" points="616.92,113.39 617.41,114.25 618.13,114.93 619.02,115.36 620.00,115.51 620.98,115.36 621.87,114.93 622.59,114.25 623.08,113.39 631.00,92.80 609.00,92.80 609.00,92.80" /><polygon class="water" points="660.92,113.39 661.41,114.25 662.13,114.93 663.02,115.36 664.00,115.51 664.98,115.36 665.87,114.93 666.59,114.25 667.08,113.39 675.00,92.80 653.00,92.80 653.00,92.80" /><polygon class="nylon" points="70.00,150.00 70.00,123.60 100.80,92.80 125.00,92.80 132.92,113.39 133.41,114.25 134.13,114.93 135.02,115.36 136.00,115.51 136.98,115.36 137.87,114.93 138.59,114.25 139.08,113.39 147.00,92.80 169.00,92.80 176.92,113.39 177.41,114.25 178.13,114.93 179.02,115.36 180.00,115.51 180.98,115.36 181.87,114.93 182.59,114.25 183.08,113.39 191.00,92.80 213.00,92.80 220.92,113.39 221.41,114.25 222.13,114.93 223.02,115.36 224.00,115.51 224.98,115.36 225.87,114.93 226.59,114.25 227.08,113.39 235.00,92.80 257.00,92.80 264.92,113.39 265.41,114.25 266.13,114.93 267.02,115.36 268.00,115.51 268.98,115.36 269.87,114.93 270.59,114.25 271.08,113.39 279.00,92.80 301.00,92.80 308.92,113.39 309.41,114.25 310.13,114.93 311.02,115.36 312.00,115.51 312.98,115.36 313.87,114.93 314.59,114.25 315.08,113.39 323.00,92.80 345.00,92.80 352.92,113.39 353.41,114.25 354.13,114.93 355.02,115.36 356.00,115.51 356.98,115.36 357.87,114.93 358.59,114.25 359.08,113.39 367.00,92.80 389.00,92.80 396.92,113.39 397.41,114.25 398.13,114.93 399.02,115.36 400.00,115.51 400.98,115.36 401.87,114.93 402.59,114.25 403.08,113.39 411.00,92.80 433.00,92.80 440.92,113.39 441.41,114.25 442.13,114.93 443.02,115.36 444.00,115.51 444.98,115.36 445.87,114.93 446.59,114.25 447.08,113.39 455.00,92.80 477.00,92.80 484.92,113.39 485.41,114.25 486.13,114.93 487.02,115.36 488.00,115.51 488.98,115.36 489.87,114.93 490.59,114.25 491.08,113.39 499.00,92.80 521.00,92.80 528.92,113.39 529.41,114.25 530.13,114.93 531.02,115.36 532.00,115.51 532.98,115.36 533.87,114.93 534.59,114.25 535.08,113.39 543.00,92.80 565.00,92.80 572.92,113.39 573.41,114.25 574.13,114.93 575.02,115.36 576.00,115.51 576.98,115.36 577.87,114.93 578.59,114.25 579.08,113.39 587.00,92.80 609.00,92.80 616.92,113.39 617.41,114.25 618.13,114.93 619.02,115.36 620.00,115.51 620.98,115.36 621.87,114.93 622.59,114.25 623.08,113.39 631.00,92.80 653.00,92.80 660.92,113.39 661.41,114.25 662.13,114.93 663.02,115.36 664.00,115.51 664.98,115.36 665.87,114.93 666.59,114.25 667.08,113.39 675.00,92.80 699.20,92.80 730.00,123.60 730.00,150.00" /><line class="lvl" x1="48.00" y1="84.00" x2="752.00" y2="84.00" /><text class="lbl small" x="760.00" y="89.00" text-anchor="start" >puddle starts 3.0 mm deep</text><line class="lvl" x1="48.00" y1="114.80" x2="752.00" y2="114.80" /><text class="lbl small" x="760.00" y="119.80" text-anchor="start" >thins to about 1.6 mm</text><line class="dim" x1="56.00" y1="92.80" x2="56.00" y2="150.00" /><line class="dim" x1="51.00" y1="92.80" x2="61.00" y2="92.80" /><line class="dim" x1="51.00" y1="150.00" x2="61.00" y2="150.00" /><text class="dimt" x="48.00" y="125.40" text-anchor="end" >2.6</text><line class="dim" x1="70.00" y1="202.40" x2="730.00" y2="202.40" /><line class="dim" x1="70.00" y1="197.40" x2="70.00" y2="207.40" /><line class="dim" x1="730.00" y1="197.40" x2="730.00" y2="207.40" /><text class="dimt" x="400.00" y="218.40" text-anchor="middle" >30 mm wide · 13 grooves, 1.0 mm wide at 2.0 mm pitch · 1.0 mm ridges</text><text class="lbl on-stone" x="400.00" y="176.40" text-anchor="middle" >granite</text></svg></div>
+    <p>The grooves are V-shaped so their corners pull water along by capillary action. Their floors sit 1.3 mm above the stone, below the 1.6 mm depth the puddle thins to, so the water stays connected to them.</p>
+  </section>
+
+  <section class="sheet">
+    <h2><span class="tag">B</span>One groove, and how water sits in it</h2>
+    <div class="fig"><svg viewBox="0 0 790 335" role="img" aria-label="Section B, one groove and its three water states" style="min-width:600px"><polygon class="water" points="104.00,215.40 107.34,221.26 112.26,225.87 118.33,228.81 125.00,229.82 131.67,228.81 137.74,225.87 142.66,221.26 146.00,215.40 200.00,75.00 50.00,75.00 50.00,75.00" /><polygon class="nylon" points="17.00,288.00 17.00,75.00 50.00,75.00 104.00,215.40 106.03,219.42 108.82,222.96 112.26,225.87 116.21,228.04 120.52,229.37 125.00,229.82 129.48,229.37 133.79,228.04 137.74,225.87 141.18,222.96 143.97,219.42 146.00,215.40 200.00,75.00 233.00,75.00 233.00,288.00" /><text class="h3t" x="125.00" y="30.00" text-anchor="middle" >Filled</text><text class="dimt strong" x="125.00" y="52.00" text-anchor="middle" >p ≈ 0 Pa</text><text class="lbl small muted" x="125.00" y="318.00" text-anchor="middle" >flat meniscus, groove full</text><line class="lead dash" x1="125.00" y1="262.50" x2="125.00" y2="52.50" /><text class="dimt strong" x="134.00" y="187.50" text-anchor="start" >α = 21°</text><polygon class="water" points="374.00,215.40 377.34,221.26 382.26,225.87 388.33,228.81 395.00,229.82 401.67,228.81 407.74,225.87 412.66,221.26 416.00,215.40 470.00,75.00 470.00,75.00 464.07,77.51 458.06,79.81 451.98,81.91 445.82,83.78 439.61,85.45 433.34,86.89 427.02,88.12 420.66,89.12 414.27,89.91 407.86,90.47 401.43,90.80 395.00,90.92 388.57,90.80 382.14,90.47 375.73,89.91 369.34,89.12 362.98,88.12 356.66,86.89 350.39,85.45 344.18,83.78 338.02,81.91 331.94,79.81 325.93,77.51 320.00,75.00 320.00,75.00" /><polygon class="nylon" points="287.00,288.00 287.00,75.00 320.00,75.00 374.00,215.40 376.03,219.42 378.82,222.96 382.26,225.87 386.21,228.04 390.52,229.37 395.00,229.82 399.48,229.37 403.79,228.04 407.74,225.87 411.18,222.96 413.97,219.42 416.00,215.40 470.00,75.00 503.00,75.00 503.00,288.00" /><text class="h3t" x="395.00" y="30.00" text-anchor="middle" >Pinned at the ridges</text><text class="dimt strong" x="395.00" y="52.00" text-anchor="middle" >−58 Pa suction</text><text class="lbl small muted" x="395.00" y="318.00" text-anchor="middle" >meniscus sags until it meets the wall at θ</text><text class="dimt strong" x="468.00" y="97.00" text-anchor="end" >θ</text><polygon class="water" points="644.00,215.40 647.34,221.26 652.26,225.87 658.33,228.81 665.00,229.82 671.67,228.81 677.74,225.87 682.66,221.26 686.00,215.40 695.46,190.80 695.46,190.80 693.05,191.82 690.61,192.76 688.14,193.61 685.64,194.37 683.12,195.05 680.57,195.63 678.00,196.13 675.42,196.54 672.83,196.86 670.22,197.09 667.61,197.22 665.00,197.27 662.39,197.22 659.78,197.09 657.17,196.86 654.58,196.54 652.00,196.13 649.43,195.63 646.88,195.05 644.36,194.37 641.86,193.61 639.39,192.76 636.95,191.82 634.54,190.80 634.54,190.80" /><polygon class="nylon" points="557.00,288.00 557.00,75.00 590.00,75.00 644.00,215.40 646.03,219.42 648.82,222.96 652.26,225.87 656.21,228.04 660.52,229.37 665.00,229.82 669.48,229.37 673.79,228.04 677.74,225.87 681.18,222.96 683.97,219.42 686.00,215.40 740.00,75.00 773.00,75.00 773.00,288.00" /><text class="h3t" x="665.00" y="30.00" text-anchor="middle" >Receded into the V</text><text class="dimt strong" x="665.00" y="52.00" text-anchor="middle" >−144 Pa suction</text><text class="lbl small muted" x="665.00" y="318.00" text-anchor="middle" >stronger pull, less water, slower flow</text></svg></div>
+    <p>Drawn 150× actual size. Gravity on the leg pulls the water, and the meniscus in each groove responds by curving. The more it curves, the harder it pulls, until it recedes into the bottom of the V. The flow model was solved for each of these shapes.</p>
+    <p><strong style="color: var(--ink)">The rule that decides it:</strong> water creeps along the groove by itself only if its contact angle θ with the nylon is below 90° − α = 69°. Fresh nylon can be above that. A wash with dish soap brings it well below.</p>
+  </section>
+
+  <div class="grid2">
+    <section class="sheet">
+      <h2><span class="tag">C</span>Comb inlet by the silicone bead</h2>
+      <div class="fig"><svg viewBox="0 0 580 250" role="img" aria-label="Section C, the comb inlet" style="min-width:360px"><clipPath id="cclip"><rect x="12" y="0" width="552.00" height="300"/></clipPath><g clip-path="url(#cclip)"><polygon class="stone" points="12.00,150.00 1548.00,150.00 1548.00,226.80 12.00,226.80" /><polygon class="water" points="12.00,150.00 1548.00,150.00 1548.00,121.20 12.00,121.20" /><polygon class="nylon" points="60.00,150.00 60.00,143.60 127.20,76.40 180.00,76.40 180.00,150.00" /><polygon class="nylon" points="228.00,150.00 228.00,76.40 276.00,76.40 276.00,150.00" /><polygon class="nylon" points="324.00,150.00 324.00,76.40 372.00,76.40 372.00,150.00" /><polygon class="nylon" points="420.00,150.00 420.00,76.40 468.00,76.40 468.00,150.00" /><polygon class="nylon" points="516.00,150.00 516.00,76.40 564.00,76.40 564.00,150.00" /><polygon class="nylon" points="612.00,150.00 612.00,76.40 660.00,76.40 660.00,150.00" /><polygon class="nylon" points="708.00,150.00 708.00,76.40 756.00,76.40 756.00,150.00" /><polygon class="nylon" points="804.00,150.00 804.00,76.40 852.00,76.40 852.00,150.00" /><polygon class="nylon" points="900.00,150.00 900.00,76.40 948.00,76.40 948.00,150.00" /><polygon class="nylon" points="996.00,150.00 996.00,76.40 1044.00,76.40 1044.00,150.00" /><polygon class="nylon" points="1092.00,150.00 1092.00,76.40 1140.00,76.40 1140.00,150.00" /><polygon class="nylon" points="1188.00,150.00 1188.00,76.40 1236.00,76.40 1236.00,150.00" /><polygon class="nylon" points="1284.00,150.00 1284.00,76.40 1332.00,76.40 1332.00,150.00" /><polygon class="nylon" points="1380.00,150.00 1380.00,76.40 1432.80,76.40 1500.00,143.60 1500.00,150.00" /><line class="lvl" x1="12.00" y1="121.20" x2="1548.00" y2="121.20" /></g><text class="lbl small" x="60.00" y="32.40" text-anchor="start" >a 0.6 mm film still reaches the slots</text><line class="dim" x1="44.00" y1="76.40" x2="44.00" y2="150.00" /><line class="dim" x1="39.00" y1="76.40" x2="49.00" y2="76.40" /><line class="dim" x1="39.00" y1="150.00" x2="49.00" y2="150.00" /><text class="dimt" x="36.00" y="117.20" text-anchor="end" >1.5</text><line class="dim" x1="180.00" y1="62.40" x2="228.00" y2="62.40" /><line class="dim" x1="180.00" y1="57.40" x2="180.00" y2="67.40" /><line class="dim" x1="228.00" y1="57.40" x2="228.00" y2="67.40" /><text class="dimt" x="204.00" y="55.40" text-anchor="middle" >1.0 slot</text><text class="lbl on-stone" x="300.00" y="198.00" text-anchor="middle" >granite</text><text class="lbl small muted" x="562.00" y="244.80" text-anchor="end" >first 10 mm of the 30 mm width shown</text></svg></div>
+      <p>For the last 8 mm of the arm, each groove becomes a slot cut right through to the granite. Water enters at stone level, so the clip keeps draining after the puddle is thinner than the grooves are high.</p>
+    </section>
+    <section class="sheet">
+      <h2><span class="tag">D</span>Drip tip, seen from inside the shower</h2>
+      <div class="fig"><svg viewBox="0 0 520 360" role="img" aria-label="Section D, the drip tip seen from the shower" style="min-width:360px"><polygon class="nylon" points="40.00,61.00 250.00,61.00 250.00,236.00 145.00,320.00 40.00,236.00" /><line class="grooveline" x1="61.00" y1="64.50" x2="61.00" y2="248.60" /><line class="grooveline" x1="75.00" y1="64.50" x2="75.00" y2="259.80" /><line class="grooveline" x1="89.00" y1="64.50" x2="89.00" y2="271.00" /><line class="grooveline" x1="103.00" y1="64.50" x2="103.00" y2="282.20" /><line class="grooveline" x1="117.00" y1="64.50" x2="117.00" y2="293.40" /><line class="grooveline" x1="131.00" y1="64.50" x2="131.00" y2="304.60" /><line class="grooveline" x1="145.00" y1="64.50" x2="145.00" y2="315.80" /><line class="grooveline" x1="159.00" y1="64.50" x2="159.00" y2="304.60" /><line class="grooveline" x1="173.00" y1="64.50" x2="173.00" y2="293.40" /><line class="grooveline" x1="187.00" y1="64.50" x2="187.00" y2="282.20" /><line class="grooveline" x1="201.00" y1="64.50" x2="201.00" y2="271.00" /><line class="grooveline" x1="215.00" y1="64.50" x2="215.00" y2="259.80" /><line class="grooveline" x1="229.00" y1="64.50" x2="229.00" y2="248.60" /><path class="drop" d="M145.00,326.00 q7,9 0,13 q-7,-4 0,-13z"/><text class="lbl small" x="264.00" y="110.00" text-anchor="start" >grooves run straight down</text><text class="lbl small" x="264.00" y="250.00" text-anchor="start" >V tip gathers them</text><text class="lbl small muted" x="264.00" y="265.00" text-anchor="start" >into one drip point</text><line class="dim" x1="40.00" y1="51.00" x2="250.00" y2="51.00" /><line class="dim" x1="40.00" y1="46.00" x2="40.00" y2="56.00" /><line class="dim" x1="250.00" y1="46.00" x2="250.00" y2="56.00" /><text class="dimt" x="145.00" y="44.00" text-anchor="middle" >30 mm</text><line class="dim" x1="28.00" y1="236.00" x2="28.00" y2="320.00" /><line class="dim" x1="23.00" y1="236.00" x2="33.00" y2="236.00" /><line class="dim" x1="23.00" y1="320.00" x2="33.00" y2="320.00" /><text class="dimt" x="20.00" y="282.00" text-anchor="end" >12 mm V</text></svg></div>
+      <p>The leg's grooves carry the water down. The V point at the bottom collects it into one place so drops fall cleanly onto the tile instead of creeping back under the clip.</p>
+    </section>
+  </div>
+
+  <section class="sheet">
+    <h2>Why the arm has to sit on the stone</h2>
+    <div class="fig"><svg viewBox="0 0 900 290" role="img" aria-label="Mounting comparison" style="min-width:600px"><polygon class="stone" points="90.00,210.00 355.20,210.00 355.20,264.40 90.00,264.40" /><polygon class="water" points="90.00,210.00 355.20,210.00 355.20,155.60 90.00,155.60" /><polygon class="nylon" points="110.40,210.00 110.40,121.60 120.60,121.60 132.84,153.42 133.60,154.75 134.71,155.80 136.09,156.46 137.60,156.69 139.11,156.46 140.49,155.80 141.60,154.75 142.36,153.42 154.60,121.60 188.60,121.60 200.84,153.42 201.60,154.75 202.71,155.80 204.09,156.46 205.60,156.69 207.11,156.46 208.49,155.80 209.60,154.75 210.36,153.42 222.60,121.60 256.60,121.60 268.84,153.42 269.60,154.75 270.71,155.80 272.09,156.46 273.60,156.69 275.11,156.46 276.49,155.80 277.60,154.75 278.36,153.42 290.60,121.60 334.80,121.60 334.80,210.00" /><polygon class="water" points="132.84,153.42 133.60,154.75 134.71,155.80 136.09,156.46 137.60,156.69 139.11,156.46 140.49,155.80 141.60,154.75 142.36,153.42 154.60,121.60 120.60,121.60 120.60,121.60" /><polygon class="water" points="200.84,153.42 201.60,154.75 202.71,155.80 204.09,156.46 205.60,156.69 207.11,156.46 208.49,155.80 209.60,154.75 210.36,153.42 222.60,121.60 188.60,121.60 188.60,121.60" /><polygon class="water" points="268.84,153.42 269.60,154.75 270.71,155.80 272.09,156.46 273.60,156.69 275.11,156.46 276.49,155.80 277.60,154.75 278.36,153.42 290.60,121.60 256.60,121.60 256.60,121.60" /><line class="lvl" x1="90.00" y1="155.60" x2="355.20" y2="155.60" /><text class="dimt" x="361.20" y="160.60" text-anchor="start" >water 1.6</text><line class="lvl2" x1="90.00" y1="165.80" x2="355.20" y2="165.80" /><text class="dimt" x="361.20" y="183.80" text-anchor="start" >groove floor 1.3</text><text class="h3t" x="223.00" y="28.00" text-anchor="middle" >Arm on the stone</text><text class="verdict ok" x="223.00" y="50.00" text-anchor="middle" >grooves reach the water</text><polygon class="stone" points="540.00,210.00 805.20,210.00 805.20,264.40 540.00,264.40" /><polygon class="water" points="540.00,210.00 805.20,210.00 805.20,155.60 540.00,155.60" /><polygon class="tape" points="560.40,210.00 784.80,210.00 784.80,176.00 560.40,176.00" /><polygon class="nylon" points="560.40,176.00 560.40,87.60 570.60,87.60 582.84,119.42 583.60,120.75 584.71,121.80 586.09,122.46 587.60,122.69 589.11,122.46 590.49,121.80 591.60,120.75 592.36,119.42 604.60,87.60 638.60,87.60 650.84,119.42 651.60,120.75 652.71,121.80 654.09,122.46 655.60,122.69 657.11,122.46 658.49,121.80 659.60,120.75 660.36,119.42 672.60,87.60 706.60,87.60 718.84,119.42 719.60,120.75 720.71,121.80 722.09,122.46 723.60,122.69 725.11,122.46 726.49,121.80 727.60,120.75 728.36,119.42 740.60,87.60 784.80,87.60 784.80,176.00" /><line class="lvl" x1="540.00" y1="155.60" x2="805.20" y2="155.60" /><text class="dimt" x="811.20" y="160.60" text-anchor="start" >water 1.6</text><line class="lvl2" x1="540.00" y1="131.80" x2="805.20" y2="131.80" /><text class="dimt" x="811.20" y="136.80" text-anchor="start" >groove floor 2.3</text><text class="h3t" x="673.00" y="28.00" text-anchor="middle" >1 mm tape under the arm</text><text class="verdict bad" x="673.00" y="50.00" text-anchor="middle" >grooves sit above the water: stalls</text></svg></div>
+    <p>Heights in mm. The puddle thins to about 1.6 mm before it starts to shrink. A millimetre of tape sounds harmless, but it lifts every groove out of reach. Tape the vertical leg to the curb's inner face and let the arm lie directly on the granite.</p>
+  </section>
+
+  <section class="sheet">
+    <h2><span class="tag">A′</span>Cloth version, same cut</h2>
+    <div class="fig"><svg viewBox="0 0 1000 200" role="img" aria-label="Section A, cloth version" style="min-width:640px"><polygon class="stone" points="48.00,120.00 752.00,120.00 752.00,168.40 48.00,168.40" /><polygon class="nylon" points="70.00,120.00 70.00,93.60 100.80,62.80 257.00,62.80 257.00,89.20 543.00,89.20 543.00,62.80 699.20,62.80 730.00,93.60 730.00,120.00" /><polygon class="fabric" points="268.00,89.20 532.00,89.20 532.00,63.90 268.00,63.90" /><line class="dim" x1="257.00" y1="48.80" x2="543.00" y2="48.80" /><line class="dim" x1="257.00" y1="43.80" x2="257.00" y2="53.80" /><line class="dim" x1="543.00" y1="43.80" x2="543.00" y2="53.80" /><text class="dimt" x="400.00" y="41.80" text-anchor="middle" >13 mm groove, 1.2 deep</text><text class="lbl on-stone" x="400.00" y="146.40" text-anchor="middle" >granite</text><text class="lbl small" x="758.00" y="80.40" text-anchor="start" >microfiber strip, 12 mm</text><text class="lbl small muted" x="758.00" y="96.40" text-anchor="start" >let 10–15 mm lie on the stone</text><text class="lbl small muted" x="758.00" y="111.40" text-anchor="start" >past the end of the arm</text></svg></div>
+    <p>The alternative print holds a microfiber strip in one wide groove. It drains about 30 times more slowly than wetted grooves, but it pulls the puddle down to a damp film.</p>
+  </section>
+
+  <section class="sheet">
+    <h2>What the simulation found</h2>
+    <div class="results">
+      <div class="res"><span class="k">v4 comb inlet</span><span class="v ok">≈ 2 min</span><span class="n">to drain a 46 mL puddle, nylon wetted. Emptied it in every case run; about 15–100 min if the nylon is not yet wetted.</span></div>
+      <div class="res"><span class="k">Grooves without the comb</span><span class="v ok">2–4 min</span><span class="n">but stalls with about 20 mL left if the granite holds the puddle edge tightly.</span></div>
+      <div class="res"><span class="k">Tape under the arm</span><span class="v bad">stalls</span><span class="n">31–36 of 46 mL left on the curb.</span></div>
+      <div class="res"><span class="k">Cloth wick</span><span class="v">≈ 50 min</span><span class="n">leaves a thin damp film.</span></div>
+    </div>
+    <p class="foot">Method: Stokes flow solved on each groove cross-section (checked against exact pipe solutions to 0.3%), coupled to a capillary and gravity flow model along the arm, bend and leg, and a draining-puddle model. Water at 30 °C. Contact angles on the nylon and granite were not measured, so the results cover a range. Fresh, unwashed nylon may bead water; wash the clip with dish soap before use.</p>
+  </section>
+</div>
