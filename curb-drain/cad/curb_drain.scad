@@ -9,7 +9,7 @@
 mode = "grooves"; // ["grooves", "wick"]
 
 /* [Fit to your curb] */
-pad_depth   = 66;   // arm length from the inner edge; ends ~10 mm from the glass, just short of the silicone bead
+pad_depth   = 56;   // arm length from the shower-side edge; glass is ~63.5 mm (2.5 in) in, so this stops ~7.5 mm short of it, clear of the silicone
 edge_radius = 3;    // radius of the curb's inner top edge (0.5 = sharp, ~3 = eased, ~19 = full bullnose on 1.5" stone)
 drop        = 40;   // how far the leg runs down the inner face below the curb top
 

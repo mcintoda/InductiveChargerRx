@@ -8,7 +8,7 @@ import numpy as np, trimesh
 from manifold3d import Manifold, CrossSection, FillRule
 
 # ---- fit to the curb (same as curb_drain.scad) ----
-PAD, RE, DROP = 66.0, 3.0, 40.0          # arm length, curb edge radius, leg length
+PAD, RE, DROP = 56.0, 3.0, 40.0          # arm length (glass ~63.5 mm in), curb edge radius, leg length (3 cm slab + 10 mm)
 # ---- section / profile ----
 T, CW, CD, PITCH, RTIP = 2.6, 1.0, 1.3, 2.0, 0.15
 FEATHER_LEN, FEATHER_MIN, COMB_LEN = 12.0, 1.0, 8.0
