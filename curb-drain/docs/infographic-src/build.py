@@ -392,7 +392,7 @@ html = open(__import__("os").path.join(__import__("os").path.dirname(__import__(
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import iso
-for k, v in dict(ISORUN=iso.iso_run(), ISOJOINT=iso.iso_joint(), SIDE=panel_side(), ARM=panel_arm(), GROOVE=panel_groove(), COMB=panel_comb(),
+for k, v in dict(ISORUN=iso.iso_run(), ISOJOINT=iso.iso_joint(), PRINTISO=iso.iso_print(), PRINTCMP=iso.print_compare(), SIDE=panel_side(), ARM=panel_arm(), GROOVE=panel_groove(), COMB=panel_comb(),
                  MOUNT=panel_mount(), TIP=panel_tip(), JOINT=panel_joint(), OVERVIEW=panel_overview()).items():
     html = html.replace("{{"+k+"}}", v)
 open(__import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "..", "curb-drain-sections.html"),"w").write(html)

@@ -293,3 +293,93 @@ def iso_joint():
     sc.label((x1, 45, -40), 40, 30, "curb (cut away)", None)
     sc.label((x1, GLASS_Y - BEAD_W / 2, 2.5), 40, -10, "silicone bead", "2.9 mm clear of the strip")
     return sc.svg("Isometric close-up of a joint between two sections", 560)
+
+
+# ---- print orientation ----
+def _profile_outline():
+    """Closed outline of the strip's L profile in part (y, z), outer surface first."""
+    prof = [(PAD, 1.0), (FEATHER_Y, T), (RE, T)]
+    prof += [bend_pt(a) for a in BEND]
+    prof += [(-T, VALLEY), (0, VALLEY), (0, -RE)]
+    prof += [bend_pt(a, RE) for a in reversed(BEND)]
+    prof += [(PAD, 0)]
+    return prof
+
+
+def iso_print():
+    """One section standing on end on the build plate: part x (length) becomes build Z.
+    World (X, Y, Z) = (part z, part y, height above the plate)."""
+    H = SEC_L
+    sc = Scene(1.35)
+    W = lambda y, z, h: (z, y, h)
+    # build plate
+    sc.poly([W(-25, -45, 0), W(80, -45, 0), W(80, 20, 0), W(-25, 20, 0)], "plate")
+    # visible outer faces: leg outer face, bend facets, arm top, feather (all face the viewer)
+    sc.poly([W(-T, VALLEY, 0), W(-T, -RE, 0), W(-T, -RE, H), W(-T, VALLEY, H)], "n-front")
+    for i in range(5, -1, -1):
+        (ya, za), (yb, zb) = bend_pt(BEND[i]), bend_pt(BEND[i + 1])
+        cls = ("n-top", "n-top", "n-mid", "n-mid", "n-front", "n-front")[i]
+        sc.poly([W(ya, za, 0), W(yb, zb, 0), W(yb, zb, H), W(ya, za, H)], cls)
+    sc.poly([W(RE, T, 0), W(FEATHER_Y, T, 0), W(FEATHER_Y, T, H), W(RE, T, H)], "n-top")
+    sc.poly([W(FEATHER_Y, T, 0), W(PAD, 1.0, 0), W(PAD, 1.0, H), W(FEATHER_Y, T, H)], "n-top")
+    # grooves: each one lies in a horizontal plane, exactly like the layers
+    for c in groove_centers(0.0, SEC_L):
+        pts = [W(-T, VALLEY + 1, c), W(-T, -RE, c)] + [W(y, z, c) for y, z in (bend_pt(a) for a in reversed(BEND))] + [W(FEATHER_Y, T, c), W(COMB_Y, top_z(COMB_Y), c)]
+        sc.polyline(pts, "gline thin")
+    # one layer highlighted part way up, and the top cap (the end face)
+    hl = 0.62 * H
+    prof = _profile_outline()
+    sc.poly([W(y, z, hl) for y, z in prof], "layerhl")
+    sc.poly([W(y, z, H) for y, z in prof], "n-end")
+    # build direction arrow
+    ay, az = 72.0, 10.0
+    sc.line(W(ay, az, 0), W(ay, az, H + 25), "zarrow")
+    sc.poly([W(ay - 3, az, H + 15), W(ay + 3, az, H + 15), W(ay, az, H + 30)], "zhead")
+    sc.label(W(ay, az, H + 28), 16, -4, "build direction (Z)", "layers stack up")
+    sc.label(W(PAD, 1.0, hl), 46, 0, "one 0.08 mm layer", "the whole L in one slice")
+    sc.label(W(30, T, 0.3 * H), 60, 10, "grooves are horizontal", "parallel to the layers")
+    sc.label(W(-T, -14, 0.12 * H), -24, 30, "305 mm long", "printed upright (max 360)", "end")
+    return sc.svg("A section standing on end on the build plate", 520)
+
+
+def print_compare():
+    """2D comparison of the bend, standing vs lying flat (layer steps exaggerated)."""
+    s, gap, stepmm = 7.0, 90, 1.0          # 1.0 mm drawn steps = 0.08 mm layers exaggerated 12.5x
+    out = []
+    def P(ox, oy, y, z): return (ox + y * s, oy - z * s)
+    def polyline(pts, cls): return f'<polyline class="{cls}" points="{" ".join(f(x)+","+f(y) for x, y in pts)}"/>'
+    def polygon(pts, cls): return f'<polygon class="{cls}" points="{" ".join(f(x)+","+f(y) for x, y in pts)}"/>'
+    prof = [(18, T), (RE, T)] + [bend_pt(a) for a in BEND] + [(-T, -16), (0, -16), (0, -RE)] + [bend_pt(a, RE) for a in reversed(BEND)] + [(18, 0)]
+    # left: standing on end, each layer is the whole profile (seen from above)
+    ox, oy = 60, 100
+    out.append(polygon([P(ox, oy, y, z) for y, z in prof], "layerhl"))
+    out.append(polyline([P(ox, oy, 16, T + 1.6), P(ox, oy, RE, T + 1.6)] + [P(ox, oy, *bend_pt(a, RE + T + 1.6)) for a in BEND] + [P(ox, oy, -T - 1.6, -14)], "flowpath"))
+    out.append(f'<text class="h3t" x="{ox - 20}" y="24">Standing on end</text>')
+    out.append(f'<text class="verdict ok" x="{ox - 20}" y="44">recommended</text>')
+    out.append(f'<text class="lbl small" x="{ox - 20}" y="{oy + 18*s + 6}">One layer is the whole profile, so</text>')
+    out.append(f'<text class="lbl small muted" x="{ox - 20}" y="{oy + 18*s + 22}">the bend is smooth along the flow (blue).</text>')
+    # right: lying flat, horizontal layers make a staircase across the bend
+    ox2 = ox + 25 * s + gap
+    stairs = []
+    zs = [T - k * stepmm for k in range(int((T + 16) / stepmm) + 1)]
+    for z in zs:   # outer surface y at each layer, quantised
+        if z >= -RE:
+            ang = math.asin(max(-1, min(1, (z + RE) / (RE + T))))
+            y = RE - (RE + T) * math.cos(ang)
+        else:
+            y = -T
+        stairs.append((math.floor(y / stepmm) * stepmm, z))
+    pts = [(18, T)]
+    for (y, z), (y2, z2) in zip(stairs, stairs[1:]):
+        pts += [(y, z), (y, z2)]
+    pts += [(-T, -16), (0, -16), (0, -RE)] + [bend_pt(a, RE) for a in reversed(BEND)] + [(18, 0)]
+    out.append(polygon([P(ox2, oy, y, z) for y, z in pts], "n-mid"))
+    for z in zs:
+        out.append(polyline([P(ox2, oy, -T - 1.5, z), P(ox2, oy, 18, z)], "layerline"))
+    out.append(polyline([P(ox2, oy, 16, T + 1.6), P(ox2, oy, RE, T + 1.6)] + [P(ox2, oy, *bend_pt(a, RE + T + 1.6)) for a in BEND] + [P(ox2, oy, -T - 1.6, -14)], "flowpath"))
+    out.append(f'<text class="h3t" x="{ox2 - 20}" y="24">Lying flat</text>')
+    out.append(f'<text class="verdict bad" x="{ox2 - 20}" y="44">works, but not ideal</text>')
+    out.append(f'<text class="lbl small" x="{ox2 - 20}" y="{oy + 18*s + 6}">Horizontal layers turn the bend into a</text>')
+    out.append(f'<text class="lbl small muted" x="{ox2 - 20}" y="{oy + 18*s + 22}">staircase across the flow (steps shown 12× too big).</text>')
+    w, h = ox2 + 25 * s + 150, oy + 18 * s + 34
+    return f'<svg viewBox="0 0 {f(w)} {f(h)}" role="img" aria-label="Bend printed standing on end versus lying flat" style="min-width:560px; max-width:760px">{"".join(out)}</svg>'

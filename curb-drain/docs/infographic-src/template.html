@@ -23,6 +23,8 @@
   --s-front: #bdb6aa;
   --s-end: #a8a194;
   --tile-line: #b9c0c6;
+  --plate: #e3e7ea;
+  --layer: #e0701f;
   --nylon-2: #7d8690;
   --slot: #ffffff;
   --water: #9fd0f2;
@@ -44,7 +46,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #111518; --sheet: #181d21; --ink: #e5eaee; --muted: #9aa6b0; --rule: #2c343a;
-    --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf; --nylon-2: #7f8892; --slot: #181d21; --n-top: #9aa3ac; --n-mid: #7f8891; --n-front: #6a737c; --n-end: #535b63; --gline: #343a40; --s-top: #5d574f; --s-front: #4c4740; --s-end: #423d37; --tile-line: #3b4248;
+    --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf; --nylon-2: #7f8892; --slot: #181d21; --n-top: #9aa3ac; --n-mid: #7f8891; --n-front: #6a737c; --n-end: #535b63; --gline: #343a40; --s-top: #5d574f; --s-front: #4c4740; --s-end: #423d37; --tile-line: #3b4248; --plate: #262c31; --layer: #f08a3c;
     --water: #24618f; --water-edge: #5cb2f0; --glass: #2b5a60; --glass-edge: #5fa6b0;
     --tile: #2a3035; --tape: #b98d2a; --fabric: #a8566c; --bead: #6c7780; --dim: #8e99a3; --cut: #f0784f;
     --ok: #3cc48b; --bad: #f0784f; color-scheme: dark;
@@ -52,7 +54,7 @@
 }
 :root[data-theme="dark"] {
   --paper: #111518; --sheet: #181d21; --ink: #e5eaee; --muted: #9aa6b0; --rule: #2c343a;
-  --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf; --nylon-2: #7f8892; --slot: #181d21; --n-top: #9aa3ac; --n-mid: #7f8891; --n-front: #6a737c; --n-end: #535b63; --gline: #343a40; --s-top: #5d574f; --s-front: #4c4740; --s-end: #423d37; --tile-line: #3b4248;
+  --stone: #4f4a43; --stone-line: #6f685d; --stone-text: #d8d0c3; --nylon: #aeb6bf; --nylon-2: #7f8892; --slot: #181d21; --n-top: #9aa3ac; --n-mid: #7f8891; --n-front: #6a737c; --n-end: #535b63; --gline: #343a40; --s-top: #5d574f; --s-front: #4c4740; --s-end: #423d37; --tile-line: #3b4248; --plate: #262c31; --layer: #f08a3c;
   --water: #24618f; --water-edge: #5cb2f0; --glass: #2b5a60; --glass-edge: #5fa6b0;
   --tile: #2a3035; --tape: #b98d2a; --fabric: #a8566c; --bead: #6c7780; --dim: #8e99a3; --cut: #f0784f;
   --ok: #3cc48b; --bad: #f0784f; color-scheme: dark;
@@ -103,6 +105,13 @@ svg text { font-family: var(--f-body); }
 .tileline { stroke: var(--tile-line); stroke-width: 1; }
 .arrow { stroke: var(--cut); stroke-width: 2; stroke-dasharray: 6 4; }
 .arrowhead { fill: var(--cut); }
+.plate { fill: var(--plate); stroke: var(--rule); }
+.layerhl { fill: var(--layer); fill-opacity: .28; stroke: var(--layer); stroke-width: 1.6; }
+.layerline { stroke: var(--layer); stroke-width: .8; opacity: .55; }
+.zarrow { stroke: var(--layer); stroke-width: 2; }
+.zhead { fill: var(--layer); }
+.flowarrow { fill: none; stroke: var(--water-edge); stroke-width: 1.6; }
+.flowpath { fill: none; stroke: var(--water-edge); stroke-width: 2; stroke-dasharray: 5 4; }
 .slot { fill: var(--slot); }
 .gap { fill: var(--slot); stroke: var(--cut); stroke-width: 1; }
 .combband { fill: var(--slot); opacity: .35; }
@@ -227,6 +236,19 @@ svg text { font-family: var(--f-body); }
         <p>Each section is accurate to about ±1.2 mm in length (±0.4%), so leave a few millimetres at the ends of the run.</p>
       </div>
     </div>
+  </section>
+
+  <section class="sheet">
+    <h2>Print orientation</h2>
+    <div class="grid2" style="gap:20px; align-items:center">
+      <div class="fig">{{PRINTISO}}</div>
+      <div style="display:grid; gap:12px; min-width:0">
+        <p>Ask JLC to print each section standing on end, with its 305 mm length vertical. MJF builds in 0.08 mm layers, and in this orientation every layer is one complete L-shaped slice of the strip.</p>
+        <p>The grooves then lie in the same horizontal planes as the layers, so the tiny layer steps run along the direction the water flows: across the arm, around the bend and down the leg. The bend, where the water works hardest, prints smooth.</p>
+        <p>Suggested order remark: <em>"Please orient each part with its longest dimension (~305 mm) vertical / along the build Z axis, so layers are perpendicular to the length."</em> If JLC packs the parts differently, they still work; MJF layers are fine enough that this is a refinement, not a requirement.</p>
+      </div>
+    </div>
+    <div class="fig" style="display:flex; justify-content:center">{{PRINTCMP}}</div>
   </section>
 
   <section class="sheet">
