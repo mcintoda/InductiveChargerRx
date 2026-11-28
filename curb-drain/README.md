@@ -50,6 +50,7 @@ cd stl/3ft-run && python3 ../../cad/curb_run.py 914.4      # total length in mm;
 
 - **Material:** MJF PA12-HP nylon, dyed black if offered (the curb is black granite). Units: mm.
 - **Checked against JLC's MJF guidelines:** 1.0 mm minimum walls (ridges, comb teeth, leading edge), 1.0 mm slots (≥ 0.6 mm), no closed cavities, 0.3 mm dovetail clearance (0.2–0.4 mm for parts that fit together), and every part well inside 370 × 276 × 360 mm.
+- **Print orientation (request it in the order remarks):** stand each part on end, with its longest dimension (~305 mm, the length along the curb) vertical along the build Z axis. Each 0.08 mm layer is then one complete L-shaped slice, so the layer steps run along the grooves everywhere and the bend prints smooth instead of as a staircase across the flow. Suggested remark: *"Please orient each part with its longest dimension (~305 mm) vertical / along the build Z axis, so layers are perpendicular to the length."* JLC may place parts differently to fit their build; the parts still work, since MJF layers are fine and the effect is small.
 - **Accuracy is ±0.3 mm or 0.4%,** so each 305 mm section can be about 1.2 mm long or short. Leave a few mm at the ends of the run.
 - **The V-groove bottoms are finer than JLC's 0.8 mm minimum for engraved detail,** so they will print rounded. The simulation still drains fully with a 0.4 mm bottom radius, just more slowly (about 4 min instead of 2.5).
 - **The comb teeth are 1.0 × ~1.5 mm ribs.** If JLC's upload check flags them, set `comb_len = 5`.
