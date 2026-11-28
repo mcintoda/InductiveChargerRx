@@ -14,6 +14,8 @@ T, CW, CD, PITCH, RTIP = 2.6, 1.0, 1.3, 2.0, 0.15
 FEATHER_LEN, FEATHER_MIN, COMB_LEN = 12.0, 1.0, 8.0
 TOOTH_PITCH, TOOTH_H = 24.0, 10.0          # drip sawtooth along the leg bottom
 TIP_R = 1.5                                # radius on the tooth tips
+# ---- mesh resolution (kept well above what MJF can print; lower = smaller STL) ----
+GROOVE_PTS, BEND_SEGS = 3, 16              # points per groove bottom, segments around the 90 deg bend
 CH = 1.4                                   # chamfer on the two outer ends
 # ---- joint ----
 TAB_LEN, TAB_ROOT, TAB_TIP = 6.0, 14.0, 20.0   # dovetail on the arm, in plan view
@@ -30,8 +32,8 @@ def groove_strip(L, start_margin, end_margin):
     yc = (T - CD) + RTIP / math.sin(ALPHA)
     for c in reversed(centers):            # walk right-to-left along the top face
         top.append((c + CW / 2, T))
-        for k in range(7):
-            a = (2 * math.pi - ALPHA) - (math.pi - 2 * ALPHA) * k / 6
+        for k in range(GROOVE_PTS):   # groove bottom: a few points is plenty (MJF min detail is 0.8 mm)
+            a = (2 * math.pi - ALPHA) - (math.pi - 2 * ALPHA) * k / (GROOVE_PTS - 1)
             top.append((c + RTIP * math.cos(a), yc + RTIP * math.sin(a)))
         top.append((c - CW / 2, T))
     pts = [(0, 0), (L, 0), (L, T)] + top + [(0, T)]
@@ -46,7 +48,7 @@ def section(L, left_end, right_end):
     eps = 0.02
     arm = Manifold.extrude(cs, PAD - RE + eps).rotate((90, 0, 0)).translate((0, PAD, 0))
     cs_t = CrossSection([[(RE + v, u) for u, v in pts]], FillRule.EvenOdd)
-    arc = Manifold.revolve(cs_t, 96, 90).transform(np.array([[0, 0, 1, 0], [0, -1, 0, RE], [1, 0, 0, -RE]], float))
+    arc = Manifold.revolve(cs_t, 4 * BEND_SEGS, 90).transform(np.array([[0, 0, 1, 0], [0, -1, 0, RE], [1, 0, 0, -RE]], float))
     leg = Manifold.extrude(cs, DROP - RE + eps).rotate((180, 0, 0)).translate((0, 0, -RE + eps))
     body = arm + arc + leg
 

@@ -27,7 +27,7 @@ feather_min = 1.0;  // thickness at the leading edge (JLC MJF minimum wall)
 tip_r       = 1.5;  // radius on the drip tip and bottom corners, smooth underfoot
 tip_h       = 10;   // height of the V drip tip (valley stays 3 mm below the slab)
 
-$fn = 96;
+$fn = 64;   // 16 segments around the bend; finer only makes the STL bigger
 re = max(edge_radius, 0.5);
 
 // 2D profile in (Y across curb, Z up); curb top at Z=0, inner face at Y=0.
